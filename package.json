@@ -1,0 +1,33 @@
+{
+  "name": "mencare-admin-dashboard",
+  "version": "1.0.0",
+  "description": "Hệ thống quản lý toàn diện cho doanh nghiệp chăm sóc da nam",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.0.1",
+    "framer-motion": "^12.23.22",
+    "lucide-react": "^0.544.0",
+    "next": "14.2.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.2.3"
+  },
+  "keywords": [
+    "next.js",
+    "react",
+    "admin-dashboard",
+    "management-system",
+    "mencare"
+  ],
+  "author": "MiniMax Agent",
+  "license": "MIT"
+}
