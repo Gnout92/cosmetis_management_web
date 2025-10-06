@@ -3,141 +3,175 @@ import Link from 'next/link';
 import Image from 'next/image';
 import styles from '../styles/gioithieu.module.css';
 
-export default function GioiThieu()  {
+export default function GioiThieu() {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [activeTab, setActiveTab] = useState('story');
+  const [activeSection, setActiveSection] = useState('intro');
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     setIsLoaded(true);
+    
+    // Auto-slide for product showcase
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % showcaseImages.length);
+    }, 4000);
+
+    return () => clearInterval(interval);
   }, []);
+
+  // Scroll to section handler
+  const scrollToSection = (sectionId) => {
+    setActiveSection(sectionId);
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  // Data
+  const showcaseImages = [
+    {
+      src: "/images/banners/banner2.jpg",
+      alt: 'Cửa hàng KaKa',
+      title: 'Không gian cửa hàng sang trọng'
+    },
+    {
+      src: "/images/banners/banner3.jpg",
+      alt: 'Bộ sưu tập sản phẩm',
+      title: 'Bộ sưu tập sản phẩm đa dạng'
+    },
+    {
+      src: "/images/banners/banner1.jpg",
+      alt: 'Đội ngũ tư vấn',
+      title: 'Đội ngũ tư vấn chuyên nghiệp'
+    },
+    {
+      src: "/images/banners/banner2.jpg",
+      alt: 'Phòng lab nghiên cứu',
+      title: 'Phòng lab nghiên cứu hiện đại'
+    }
+  ];
+
+  const whyChooseUs = [
+    {
+      icon: '🏆',
+      title: '100% Sản phẩm chính hãng',
+      description: 'Tất cả sản phẩm đều có tem chứng nhận và được nhập khẩu trực tiếp từ các thương hiệu uy tín.'
+    },
+    {
+      icon: '👩‍⚕️',
+      title: 'Tư vấn miễn phí từ chuyên gia',
+      description: 'Đội ngũ chuyên gia da liễu và beauty advisor tư vấn miễn phí, chọn sản phẩm phù hợp với từng loại da.'
+    },
+    {
+      icon: '🚚',
+      title: 'Giao hàng toàn quốc nhanh chóng',
+      description: 'Giao hàng trong 24h tại TP.HCM và Hà Nội, toàn quốc trong 2-3 ngày với nhiều hình thức thanh toán.'
+    },
+    {
+      icon: '🔄',
+      title: 'Chính sách đổi trả linh hoạt',
+      description: 'Đổi trả trong 30 ngày, hoàn tiền 100% nếu sản phẩm không phù hợp hoặc có vấn đề về chất lượng.'
+    },
+    {
+      icon: '💎',
+      title: 'Chương trình membership ưu đãi',
+      description: 'Tích điểm, ưu đãi độc quyền, quà tặng sinh nhật và nhiều đặc quyền dành cho khách hàng thân thiết.'
+    },
+    {
+      icon: '🛡️',
+      title: 'Bảo hành và chăm sóc sau bán',
+      description: 'Bảo hành sản phẩm, hỗ trợ 24/7 qua hotline và livechat, theo dõi kết quả sử dụng sản phẩm.'
+    }
+  ];
 
   const teamMembers = [
     {
       id: 1,
-      name: 'Nguyễn Văn Minh',
+      name: 'Nguyễn Thị Lan Anh',
       position: 'CEO & Founder',
-      avatar: '👨‍💼',
-      description: 'Hơn 15 năm kinh nghiệm trong ngành mỹ phẩm',
-      speciality: 'Chiến lược phát triển thương hiệu'
+      avatar: '👩‍💼',
+      experience: '15 năm kinh nghiệm trong ngành làm đẹp',
+      achievement: 'Giải thưởng "Doanh nhân nữ xuất sắc 2023"'
     },
     {
       id: 2,
-      name: 'Trần Thị Lan',
-      position: 'Chief Marketing Officer',
-      avatar: '👩‍💼',
-      description: 'Chuyên gia marketing với nhiều chiến dịch thành công',
-      speciality: 'Digital Marketing & Brand Development'
+      name: 'Dr. Trần Minh Khoa',
+      position: 'Chuyên gia Da liễu',
+      avatar: '👨‍⚕️',
+      experience: 'Bác sĩ Da liễu hơn 12 năm kinh nghiệm',
+      achievement: 'Chứng chỉ chuyên khoa Da liễu quốc tế'
     },
     {
       id: 3,
-      name: 'Dr. Lê Văn Khánh',
-      position: 'Head of R&D',
-      avatar: '👨‍🔬',
-      description: 'Tiến sĩ Hóa học, chuyên gia nghiên cứu công thức',
-      speciality: 'Product Research & Development'
+      name: 'Lê Thị Thu Hương',
+      position: 'Head of Customer Experience',
+      avatar: '👩‍💻',
+      experience: '10 năm kinh nghiệm chăm sóc khách hàng',
+      achievement: 'Giải thưởng "Best Customer Service 2024"'
     },
     {
       id: 4,
-      name: 'Phạm Thị Hương',
-      position: 'Customer Experience Manager',
-      avatar: '👩‍💻',
-      description: 'Đảm bảo trải nghiệm khách hàng tốt nhất',
-      speciality: 'Customer Service & Quality Control'
+      name: 'Phạm Văn Đức',
+      position: 'Product Development Manager',
+      avatar: '👨‍🔬',
+      experience: '8 năm nghiên cứu và phát triển sản phẩm',
+      achievement: 'Sáng chế 15+ công thức độc quyền'
     }
+  ];
+
+  const socialLinks = [
+    { icon: '📘', name: 'Facebook', url: 'https://facebook.com/myskinbeauty', followers: '250K+' },
+    { icon: '📷', name: 'Instagram', url: 'https://instagram.com/myskinbeauty', followers: '180K+' },
+    { icon: '🎵', name: 'TikTok', url: 'https://tiktok.com/@myskinbeauty', followers: '320K+' },
+    { icon: '📺', name: 'YouTube', url: 'https://youtube.com/myskinbeauty', followers: '95K+' }
   ];
 
   const achievements = [
-    {
-      icon: '🏆',
-      title: 'Thương hiệu uy tín',
-      description: 'Top 10 thương hiệu mỹ phẩm nam được yêu thích nhất Việt Nam',
-      year: '2024'
-    },
-    {
-      icon: '🌟',
-      title: 'Chất lượng quốc tế',
-      description: 'Chứng nhận ISO 22716 về tiêu chuẩn sản xuất mỹ phẩm',
-      year: '2023'
-    },
-    {
-      icon: '💚',
-      title: 'Thân thiện môi trường',
-      description: 'Cam kết sử dụng 100% bao bì tái chế và thành phần tự nhiên',
-      year: '2023'
-    },
-    {
-      icon: '🔬',
-      title: 'Đột phá công nghệ',
-      description: 'Ra mắt công nghệ Nano-Peptide độc quyền cho sản phẩm nam',
-      year: '2024'
-    }
-  ];
-
-  const timeline = [
-    {
-      year: '2018',
-      title: 'Khởi đầu hành trình',
-      description: 'Thành lập công ty với tầm nhìn cung cấp sản phẩm chăm sóc da chất lượng cao cho nam giới Việt Nam'
-    },
-    {
-      year: '2019',
-      title: 'Sản phẩm đầu tiên',
-      description: 'Ra mắt dòng sản phẩm chăm sóc da cơ bản với 5 sản phẩm core'
-    },
-    {
-      year: '2020',
-      title: 'Mở rộng thị trường',
-      description: 'Phát triển hệ thống phân phối trên toàn quốc với hơn 100 đại lý'
-    },
-    {
-      year: '2021',
-      title: 'Chuyển đổi số',
-      description: 'Xây dựng nền tảng thương mại điện tử và ứng dụng mobile'
-    },
-    {
-      year: '2022',
-      title: 'Nghiên cứu phát triển',
-      description: 'Thành lập phòng lab R&D với đội ngũ chuyên gia quốc tế'
-    },
-    {
-      year: '2023',
-      title: 'Mở rộng quốc tế',
-      description: 'Xuất khẩu sản phẩm ra thị trường Đông Nam Á'
-    },
-    {
-      year: '2024',
-      title: 'MỸPHẨM NAM V2',
-      description: 'Ra mắt thương hiệu mới với công nghệ tiên tiến và trải nghiệm khách hàng vượt trội'
-    }
-  ];
-
-  const values = [
-    {
-      icon: '🎯',
-      title: 'Chất lượng',
-      description: 'Cam kết mang đến sản phẩm chất lượng cao nhất với tiêu chuẩn quốc tế'
-    },
-    {
-      icon: '🤝',
-      title: 'Tin cậy',
-      description: 'Xây dựng niềm tin qua từng sản phẩm và dịch vụ chăm sóc khách hàng'
-    },
-    {
-      icon: '🚀',
-      title: 'Đổi mới',
-      description: 'Không ngừng nghiên cứu và phát triển để đem đến giải pháp tối ưu'
-    },
-    {
-      icon: '🌱',
-      title: 'Bền vững',
-      description: 'Bảo vệ môi trường với quy trình sản xuất xanh và bao bì tái chế'
-    }
+    { year: '2024', title: 'Top 5 Thương hiệu mỹ phẩm uy tín', org: 'Beauty Awards Vietnam' },
+    { year: '2023', title: 'Chứng nhận ISO 22716', org: 'Tổ chức Tiêu chuẩn Quốc tế' },
+    { year: '2023', title: '"Best Online Beauty Store"', org: 'E-commerce Excellence Awards' },
+    { year: '2022', title: 'Thương hiệu được yêu thích nhất', org: 'Vietnam Beauty Choice Awards' }
   ];
 
   return (
     <div className={styles.container}>
-      {/* Header */}
-      <header className={styles.header}>
+      {/* Floating Navigation */}
+      <nav className={styles.floatingNav}>
+        <button 
+          className={`${styles.navBtn} ${activeSection === 'intro' ? styles.active : ''}`}
+          onClick={() => scrollToSection('intro')}
+        >
+          🏠
+        </button>
+        <button 
+          className={`${styles.navBtn} ${activeSection === 'mission' ? styles.active : ''}`}
+          onClick={() => scrollToSection('mission')}
+        >
+          🎯
+        </button>
+        <button 
+          className={`${styles.navBtn} ${activeSection === 'showcase' ? styles.active : ''}`}
+          onClick={() => scrollToSection('showcase')}
+        >
+          📸
+        </button>
+        <button 
+          className={`${styles.navBtn} ${activeSection === 'why-us' ? styles.active : ''}`}
+          onClick={() => scrollToSection('why-us')}
+        >
+          ⭐
+        </button>
+        <button 
+          className={`${styles.navBtn} ${activeSection === 'contact' ? styles.active : ''}`}
+          onClick={() => scrollToSection('contact')}
+        >
+          📞
+        </button>
+      </nav>
+
+      {/* Header Section */}
+      <header className={styles.header} id="intro">
         <div className={styles.headerBackground}>
           <div className={styles.headerParticles}></div>
         </div>
@@ -150,11 +184,13 @@ export default function GioiThieu()  {
           
           <div className={styles.heroText}>
             <h1 className={styles.heroTitle}>
-              <span className={styles.heroMainText}>GIỚI THIỆU</span>
-              <span className={styles.heroSubText}>MỸPHẨM NAM V2</span>
+              <span className={styles.heroMainText}>GIỚI THIỆU VỀ</span>
+              <span className={styles.heroSubText}>KaKa</span>
+              <span className={styles.heroTagline}>✨ Nơi tỏa sáng vẻ đẹp tự nhiên của bạn ✨</span>
             </h1>
             <p className={styles.heroDescription}>
-              Hành trình 6 năm kiến tạo thương hiệu mỹ phẩm nam hàng đầu Việt Nam
+              Hành trình 6 năm kiến tạo thương hiệu mỹ phẩm hàng đầu Việt Nam với sứ mệnh 
+              mang đến vẻ đẹp tự nhiên, an toàn và bền vững cho phụ nữ Việt.
             </p>
           </div>
         </div>
@@ -164,196 +200,280 @@ export default function GioiThieu()  {
       <main className={styles.main}>
         <div className={styles.contentContainer}>
           
-          {/* Tab Navigation */}
-          <div className={styles.tabNavigation}>
-            <button 
-              className={`${styles.tabBtn} ${activeTab === 'story' ? styles.active : ''}`}
-              onClick={() => setActiveTab('story')}
-            >
-              <span>📖</span>
-              Câu chuyện của chúng tôi
-            </button>
-            <button 
-              className={`${styles.tabBtn} ${activeTab === 'team' ? styles.active : ''}`}
-              onClick={() => setActiveTab('team')}
-            >
-              <span>👥</span>
-              Đội ngũ
-            </button>
-            <button 
-              className={`${styles.tabBtn} ${activeTab === 'timeline' ? styles.active : ''}`}
-              onClick={() => setActiveTab('timeline')}
-            >
-              <span>📅</span>
-              Lịch sử phát triển
-            </button>
-            <button 
-              className={`${styles.tabBtn} ${activeTab === 'achievements' ? styles.active : ''}`}
-              onClick={() => setActiveTab('achievements')}
-            >
-              <span>🏆</span>
-              Thành tựu
-            </button>
-          </div>
+          {/* 📝 Đoạn mở đầu */}
+          <section className={`${styles.introSection} ${isLoaded ? styles.fadeIn : ''}`}>
+            <div className={styles.introGrid}>
+              <div className={styles.introText}>
+                <h2 className={styles.sectionTitle}>Câu chuyện của chúng tôi</h2>
+                <p className={styles.introParagraph}>
+                  <strong>MySkin Beauty</strong> là cửa hàng chuyên cung cấp các sản phẩm chăm sóc da và 
+                  mỹ phẩm chính hãng đến từ <span className={styles.highlight}>Hàn Quốc, Nhật Bản và châu Âu</span>.
+                </p>
+                <p className={styles.introParagraph}>
+                  Với sứ mệnh mang đến vẻ đẹp tự nhiên, an toàn và bền vững, chúng tôi luôn 
+                  <span className={styles.highlight}>chọn lọc kỹ lưỡng từng sản phẩm</span> để phù hợp 
+                  với làn da phụ nữ Việt Nam.
+                </p>
+                <p className={styles.introParagraph}>
+                  Từ những ngày đầu khởi nghiệp với ước mơ nhỏ, đến nay MySkin Beauty đã trở thành 
+                  <span className={styles.highlight}>thương hiệu được hơn 150.000 khách hàng tin tưởng</span> 
+                  với hệ thống phân phối trên toàn quốc.
+                </p>
+              </div>
+              
+              <div className={styles.introStats}>
+                <div className={styles.statCard}>
+                  <div className={styles.statIcon}>👥</div>
+                  <div className={styles.statNumber}>150,000+</div>
+                  <div className={styles.statLabel}>Khách hàng tin tưởng</div>
+                </div>
+                <div className={styles.statCard}>
+                  <div className={styles.statIcon}>🏪</div>
+                  <div className={styles.statNumber}>300+</div>
+                  <div className={styles.statLabel}>Điểm bán hàng</div>
+                </div>
+                <div className={styles.statCard}>
+                  <div className={styles.statIcon}>🌍</div>
+                  <div className={styles.statNumber}>15+</div>
+                  <div className={styles.statLabel}>Thương hiệu quốc tế</div>
+                </div>
+                <div className={styles.statCard}>
+                  <div className={styles.statIcon}>⭐</div>
+                  <div className={styles.statNumber}>4.9/5</div>
+                  <div className={styles.statLabel}>Đánh giá khách hàng</div>
+                </div>
+              </div>
+            </div>
+          </section>
 
-          {/* Tab Content */}
-          <div className={styles.tabContent}>
+          {/* 🎯 Sứ mệnh - Tầm nhìn - Giá trị cốt lõi */}
+          <section className={styles.missionSection} id="mission">
+            <h2 className={styles.sectionTitle}>Sứ mệnh - Tầm nhìn - Giá trị cốt lõi</h2>
             
-            {/* Story Tab */}
-            {activeTab === 'story' && (
-              <div className={`${styles.storySection} ${isLoaded ? styles.fadeIn : ''}`}>
-                <div className={styles.storyGrid}>
-                  <div className={styles.storyText}>
-                    <h2 className={styles.sectionTitle}>Câu chuyện khởi nguồn</h2>
-                    <p className={styles.storyParagraph}>
-                      MỸPHẨM NAM V2 ra đời từ một câu hỏi đơn giản: "Tại sao nam giới Việt Nam 
-                      lại phải chấp nhận những sản phẩm chăm sóc da không phù hợp với làn da 
-                      và khí hậu nhiệt đới của mình?"
-                    </p>
-                    <p className={styles.storyParagraph}>
-                      Xuất phát từ niềm đam mê nghiên cứu về da và mong muốn mang đến giải pháp 
-                      chăm sóc da chuyên biệt cho nam giới, đội ngũ sáng lập đã dành 6 năm để 
-                      nghiên cứu, thử nghiệm và hoàn thiện từng công thức.
-                    </p>
-                    <p className={styles.storyParagraph}>
-                      Hôm nay, chúng tôi tự hào là thương hiệu được hơn 50.000 khách hàng tin tưởng, 
-                      với hệ thống phân phối trên toàn quốc và đang mở rộng ra thị trường quốc tế.
-                    </p>
-                  </div>
-                  
-                  <div className={styles.storyStats}>
-                    <div className={styles.statCard}>
-                      <div className={styles.statIcon}>🎯</div>
-                      <div className={styles.statNumber}>50,000+</div>
-                      <div className={styles.statLabel}>Khách hàng tin tưởng</div>
-                    </div>
-                    <div className={styles.statCard}>
-                      <div className={styles.statIcon}>🏪</div>
-                      <div className={styles.statNumber}>200+</div>
-                      <div className={styles.statLabel}>Điểm bán hàng</div>
-                    </div>
-                    <div className={styles.statCard}>
-                      <div className={styles.statIcon}>📦</div>
-                      <div className={styles.statNumber}>150+</div>
-                      <div className={styles.statLabel}>Sản phẩm</div>
-                    </div>
-                    <div className={styles.statCard}>
-                      <div className={styles.statIcon}>⭐</div>
-                      <div className={styles.statNumber}>4.9/5</div>
-                      <div className={styles.statLabel}>Đánh giá khách hàng</div>
+            <div className={styles.missionGrid}>
+              <div className={styles.missionCard}>
+                <div className={styles.missionIcon}>🎯</div>
+                <h3 className={styles.missionTitle}>Sứ mệnh (Mission)</h3>
+                <p className={styles.missionText}>
+                  Giúp khách hàng tự tin hơn mỗi ngày bằng những sản phẩm làm đẹp 
+                  <strong>chất lượng, an toàn và hiệu quả</strong>. Chúng tôi cam kết mang đến 
+                  trải nghiệm mua sắm tuyệt vời và dịch vụ chăm sóc khách hàng tận tâm.
+                </p>
+              </div>
+              
+              <div className={styles.missionCard}>
+                <div className={styles.missionIcon}>🌟</div>
+                <h3 className={styles.missionTitle}>Tầm nhìn (Vision)</h3>
+                <p className={styles.missionText}>
+                  Trở thành <strong>thương hiệu mỹ phẩm uy tín hàng đầu Việt Nam</strong>, 
+                  mang đến trải nghiệm mua sắm tiện lợi và đáng tin cậy. Mở rộng ra 
+                  thị trường khu vực Đông Nam Á vào năm 2026.
+                </p>
+              </div>
+            </div>
+
+            <div className={styles.valuesSection}>
+              <h3 className={styles.valuesTitle}>🌸 Giá trị cốt lõi (Core Values)</h3>
+              <div className={styles.valuesGrid}>
+                <div className={styles.valueItem}>
+                  <span className={styles.valueIcon}>🌸</span>
+                  <span className={styles.valueText}>Chất lượng thật – Giá trị thật</span>
+                </div>
+                <div className={styles.valueItem}>
+                  <span className={styles.valueIcon}>🌿</span>
+                  <span className={styles.valueText}>An toàn & thân thiện với làn da</span>
+                </div>
+                <div className={styles.valueItem}>
+                  <span className={styles.valueIcon}>💬</span>
+                  <span className={styles.valueText}>Tận tâm với khách hàng</span>
+                </div>
+                <div className={styles.valueItem}>
+                  <span className={styles.valueIcon}>🌎</span>
+                  <span className={styles.valueText}>Hướng tới vẻ đẹp bền vững</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* 📸 Hình ảnh minh họa */}
+          <section className={styles.showcaseSection} id="showcase">
+            <h2 className={styles.sectionTitle}>Khám phá MySkin Beauty</h2>
+            <p className={styles.sectionDescription}>
+              Hình ảnh cửa hàng, sản phẩm nổi bật và đội ngũ tư vấn chuyên nghiệp
+            </p>
+            
+            <div className={styles.showcaseContainer}>
+              <div className={styles.mainShowcase}>
+                <div className={styles.imageContainer}>
+                  <div 
+                    className={styles.showcaseImage}
+                    style={{ backgroundImage: `url(${showcaseImages[currentImageIndex]?.src || '/images/placeholder.jpg'})` }}
+                  >
+                    <div className={styles.imageOverlay}>
+                      <h3 className={styles.imageTitle}>{showcaseImages[currentImageIndex]?.title}</h3>
                     </div>
                   </div>
                 </div>
-
-                {/* Values Section */}
-                <div className={styles.valuesSection}>
-                  <h2 className={styles.sectionTitle}>Giá trị cốt lõi</h2>
-                  <div className={styles.valuesGrid}>
-                    {values.map((value, index) => (
-                      <div key={index} className={styles.valueCard}>
-                        <div className={styles.valueIcon}>{value.icon}</div>
-                        <h3 className={styles.valueTitle}>{value.title}</h3>
-                        <p className={styles.valueDescription}>{value.description}</p>
+                
+                <div className={styles.imageControls}>
+                  {showcaseImages.map((_, index) => (
+                    <button
+                      key={index}
+                      className={`${styles.imageIndicator} ${index === currentImageIndex ? styles.active : ''}`}
+                      onClick={() => setCurrentImageIndex(index)}
+                    />
+                  ))}
+                </div>
+              </div>
+              
+              <div className={styles.showcaseInfo}>
+                <div className={styles.teamPreview}>
+                  <h3 className={styles.teamTitle}>🧑‍🤝‍🧑 Đội ngũ chuyên gia</h3>
+                  <div className={styles.teamList}>
+                    {teamMembers.map(member => (
+                      <div key={member.id} className={styles.teamMember}>
+                        <span className={styles.memberAvatar}>{member.avatar}</span>
+                        <div className={styles.memberInfo}>
+                          <div className={styles.memberName}>{member.name}</div>
+                          <div className={styles.memberPosition}>{member.position}</div>
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
-              </div>
-            )}
-
-            {/* Team Tab */}
-            {activeTab === 'team' && (
-              <div className={`${styles.teamSection} ${isLoaded ? styles.slideUp : ''}`}>
-                <h2 className={styles.sectionTitle}>Đội ngũ lãnh đạo</h2>
-                <p className={styles.sectionDescription}>
-                  Những con người tài năng và đam mê đang kiến tạo tương lai của MỸPHẨM NAM V2
-                </p>
                 
-                <div className={styles.teamGrid}>
-                  {teamMembers.map(member => (
-                    <div key={member.id} className={styles.teamCard}>
-                      <div className={styles.teamAvatar}>
-                        <span className={styles.avatarIcon}>{member.avatar}</span>
-                      </div>
-                      <div className={styles.teamInfo}>
-                        <h3 className={styles.teamName}>{member.name}</h3>
-                        <p className={styles.teamPosition}>{member.position}</p>
-                        <p className={styles.teamDescription}>{member.description}</p>
-                        <div className={styles.teamSpeciality}>
-                          <span className={styles.specialityLabel}>Chuyên môn:</span>
-                          <span className={styles.specialityText}>{member.speciality}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Timeline Tab */}
-            {activeTab === 'timeline' && (
-              <div className={`${styles.timelineSection} ${isLoaded ? styles.fadeIn : ''}`}>
-                <h2 className={styles.sectionTitle}>Hành trình phát triển</h2>
-                <p className={styles.sectionDescription}>
-                  Từ những bước đầu tiên đến thành công hôm nay
-                </p>
-                
-                <div className={styles.timeline}>
-                  {timeline.map((event, index) => (
-                    <div key={index} className={styles.timelineItem}>
-                      <div className={styles.timelineYear}>{event.year}</div>
-                      <div className={styles.timelineContent}>
-                        <h3 className={styles.timelineTitle}>{event.title}</h3>
-                        <p className={styles.timelineDescription}>{event.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Achievements Tab */}
-            {activeTab === 'achievements' && (
-              <div className={`${styles.achievementsSection} ${isLoaded ? styles.slideUp : ''}`}>
-                <h2 className={styles.sectionTitle}>Thành tựu và giải thưởng</h2>
-                <p className={styles.sectionDescription}>
-                  Những dấu mốc quan trọng khẳng định vị thế của MỸPHẨM NAM V2
-                </p>
-                
-                <div className={styles.achievementsGrid}>
+                <div className={styles.achievementsList}>
+                  <h3 className={styles.achievementsTitle}>🏆 Thành tựu nổi bật</h3>
                   {achievements.map((achievement, index) => (
-                    <div key={index} className={styles.achievementCard}>
-                      <div className={styles.achievementIcon}>{achievement.icon}</div>
-                      <div className={styles.achievementYear}>{achievement.year}</div>
-                      <h3 className={styles.achievementTitle}>{achievement.title}</h3>
-                      <p className={styles.achievementDescription}>{achievement.description}</p>
+                    <div key={index} className={styles.achievementItem}>
+                      <span className={styles.achievementYear}>{achievement.year}</span>
+                      <div className={styles.achievementContent}>
+                        <div className={styles.achievementTitle}>{achievement.title}</div>
+                        <div className={styles.achievementOrg}>{achievement.org}</div>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          </section>
 
-          {/* Call to Action */}
-          <div className={styles.ctaSection}>
-            <div className={styles.ctaContent}>
-              <h2 className={styles.ctaTitle}>Hãy là một phần của hành trình này</h2>
-              <p className={styles.ctaDescription}>
-                Khám phá bộ sưu tập sản phẩm chăm sóc da nam cao cấp và trải nghiệm 
-                sự khác biệt mà MỸPHẨM NAM V2 mang lại.
+          {/* ⭐ Lý do nên chọn shop */}
+          <section className={styles.whyUsSection} id="why-us">
+            <h2 className={styles.sectionTitle}>Tại sao nên chọn MySkin Beauty?</h2>
+            <p className={styles.sectionDescription}>
+              6 lý do khiến hơn 150,000 khách hàng tin tưởng và lựa chọn chúng tôi
+            </p>
+            
+            <div className={styles.whyUsGrid}>
+              {whyChooseUs.map((reason, index) => (
+                <div key={index} className={styles.whyUsCard}>
+                  <div className={styles.whyUsIcon}>{reason.icon}</div>
+                  <h3 className={styles.whyUsTitle}>{reason.title}</h3>
+                  <p className={styles.whyUsDescription}>{reason.description}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* 💌 Lời cảm ơn & Call to Action */}
+          <section className={styles.thanksSection}>
+            <div className={styles.thanksContent}>
+              <h2 className={styles.thanksTitle}>💖 Lời cảm ơn chân thành</h2>
+              <p className={styles.thanksText}>
+                <strong>MySkin Beauty</strong> xin chân thành cảm ơn hơn <span className={styles.highlight}>150.000 khách hàng</span> 
+                đã tin tưởng và đồng hành cùng chúng tôi trong suốt thời gian qua.
               </p>
+              <p className={styles.thanksText}>
+                Hãy cùng chúng tôi tiếp tục hành trình lan tỏa vẻ đẹp tự nhiên – 
+                <strong>bắt đầu ngay hôm nay!</strong>
+              </p>
+              
               <div className={styles.ctaButtons}>
                 <Link href="/cua-hang" className={styles.ctaButton}>
                   <span>🛒</span>
                   Khám phá sản phẩm
                 </Link>
-                <Link href="/ho-tro-khach-hang" className={styles.ctaButtonSecondary}>
+                <Link href="/tu-van" className={styles.ctaButtonSecondary}>
                   <span>💬</span>
                   Tư vấn miễn phí
                 </Link>
+                <Link href="/khuyen-mai" className={styles.ctaButtonSpecial}>
+                  <span>🎁</span>
+                  Ưu đãi đặc biệt
+                </Link>
               </div>
             </div>
-          </div>
+          </section>
+
+          {/* 📍 Thông tin liên hệ */}
+          <section className={styles.contactSection} id="contact">
+            <h2 className={styles.sectionTitle}>📍 Thông tin liên hệ</h2>
+            
+            <div className={styles.contactGrid}>
+              <div className={styles.contactInfo}>
+                <div className={styles.contactItem}>
+                  <div className={styles.contactIcon}>🏪</div>
+                  <div className={styles.contactText}>
+                    <strong>Địa chỉ cửa hàng chính:</strong><br/>
+                    123 Nguyễn Văn Linh, Quận 7, TP.HCM<br/>
+                    <em>Mở cửa: 8:00 - 21:00 (Thứ 2 - Chủ nhật)</em>
+                  </div>
+                </div>
+                
+                <div className={styles.contactItem}>
+                  <div className={styles.contactIcon}>📞</div>
+                  <div className={styles.contactText}>
+                    <strong>Hotline hỗ trợ:</strong><br/>
+                    📱 <a href="tel:0901234567">0901 234 567</a> (Zalo/Viber)<br/>
+                    ☎️ <a href="tel:02838901234">(028) 3890 1234</a> (Cố định)
+                  </div>
+                </div>
+                
+                <div className={styles.contactItem}>
+                  <div className={styles.contactIcon}>✉️</div>
+                  <div className={styles.contactText}>
+                    <strong>Email hỗ trợ:</strong><br/>
+                    📧 <a href="mailto:support@myskinbeauty.vn">support@myskinbeauty.vn</a><br/>
+                    📧 <a href="mailto:sales@myskinbeauty.vn">sales@myskinbeauty.vn</a>
+                  </div>
+                </div>
+              </div>
+              
+              <div className={styles.socialSection}>
+                <h3 className={styles.socialTitle}>🌐 Kết nối với chúng tôi</h3>
+                <div className={styles.socialGrid}>
+                  {socialLinks.map((social, index) => (
+                    <a key={index} href={social.url} className={styles.socialLink}>
+                      <span className={styles.socialIcon}>{social.icon}</span>
+                      <div className={styles.socialInfo}>
+                        <div className={styles.socialName}>{social.name}</div>
+                        <div className={styles.socialFollowers}>{social.followers} followers</div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+                
+                <div className={styles.businessHours}>
+                  <h4 className={styles.hoursTitle}>⏰ Giờ làm việc</h4>
+                  <div className={styles.hoursList}>
+                    <div className={styles.hoursItem}>
+                      <span>Thứ 2 - Thứ 6:</span>
+                      <span>8:00 - 21:00</span>
+                    </div>
+                    <div className={styles.hoursItem}>
+                      <span>Thứ 7 - Chủ nhật:</span>
+                      <span>8:00 - 22:00</span>
+                    </div>
+                    <div className={styles.hoursItem}>
+                      <span>Hotline 24/7:</span>
+                      <span>Luôn sẵn sàng hỗ trợ</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
       </main>
     </div>

@@ -1,843 +1,465 @@
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
 import styles from '../styles/cuahang.module.css';
 
-const CuaHang = () => {
-  const [activeModule, setActiveModule] = useState('dashboard');
 
-  const modules = [
-    { id: 'products', name: 'Quản lý sản phẩm', icon: '📦' },
-    { id: 'customers', name: 'Quản lý khách hàng', icon: '👥' },
-    { id: 'employees', name: 'Quản lý nhân viên', icon: '👨‍💼' },
-    { id: 'orders', name: 'Quản lý đơn hàng', icon: '📋' },
-    { id: 'warehouse', name: 'Quản lý kho', icon: '🏪' },
-    { id: 'marketing', name: 'Marketing & Khuyến mãi', icon: '📢' },
-    { id: 'reports', name: 'Báo cáo & Phân tích', icon: '📊' }
+const CuaHang = () => {
+  const [selectedBranch, setSelectedBranch] = useState(null);
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    message: ''
+  });
+
+  // Dữ liệu chi nhánh cửa hàng
+  const branches = [
+    {
+      id: 1,
+      name: "KaKa Mỹ Phẩm – Cần Thơ",
+      address: "123 Nguyễn Trãi, Quận Ninh Kiều, TP. Cần Thơ",
+      phone: "0901 234 567",
+      email: "cantho@kakacosmetica.com",
+      hours: "8:00 – 21:00 (T2–CN)",
+      region: "Miền Nam",
+      mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3928.8414722047205!2d105.78011!3d10.029998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31a0895a51d60719%3A0x9d76b0035f6d53d0!2zTmd1eeG7hW4gVHLDo2ksIE5pbmggS2nhu4F1LCBD4bqnbiBUaMah!5e0!3m2!1svi!2s!4v1709000000000!5m2!1svi!2s",
+      image: "/images/store-cantho.jpg"
+    },
+    {
+      id: 2,
+      name: "KaKa Mỹ Phẩm – TP.HCM Quận 1",
+      address: "456 Đường Lê Lợi, Quận 1, TP. Hồ Chí Minh",
+      phone: "0902 345 678",
+      email: "q1hcm@kakacosmetica.com",
+      hours: "8:30 – 21:30 (T2–CN)",
+      region: "Miền Nam",
+      mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.4175153486596!2d106.69779!3d10.772675!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f1c06f4e1dd%3A0x43900f1d4539a3d!2zTMOqIEzhu6NpLCBRdeG6rW4gMSwgVGjDoG5oIHBo4buRIEjhu5MgQ2jDrSBNaW5o!5e0!3m2!1svi!2s!4v1709000000000!5m2!1svi!2s",
+      image: "/images/store-hcm-q1.jpg"
+    },
+    {
+      id: 3,
+      name: "KaKa Mỹ Phẩm – TP.HCM Quận 7",
+      address: "789 Nguyễn Thị Thập, Quận 7, TP. Hồ Chí Minh",
+      phone: "0903 456 789",
+      email: "q7hcm@kakacosmetica.com",
+      hours: "9:00 – 21:00 (T2–CN)",
+      region: "Miền Nam",
+      mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3920.0256345678!2d106.71234!3d10.75432!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x317528b0a29b8b45%3A0x123456789abcdef!2zTmd1eeG7hW4gVGjhu4sgVGjhuq1wLCBRdeG6rW4gNw!5e0!3m2!1svi!2s!4v1709000000000!5m2!1svi!2s",
+      image: "/images/store-hcm-q7.jpg"
+    },
+    {
+      id: 4,
+      name: "KaKa Mỹ Phẩm – Đà Nẵng",
+      address: "321 Lê Duẩn, Quận Hải Châu, TP. Đà Nẵng",
+      phone: "0904 567 890",
+      email: "danang@kakacosmetica.com",
+      hours: "8:00 – 21:00 (T2–CN)",
+      region: "Miền Trung",
+      mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3834.0123456789!2d108.2123!3d16.0678!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x314219c792252a63%3A0x1d0123456789abc!2zTMOqIER1w6JuLCBIYWkgQ2jDonUsIMSQw6AgTuG6tW5n!5e0!3m2!1svi!2s!4v1709000000000!5m2!1svi!2s",
+      image: "/images/store-danang.jpg"
+    },
+    {
+      id: 5,
+      name: "KaKa Mỹ Phẩm – Hà Nội Ba Đình",
+      address: "654 Đường Láng, Quận Ba Đình, TP. Hà Nội",
+      phone: "0905 678 901",
+      email: "badinh@kakacosmetica.com",
+      hours: "8:30 – 21:00 (T2–CN)",
+      region: "Miền Bắc",
+      mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.1234567890!2d105.8019!3d21.0285!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab9bd9861ca1%3A0x1234567890abcdef!2zxJDGsOG7nW5nIEzDoW5nLCBCYSDEkMOsbmgsIEjDoCBO4buZaQ!5e0!3m2!1svi!2s!4v1709000000000!5m2!1svi!2s",
+      image: "/images/store-hanoi-badinh.jpg"
+    },
+    {
+      id: 6,
+      name: "KaKa Mỹ Phẩm – Hà Nội Cầu Giấy",
+      address: "987 Xuân Thủy, Quận Cầu Giấy, TP. Hà Nội",
+      phone: "0906 789 012",
+      email: "caugiay@kakacosmetica.com",
+      hours: "9:00 – 21:30 (T2–CN)",
+      region: "Miền Bắc",
+      mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3723.9876543210!2d105.7894!3d21.0456!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x313454b91f916a05%3A0x9876543210fedcba!2zWHXDom4gVGjhu6d5LCBD4bqndSBHaeG6pXksIEjDoCBO4buZaQ!5e0!3m2!1svi!2s!4v1709000000000!5m2!1svi!2s",
+      image: "/images/store-hanoi-caugiay.jpg"
+    }
   ];
+
+  // Dữ liệu hình ảnh cửa hàng
+  const storeImages = [
+    {
+      id: 1,
+      title: "Kệ trưng bày mỹ phẩm cao cấp",
+      image: "/images/banners/banner1.jpg",
+      description: "Không gian trưng bày hiện đại với đầy đủ các sản phẩm mỹ phẩm chất lượng cao"
+    },
+    {
+      id: 2,
+      title: "Khu tư vấn làm đẹp chuyên nghiệp",
+      image: "/images/banners/banner2.jpg",
+      description: "Khu vực tư vấn riêng tư với đội ngũ chuyên viên giàu kinh nghiệm"
+    },
+    {
+      id: 3,
+      title: "Nhân viên chăm sóc khách hàng",
+      image: "/images/banners/banner3.jpg",
+      description: "Đội ngũ nhân viên tận tâm, chuyên nghiệp phục vụ khách hàng 24/7"
+    },
+    {
+      id: 4,
+      title: "Không gian mua sắm thoải mái",
+      image: "/images/banners/banner1.jpg",
+      description: "Thiết kế nội thất sang trọng, tạo cảm giác thư giãn khi mua sắm"
+    }
+  ];
+
+  // Nhóm chi nhánh theo khu vực
+  const branchesByRegion = branches.reduce((acc, branch) => {
+    if (!acc[branch.region]) {
+      acc[branch.region] = [];
+    }
+    acc[branch.region].push(branch);
+    return acc;
+  }, {});
+
+  // Xử lý form liên hệ
+  const handleInputChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmitContact = (e) => {
+    e.preventDefault();
+    // Xử lý gửi form ở đây
+    console.log('Form data:', formData);
+    alert('Cảm ơn bạn đã đăng ký! Chúng tôi sẽ liên hệ với bạn sớm nhất.');
+    setShowContactForm(false);
+    setFormData({ name: '', phone: '', email: '', message: '' });
+  };
+
+  const handleCallBranch = (phone) => {
+    window.open(`tel:${phone}`, '_self');
+  };
+
+  const handleGetDirections = (address) => {
+    const encodedAddress = encodeURIComponent(address);
+    window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
+  };
+
+  const handleViewMap = (branch) => {
+    setSelectedBranch(branch);
+  };
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>🌟 Hệ Thống Quản Lý Cửa Hàng Mỹ Phẩm</h1>
-        <p className={styles.subtitle}>Quản lý hiệu quả - Phát triển bền vững</p>
+      {/* Header Section */}
+      <div className={styles.headerSection}>
+        <div className={styles.heroContent}>
+          <h1 className={styles.mainTitle}>
+            🏪 Hệ Thống Cửa Hàng KaKa Mỹ Phẩm
+          </h1>
+          <p className={styles.heroDescription}>
+            Hệ thống cửa hàng mỹ phẩm KaKa hiện có mặt tại nhiều tỉnh thành trên toàn quốc, 
+            mang đến cho bạn trải nghiệm mua sắm tiện lợi và chuyên nghiệp nhất.
+          </p>
+          <div className={styles.heroStats}>
+            <div className={styles.statItem}>
+              <span className={styles.statNumber}>6+</span>
+              <span className={styles.statLabel}>Chi nhánh</span>
+            </div>
+            <div className={styles.statItem}>
+              <span className={styles.statNumber}>3</span>
+              <span className={styles.statLabel}>Miền</span>
+            </div>
+            <div className={styles.statItem}>
+              <span className={styles.statNumber}>1000+</span>
+              <span className={styles.statLabel}>Sản phẩm</span>
+            </div>
+          </div>
+        </div>
+        <div className={styles.heroImage}>
+          <Image 
+            src="/images/banners/banner3.jpg"
+            alt="KaKa Store Hero" 
+            width={600} 
+            height={400}
+            className={styles.heroImg}
+          />
+        </div>
       </div>
 
-      <div className={styles.navigation}>
+      {/* Quick Actions */}
+      <div className={styles.quickActions}>
         <button 
-          className={`${styles.navButton} ${activeModule === 'dashboard' ? styles.active : ''}`}
-          onClick={() => setActiveModule('dashboard')}
+          className={styles.actionBtn}
+          onClick={() => handleCallBranch('1900-234-567')}
         >
-          🏠 Dashboard
+          <span className={styles.actionIcon}>📞</span>
+          Gọi ngay
         </button>
-        {modules.map(module => (
-          <button 
-            key={module.id}
-            className={`${styles.navButton} ${activeModule === module.id ? styles.active : ''}`}
-            onClick={() => setActiveModule(module.id)}
-          >
-            {module.icon} {module.name}
-          </button>
-        ))}
+        <button 
+          className={styles.actionBtn}
+          onClick={() => window.open('https://www.facebook.com/kakacosmetica', '_blank')}
+        >
+          <span className={styles.actionIcon}>📱</span>
+          Fanpage
+        </button>
+        <button 
+          className={styles.actionBtn}
+          onClick={() => window.open('https://zalo.me/kakacosmetica', '_blank')}
+        >
+          <span className={styles.actionIcon}>💬</span>
+          Zalo
+        </button>
+        <button 
+          className={styles.actionBtn}
+          onClick={() => setShowContactForm(true)}
+        >
+          <span className={styles.actionIcon}>✉️</span>
+          Liên hệ
+        </button>
       </div>
 
-      <div className={styles.content}>
-        {activeModule === 'dashboard' && <DashboardView />}
-        {activeModule === 'products' && <ProductManagement />}
-        {activeModule === 'customers' && <CustomerManagement />}
-        {activeModule === 'employees' && <EmployeeManagement />}
-        {activeModule === 'orders' && <OrderManagement />}
-        {activeModule === 'warehouse' && <WarehouseManagement />}
-        {activeModule === 'marketing' && <MarketingManagement />}
-        {activeModule === 'reports' && <ReportsAnalytics />}
-      </div>
-    </div>
-  );
-};
-
-// Dashboard Component
-const DashboardView = () => {
-  const stats = [
-    { title: 'Tổng sản phẩm', value: '1,247', change: '+12%', color: '#4F46E5' },
-    { title: 'Khách hàng', value: '8,942', change: '+8%', color: '#059669' },
-    { title: 'Đơn hàng hôm nay', value: '156', change: '+15%', color: '#DC2626' },
-    { title: 'Doanh thu tháng', value: '₫245M', change: '+23%', color: '#7C3AED' }
-  ];
-
-  return (
-    <div className={styles.dashboard}>
-      <div className={styles.statsGrid}>
-        {stats.map((stat, index) => (
-          <div key={index} className={styles.statCard}>
-            <div className={styles.statValue}>{stat.value}</div>
-            <div className={styles.statTitle}>{stat.title}</div>
-            <div className={styles.statChange} style={{color: stat.color}}>
-              {stat.change}
+      {/* Branches Section */}
+      <div className={styles.branchesSection}>
+        <h2 className={styles.sectionTitle}>
+          🗺️ Danh Sách Chi Nhánh
+        </h2>
+        
+        {Object.entries(branchesByRegion).map(([region, regionBranches]) => (
+          <div key={region} className={styles.regionContainer}>
+            <h3 className={styles.regionTitle}>{region}</h3>
+            <div className={styles.branchGrid}>
+              {regionBranches.map(branch => (
+                <div key={branch.id} className={styles.branchCard}>
+                  <div className={styles.branchHeader}>
+                    <h4 className={styles.branchName}>{branch.name}</h4>
+                    <div className={styles.branchBadge}>{branch.region}</div>
+                  </div>
+                  
+                  <div className={styles.branchInfo}>
+                    <div className={styles.infoItem}>
+                      <span className={styles.infoIcon}>📍</span>
+                      <span className={styles.infoText}>{branch.address}</span>
+                    </div>
+                    
+                    <div className={styles.infoItem}>
+                      <span className={styles.infoIcon}>☎️</span>
+                      <span className={styles.infoText}>{branch.phone}</span>
+                    </div>
+                    
+                    <div className={styles.infoItem}>
+                      <span className={styles.infoIcon}>🕒</span>
+                      <span className={styles.infoText}>{branch.hours}</span>
+                    </div>
+                    
+                    <div className={styles.infoItem}>
+                      <span className={styles.infoIcon}>📧</span>
+                      <span className={styles.infoText}>{branch.email}</span>
+                    </div>
+                  </div>
+                  
+                  <div className={styles.branchActions}>
+                    <button 
+                      className={styles.mapBtn}
+                      onClick={() => handleViewMap(branch)}
+                    >
+                      🗺️ Xem bản đồ
+                    </button>
+                    <button 
+                      className={styles.contactBtn}
+                      onClick={() => handleCallBranch(branch.phone)}
+                    >
+                      💬 Liên hệ ngay
+                    </button>
+                    <button 
+                      className={styles.directionBtn}
+                      onClick={() => handleGetDirections(branch.address)}
+                    >
+                      📍 Chỉ đường
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         ))}
       </div>
 
-      <div className={styles.quickActions}>
-        <h3>Thao tác nhanh</h3>
-        <div className={styles.actionGrid}>
-          <button className={styles.actionButton}>➕ Thêm sản phẩm</button>
-          <button className={styles.actionButton}>👤 Thêm khách hàng</button>
-          <button className={styles.actionButton}>📝 Tạo đơn hàng</button>
-          <button className={styles.actionButton}>📊 Xem báo cáo</button>
-        </div>
-      </div>
-
-      <div className={styles.recentActivity}>
-        <h3>Hoạt động gần đây</h3>
-        <div className={styles.activityList}>
-          <div className={styles.activityItem}>
-            <span className={styles.activityIcon}>📦</span>
-            <span>Sản phẩm "Son môi đỏ Ruby" đã được cập nhật</span>
-            <span className={styles.activityTime}>5 phút trước</span>
+      {/* Interactive Map Section */}
+      <div className={styles.mapSection}>
+        <h2 className={styles.sectionTitle}>
+          🗺️ Bản Đồ Tương Tác
+        </h2>
+        
+        {selectedBranch ? (
+          <div className={styles.mapContainer}>
+            <div className={styles.mapHeader}>
+              <h3>{selectedBranch.name}</h3>
+              <button 
+                className={styles.closeMapBtn}
+                onClick={() => setSelectedBranch(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <iframe
+              src={selectedBranch.mapUrl}
+              width="100%"
+              height="400"
+              style={{ border: 0, borderRadius: '12px' }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
           </div>
-          <div className={styles.activityItem}>
-            <span className={styles.activityIcon}>👤</span>
-            <span>Khách hàng mới "Nguyễn Văn A" đã đăng ký</span>
-            <span className={styles.activityTime}>10 phút trước</span>
-          </div>
-          <div className={styles.activityItem}>
-            <span className={styles.activityIcon}>📋</span>
-            <span>Đơn hàng #HD001 đã được xác nhận</span>
-            <span className={styles.activityTime}>15 phút trước</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Product Management Component
-const ProductManagement = () => {
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [editingProduct, setEditingProduct] = useState(null);
-
-  useEffect(() => {
-    // Mock data từ CSDL
-    const mockCategories = [
-      { MaDanhMuc: 1, TenDanhMuc: 'Sữa rửa mặt', MoTa: 'Các loại sữa rửa mặt cho da mặt' },
-      { MaDanhMuc: 2, TenDanhMuc: 'Kem chống nắng', MoTa: 'Kem chống nắng bảo vệ da khỏi tia UV' },
-      { MaDanhMuc: 3, TenDanhMuc: 'Dầu gội', MoTa: 'Dầu gội chăm sóc tóc' },
-      { MaDanhMuc: 4, TenDanhMuc: 'Mặt nạ', MoTa: 'Mặt nạ dưỡng da' }
-    ];
-
-    const mockProducts = [
-      { MaSanPham: 1, TenSanPham: 'Son môi đỏ Ruby', MoTa: 'Son đỏ Ruby lâu trôi', MaDanhMuc: 1, Gia: 200000, GiaGoc: 250000, SoLuong: 50 },
-      { MaSanPham: 2, TenSanPham: 'Kem dưỡng ẩm ban ngày', MoTa: 'Dưỡng ẩm và chống nắng', MaDanhMuc: 2, Gia: 150000, GiaGoc: 180000, SoLuong: 30 },
-      { MaSanPham: 3, TenSanPham: 'Serum vitamin C', MoTa: 'Serum sáng da và mờ thâm', MaDanhMuc: 2, Gia: 220000, GiaGoc: 260000, SoLuong: 5 },
-      { MaSanPham: 4, TenSanPham: 'Sữa rửa mặt làm sạch sâu', MoTa: 'Loại bỏ bụi bẩn và bã nhờn', MaDanhMuc: 1, Gia: 120000, GiaGoc: 150000, SoLuong: 0 }
-    ];
-
-    setCategories(mockCategories);
-    setProducts(mockProducts);
-  }, []);
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(amount);
-  };
-
-  const getStockStatus = (quantity) => {
-    if (quantity === 0) return { status: 'Hết hàng', className: 'outOfStock' };
-    if (quantity <= 10) return { status: 'Sắp hết', className: 'lowStock' };
-    return { status: 'Còn hàng', className: 'inStock' };
-  };
-
-  const getCategoryName = (categoryId) => {
-    const category = categories.find(cat => cat.MaDanhMuc === categoryId);
-    return category ? category.TenDanhMuc : 'N/A';
-  };
-
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.TenSanPham.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || product.MaDanhMuc === parseInt(selectedCategory);
-    return matchesSearch && matchesCategory;
-  });
-
-  return (
-    <div className={styles.module}>
-      <div className={styles.moduleHeader}>
-        <h2>📦 Quản lý sản phẩm</h2>
-        <button 
-          className={styles.primaryButton}
-          onClick={() => setShowAddForm(true)}
-        >
-          ➕ Thêm sản phẩm
-        </button>
-      </div>
-
-      {/* Cảnh báo tồn kho */}
-      <div className={styles.stockAlerts}>
-        {products.filter(p => p.SoLuong <= 10).length > 0 && (
-          <div className={styles.alertBanner}>
-            <span className={styles.alertIcon}>⚠️</span>
-            <span>Có {products.filter(p => p.SoLuong <= 10).length} sản phẩm sắp hết hoặc đã hết hàng!</span>
+        ) : (
+          <div className={styles.mapPlaceholder}>
+            <div className={styles.placeholderContent}>
+              <span className={styles.placeholderIcon}>🗺️</span>
+              <h3>Chọn chi nhánh để xem bản đồ</h3>
+              <p>Nhấn vào nút "Xem bản đồ" ở bất kỳ chi nhánh nào để hiển thị vị trí chính xác</p>
+            </div>
           </div>
         )}
       </div>
 
-      <div className={styles.filters}>
-        <input
-          type="text"
-          placeholder="🔍 Tìm kiếm sản phẩm..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className={styles.searchInput}
-        />
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className={styles.filterSelect}
-        >
-          <option value="all">Tất cả danh mục</option>
-          {categories.map(category => (
-            <option key={category.MaDanhMuc} value={category.MaDanhMuc}>
-              {category.TenDanhMuc}
-            </option>
+      {/* Store Images Gallery */}
+      <div className={styles.gallerySection}>
+        <h2 className={styles.sectionTitle}>
+          🖼️ Hình Ảnh Cửa Hàng
+        </h2>
+        <div className={styles.imageGrid}>
+          {storeImages.map(item => (
+            <div key={item.id} className={styles.imageCard}>
+              <div className={styles.imageWrapper}>
+                <Image 
+                  src={item.image} 
+                  alt={item.title}
+                  width={300}
+                  height={200}
+                  className={styles.storeImage}
+                />
+              </div>
+              <div className={styles.imageContent}>
+                <h4 className={styles.imageTitle}>{item.title}</h4>
+                <p className={styles.imageDescription}>{item.description}</p>
+              </div>
+            </div>
           ))}
-        </select>
+        </div>
       </div>
 
-      <div className={styles.tableContainer}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Mã SP</th>
-              <th>Tên sản phẩm</th>
-              <th>Danh mục</th>
-              <th>Giá bán</th>
-              <th>Giá gốc</th>
-              <th>Tồn kho</th>
-              <th>Trạng thái</th>
-              <th>Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredProducts.map(product => {
-              const stockStatus = getStockStatus(product.SoLuong);
-              return (
-                <tr key={product.MaSanPham}>
-                  <td>SP{product.MaSanPham.toString().padStart(3, '0')}</td>
-                  <td>
-                    <div className={styles.productCell}>
-                      <strong>{product.TenSanPham}</strong>
-                      <span className={styles.productDesc}>{product.MoTa}</span>
-                    </div>
-                  </td>
-                  <td>{getCategoryName(product.MaDanhMuc)}</td>
-                  <td>{formatCurrency(product.Gia)}</td>
-                  <td className={styles.originalPrice}>{formatCurrency(product.GiaGoc)}</td>
-                  <td>{product.SoLuong}</td>
-                  <td>
-                    <span className={`${styles.status} ${styles[stockStatus.className]}`}>
-                      {stockStatus.status}
-                    </span>
-                  </td>
-                  <td>
-                    <button 
-                      className={styles.editButton}
-                      onClick={() => setEditingProduct(product)}
-                    >
-                      ✏️
-                    </button>
-                    <button className={styles.deleteButton}>🗑️</button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {showAddForm && (
-        <div className={styles.modal}>
+      {/* Contact Form Modal */}
+      {showContactForm && (
+        <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
-            <h3>Thêm sản phẩm mới</h3>
-            <form className={styles.form}>
-              <input type="text" placeholder="Tên sản phẩm" className={styles.input} />
-              <select className={styles.input}>
-                <option>Chọn danh mục</option>
-                {categories.map(cat => (
-                  <option key={cat.MaDanhMuc} value={cat.MaDanhMuc}>
-                    {cat.TenDanhMuc}
-                  </option>
-                ))}
-              </select>
-              <input type="number" placeholder="Giá bán" className={styles.input} />
-              <input type="number" placeholder="Giá gốc" className={styles.input} />
-              <input type="number" placeholder="Số lượng" className={styles.input} />
-              <textarea placeholder="Mô tả sản phẩm" className={styles.textarea}></textarea>
-              <div className={styles.modalActions}>
-                <button type="button" onClick={() => setShowAddForm(false)} className={styles.cancelButton}>Hủy</button>
-                <button type="submit" className={styles.primaryButton}>Thêm</button>
+            <div className={styles.modalHeader}>
+              <h3>📧 Đăng Ký Nhận Thông Tin</h3>
+              <button 
+                className={styles.closeModalBtn}
+                onClick={() => setShowContactForm(false)}
+              >
+                ✕
+              </button>
+            </div>
+            
+            <form onSubmit={handleSubmitContact} className={styles.contactForm}>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Họ và tên *</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className={styles.formInput}
+                  placeholder="Nhập họ và tên của bạn"
+                  required
+                />
+              </div>
+              
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Số điện thoại *</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  className={styles.formInput}
+                  placeholder="Nhập số điện thoại"
+                  required
+                />
+              </div>
+              
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className={styles.formInput}
+                  placeholder="Nhập địa chỉ email"
+                />
+              </div>
+              
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Tin nhắn</label>
+                <textarea
+                  name="message"
+                  value={formData.message}
+                  onChange={handleInputChange}
+                  className={styles.formTextarea}
+                  placeholder="Nhập tin nhắn của bạn (tùy chọn)"
+                  rows={4}
+                />
+              </div>
+              
+              <div className={styles.formActions}>
+                <button 
+                  type="button" 
+                  className={styles.cancelBtn}
+                  onClick={() => setShowContactForm(false)}
+                >
+                  Hủy
+                </button>
+                <button type="submit" className={styles.submitBtn}>
+                  Gửi thông tin
+                </button>
               </div>
             </form>
           </div>
         </div>
       )}
-    </div>
-  );
-};
 
-// Customer Management Component
-const CustomerManagement = () => {
-  const [customers, setCustomers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-
-  useEffect(() => {
-    const mockCustomers = [
-      { MaKH: 1, HoVaTen: 'Nguyễn Văn K', DienThoai: '0981111111', Email: 'k@shop.com', DiaChi: '123 Đường Lê Lợi, Quận 1, TP.HCM', SoDonHang: 5, TongChiTieu: 2500000 },
-      { MaKH: 2, HoVaTen: 'Trần Thị L', DienThoai: '0982222222', Email: 'l@shop.com', DiaChi: '456 Đường Trần Hưng Đạo, Quận 5, TP.HCM', SoDonHang: 3, TongChiTieu: 1800000 },
-      { MaKH: 3, HoVaTen: 'Lê Văn M', DienThoai: '0983333333', Email: 'm@shop.com', DiaChi: '789 Đường Nguyễn Văn Cừ, Quận 3, TP.HCM', SoDonHang: 8, TongChiTieu: 4200000 },
-      { MaKH: 4, HoVaTen: 'Phạm Thị N', DienThoai: '0984444444', Email: 'n@shop.com', DiaChi: '321 Đường Lê Văn Sỹ, Quận 10, TP.HCM', SoDonHang: 2, TongChiTieu: 950000 }
-    ];
-    setCustomers(mockCustomers);
-  }, []);
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(amount);
-  };
-
-  const getCustomerType = (totalSpent) => {
-    if (totalSpent >= 5000000) return { type: 'VIP', className: 'vip' };
-    if (totalSpent >= 2000000) return { type: 'Thường', className: 'regular' };
-    return { type: 'Mới', className: 'new' };
-  };
-
-  const filteredCustomers = customers.filter(customer =>
-    customer.HoVaTen.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.DienThoai.includes(searchTerm) ||
-    customer.Email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  return (
-    <div className={styles.module}>
-      <div className={styles.moduleHeader}>
-        <h2>👥 Quản lý khách hàng</h2>
-        <button className={styles.primaryButton}>➕ Thêm khách hàng</button>
-      </div>
-
-      <div className={styles.filters}>
-        <input
-          type="text"
-          placeholder="🔍 Tìm kiếm khách hàng..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className={styles.searchInput}
-        />
-      </div>
-
-      <div className={styles.customerStats}>
-        <div className={styles.statCard}>
-          <div className={styles.statValue}>{customers.length}</div>
-          <div className={styles.statTitle}>Tổng khách hàng</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statValue}>{customers.filter(c => c.TongChiTieu >= 5000000).length}</div>
-          <div className={styles.statTitle}>Khách VIP</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statValue}>{formatCurrency(customers.reduce((sum, c) => sum + c.TongChiTieu, 0))}</div>
-          <div className={styles.statTitle}>Tổng chi tiêu</div>
-        </div>
-      </div>
-
-      <div className={styles.tableContainer}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Mã KH</th>
-              <th>Họ và tên</th>
-              <th>Điện thoại</th>
-              <th>Email</th>
-              <th>Đơn hàng</th>
-              <th>Tổng chi tiêu</th>
-              <th>Loại KH</th>
-              <th>Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredCustomers.map(customer => {
-              const customerType = getCustomerType(customer.TongChiTieu);
-              return (
-                <tr key={customer.MaKH}>
-                  <td>KH{customer.MaKH.toString().padStart(3, '0')}</td>
-                  <td>
-                    <div className={styles.customerCell}>
-                      <strong>{customer.HoVaTen}</strong>
-                      <span className={styles.customerAddress}>{customer.DiaChi}</span>
-                    </div>
-                  </td>
-                  <td>{customer.DienThoai}</td>
-                  <td>{customer.Email}</td>
-                  <td>{customer.SoDonHang}</td>
-                  <td>{formatCurrency(customer.TongChiTieu)}</td>
-                  <td>
-                    <span className={`${styles.customerType} ${styles[customerType.className]}`}>
-                      {customerType.type}
-                    </span>
-                  </td>
-                  <td>
-                    <button className={styles.editButton}>✏️</button>
-                    <button className={styles.viewButton}>👁️</button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};
-
-// Employee Management Component
-const EmployeeManagement = () => {
-  const [employees, setEmployees] = useState([]);
-
-  useEffect(() => {
-    const mockEmployees = [
-      { MaNV: 1, HoVaTen: 'Nguyen Van A', DienThoai: '0901234567', Email: 'a@shop.com', VaiTro: 'Admin', TrangThai: 'Hoạt động' },
-      { MaNV: 2, HoVaTen: 'Tran Thi B', DienThoai: '0902345678', Email: 'b@shop.com', VaiTro: 'Nhân viên', TrangThai: 'Hoạt động' },
-      { MaNV: 3, HoVaTen: 'Le Thi C', DienThoai: '0903456789', Email: 'c@shop.com', VaiTro: 'Nhân viên', TrangThai: 'Hoạt động' },
-      { MaNV: 4, HoVaTen: 'Pham Van D', DienThoai: '0904567890', Email: 'd@shop.com', VaiTro: 'Nhân viên', TrangThai: 'Tạm nghỉ' }
-    ];
-    setEmployees(mockEmployees);
-  }, []);
-
-  return (
-    <div className={styles.module}>
-      <div className={styles.moduleHeader}>
-        <h2>👨‍💼 Quản lý nhân viên</h2>
-        <button className={styles.primaryButton}>➕ Thêm nhân viên</button>
-      </div>
-
-      <div className={styles.employeeStats}>
-        <div className={styles.statCard}>
-          <div className={styles.statValue}>{employees.length}</div>
-          <div className={styles.statTitle}>Tổng nhân viên</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statValue}>{employees.filter(e => e.TrangThai === 'Hoạt động').length}</div>
-          <div className={styles.statTitle}>Đang hoạt động</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statValue}>{employees.filter(e => e.VaiTro === 'Admin').length}</div>
-          <div className={styles.statTitle}>Quản trị viên</div>
-        </div>
-      </div>
-
-      <div className={styles.tableContainer}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Mã NV</th>
-              <th>Họ và tên</th>
-              <th>Điện thoại</th>
-              <th>Email</th>
-              <th>Vai trò</th>
-              <th>Trạng thái</th>
-              <th>Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {employees.map(employee => (
-              <tr key={employee.MaNV}>
-                <td>NV{employee.MaNV.toString().padStart(3, '0')}</td>
-                <td>{employee.HoVaTen}</td>
-                <td>{employee.DienThoai}</td>
-                <td>{employee.Email}</td>
-                <td>
-                  <span className={`${styles.role} ${employee.VaiTro === 'Admin' ? styles.admin : styles.staff}`}>
-                    {employee.VaiTro}
-                  </span>
-                </td>
-                <td>
-                  <span className={`${styles.status} ${employee.TrangThai === 'Hoạt động' ? styles.active : styles.inactive}`}>
-                    {employee.TrangThai}
-                  </span>
-                </td>
-                <td>
-                  <button className={styles.editButton}>✏️</button>
-                  <button className={styles.deleteButton}>🗑️</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};
-
-// Order Management Component
-const OrderManagement = () => {
-  const [orders, setOrders] = useState([]);
-  const [filterStatus, setFilterStatus] = useState('all');
-
-  useEffect(() => {
-    const mockOrders = [
-      { MaHD: 1, KhachHang: 'Nguyễn Văn K', NgayLap: '2024-01-15', TongTien: 450000, TrangThai: 'Đã giao', PhuongThucThanhToan: 'Tiền mặt' },
-      { MaHD: 2, KhachHang: 'Trần Thị L', NgayLap: '2024-01-16', TongTien: 320000, TrangThai: 'Đang xử lý', PhuongThucThanhToan: 'Thẻ' },
-      { MaHD: 3, KhachHang: 'Lê Văn M', NgayLap: '2024-01-16', TongTien: 680000, TrangThai: 'Đang giao', PhuongThucThanhToan: 'Ví điện tử' },
-      { MaHD: 4, KhachHang: 'Phạm Thị N', NgayLap: '2024-01-17', TongTien: 290000, TrangThai: 'Chờ xác nhận', PhuongThucThanhToan: 'COD' }
-    ];
-    setOrders(mockOrders);
-  }, []);
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(amount);
-  };
-
-  const getStatusColor = (status) => {
-    const statusMap = {
-      'Chờ xác nhận': 'pending',
-      'Đang xử lý': 'processing',
-      'Đang giao': 'shipping',
-      'Đã giao': 'delivered',
-      'Đã hủy': 'cancelled'
-    };
-    return statusMap[status] || 'pending';
-  };
-
-  const filteredOrders = orders.filter(order => 
-    filterStatus === 'all' || order.TrangThai === filterStatus
-  );
-
-  return (
-    <div className={styles.module}>
-      <div className={styles.moduleHeader}>
-        <h2>📋 Quản lý đơn hàng</h2>
-        <button className={styles.primaryButton}>➕ Tạo đơn hàng</button>
-      </div>
-
-      <div className={styles.orderStats}>
-        <div className={styles.statCard}>
-          <div className={styles.statValue}>{orders.length}</div>
-          <div className={styles.statTitle}>Tổng đơn hàng</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statValue}>{orders.filter(o => o.TrangThai === 'Chờ xác nhận').length}</div>
-          <div className={styles.statTitle}>Chờ xử lý</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statValue}>{formatCurrency(orders.reduce((sum, o) => sum + o.TongTien, 0))}</div>
-          <div className={styles.statTitle}>Tổng giá trị</div>
-        </div>
-      </div>
-
-      <div className={styles.filters}>
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          className={styles.filterSelect}
-        >
-          <option value="all">Tất cả trạng thái</option>
-          <option value="Chờ xác nhận">Chờ xác nhận</option>
-          <option value="Đang xử lý">Đang xử lý</option>
-          <option value="Đang giao">Đang giao</option>
-          <option value="Đã giao">Đã giao</option>
-          <option value="Đã hủy">Đã hủy</option>
-        </select>
-      </div>
-
-      <div className={styles.tableContainer}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Mã đơn</th>
-              <th>Khách hàng</th>
-              <th>Ngày đặt</th>
-              <th>Tổng tiền</th>
-              <th>Thanh toán</th>
-              <th>Trạng thái</th>
-              <th>Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredOrders.map(order => (
-              <tr key={order.MaHD}>
-                <td>HD{order.MaHD.toString().padStart(3, '0')}</td>
-                <td>{order.KhachHang}</td>
-                <td>{order.NgayLap}</td>
-                <td>{formatCurrency(order.TongTien)}</td>
-                <td>{order.PhuongThucThanhToan}</td>
-                <td>
-                  <span className={`${styles.status} ${styles[getStatusColor(order.TrangThai)]}`}>
-                    {order.TrangThai}
-                  </span>
-                </td>
-                <td>
-                  <button className={styles.viewButton}>👁️</button>
-                  <button className={styles.editButton}>✏️</button>
-                  <button className={styles.printButton}>🖨️</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};
-
-// Warehouse Management Component
-const WarehouseManagement = () => {
-  const [warehouses, setWarehouses] = useState([]);
-
-  useEffect(() => {
-    const mockWarehouses = [
-      { MaKho: 1, TenKho: 'Kho trung tâm', ViTri: 'Hà Nội', SucChua: 1000, DangSuDung: 750, SoLoaiSP: 245 },
-      { MaKho: 2, TenKho: 'Kho chi nhánh HCM', ViTri: 'TP.HCM', SucChua: 800, DangSuDung: 600, SoLoaiSP: 180 },
-      { MaKho: 3, TenKho: 'Kho Đà Nẵng', ViTri: 'Đà Nẵng', SucChua: 500, DangSuDung: 300, SoLoaiSP: 120 }
-    ];
-    setWarehouses(mockWarehouses);
-  }, []);
-
-  return (
-    <div className={styles.module}>
-      <div className={styles.moduleHeader}>
-        <h2>🏪 Quản lý kho</h2>
-        <button className={styles.primaryButton}>➕ Thêm kho</button>
-      </div>
-
-      <div className={styles.warehouseGrid}>
-        {warehouses.map(warehouse => {
-          const usagePercent = (warehouse.DangSuDung / warehouse.SucChua) * 100;
-          return (
-            <div key={warehouse.MaKho} className={styles.warehouseCard}>
-              <h3>{warehouse.TenKho}</h3>
-              <p>📍 {warehouse.ViTri}</p>
-              <div className={styles.warehouseStats}>
-                <div className={styles.capacityBar}>
-                  <div 
-                    className={styles.capacityFill}
-                    style={{ 
-                      width: `${usagePercent}%`,
-                      backgroundColor: usagePercent > 80 ? '#ef4444' : usagePercent > 60 ? '#f59e0b' : '#10b981'
-                    }}
-                  ></div>
-                </div>
-                <p>{warehouse.DangSuDung}/{warehouse.SucChua} sản phẩm ({usagePercent.toFixed(1)}%)</p>
-                <p>📦 {warehouse.SoLoaiSP} loại sản phẩm</p>
-              </div>
-              <button className={styles.editButton}>Quản lý</button>
+      {/* Footer Section */}
+      <div className={styles.footerSection}>
+        <div className={styles.footerContent}>
+          <div className={styles.footerInfo}>
+            <h3>🌟 KaKa Mỹ Phẩm</h3>
+            <p>Chuyên cung cấp mỹ phẩm chất lượng cao, uy tín hàng đầu Việt Nam</p>
+          </div>
+          
+          <div className={styles.footerContact}>
+            <h4>Liên hệ tổng đài</h4>
+            <p>📞 Hotline: 1900-234-567</p>
+            <p>📧 Email: info@kakacosmetica.com</p>
+            <p>🌐 Website: www.kakacosmetica.com</p>
+          </div>
+          
+          <div className={styles.footerSocial}>
+            <h4>Theo dõi chúng tôi</h4>
+            <div className={styles.socialLinks}>
+              <a href="https://facebook.com/kakacosmetica" target="_blank" rel="noopener noreferrer">
+                📘 Facebook
+              </a>
+              <a href="https://instagram.com/kakacosmetica" target="_blank" rel="noopener noreferrer">
+                📷 Instagram
+              </a>
+              <a href="https://zalo.me/kakacosmetica" target="_blank" rel="noopener noreferrer">
+                💬 Zalo
+              </a>
             </div>
-          );
-        })}
-      </div>
-
-      <div className={styles.inventoryAlerts}>
-        <h3>Cảnh báo tồn kho</h3>
-        <div className={styles.alertList}>
-          <div className={styles.alertItem}>
-            <span className={styles.alertIcon}>⚠️</span>
-            <span>Serum vitamin C - Còn 5 sản phẩm</span>
-            <button className={styles.alertButton}>Nhập hàng</button>
-          </div>
-          <div className={styles.alertItem}>
-            <span className={styles.alertIcon}>🚨</span>
-            <span>Sữa rửa mặt làm sạch sâu - Hết hàng</span>
-            <button className={styles.alertButton}>Nhập hàng</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Marketing Management Component
-const MarketingManagement = () => {
-  const [campaigns, setCampaigns] = useState([]);
-
-  useEffect(() => {
-    const mockCampaigns = [
-      { id: 1, TenChienDich: 'Khuyến mãi mùa hè', LoaiKM: 'Giảm giá %', GiaTri: 20, NgayBatDau: '2024-06-01', NgayKetThuc: '2024-06-30', TrangThai: 'Đang chạy' },
-      { id: 2, TenChienDich: 'Flash Sale cuối tuần', LoaiKM: 'Giảm tiền', GiaTri: 50000, NgayBatDau: '2024-01-20', NgayKetThuc: '2024-01-21', TrangThai: 'Sắp tới' },
-      { id: 3, TenChienDich: 'Mua 2 tặng 1', LoaiKM: 'Khuyến mãi combo', GiaTri: 0, NgayBatDau: '2024-01-15', NgayKetThuc: '2024-01-31', TrangThai: 'Đã kết thúc' }
-    ];
-    setCampaigns(mockCampaigns);
-  }, []);
-
-  const getStatusColor = (status) => {
-    const statusMap = {
-      'Đang chạy': 'active',
-      'Sắp tới': 'upcoming',
-      'Đã kết thúc': 'ended'
-    };
-    return statusMap[status] || 'ended';
-  };
-
-  return (
-    <div className={styles.module}>
-      <div className={styles.moduleHeader}>
-        <h2>📢 Marketing & Khuyến mãi</h2>
-        <button className={styles.primaryButton}>➕ Tạo chiến dịch</button>
-      </div>
-
-      <div className={styles.campaignGrid}>
-        {campaigns.map(campaign => (
-          <div key={campaign.id} className={styles.campaignCard}>
-            <h3>{campaign.TenChienDich}</h3>
-            <p><strong>Loại:</strong> {campaign.LoaiKM}</p>
-            <p><strong>Giảm:</strong> {campaign.LoaiKM.includes('%') ? `${campaign.GiaTri}%` : `${campaign.GiaTri.toLocaleString()}₫`}</p>
-            <p><strong>Thời gian:</strong> {campaign.NgayBatDau} - {campaign.NgayKetThuc}</p>
-            <span className={`${styles.status} ${styles[getStatusColor(campaign.TrangThai)]}`}>
-              {campaign.TrangThai}
-            </span>
-            <div className={styles.campaignActions}>
-              <button className={styles.editButton}>✏️ Sửa</button>
-              <button className={styles.viewButton}>📊 Thống kê</button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className={styles.couponSection}>
-        <h3>Mã giảm giá</h3>
-        <div className={styles.couponList}>
-          <div className={styles.couponItem}>
-            <code>SUMMER2024</code>
-            <span>Giảm 15% - Còn 50 lượt</span>
-            <button className={styles.editButton}>Sửa</button>
-          </div>
-          <div className={styles.couponItem}>
-            <code>NEWCUSTOMER</code>
-            <span>Giảm 30.000₫ - Còn 100 lượt</span>
-            <button className={styles.editButton}>Sửa</button>
-          </div>
-        </div>
-        <button className={styles.primaryButton}>➕ Tạo mã mới</button>
-      </div>
-    </div>
-  );
-};
-
-// Reports & Analytics Component
-const ReportsAnalytics = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState('month');
-  const [reportsData, setReportsData] = useState({});
-
-  useEffect(() => {
-    const mockData = {
-      today: { revenue: 2500000, orders: 15, customers: 12, avgOrderValue: 166667 },
-      week: { revenue: 18000000, orders: 85, customers: 68, avgOrderValue: 211765 },
-      month: { revenue: 75000000, orders: 340, customers: 250, avgOrderValue: 220588 }
-    };
-    setReportsData(mockData);
-  }, []);
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(amount);
-  };
-
-  const topProducts = [
-    { TenSanPham: 'Son môi đỏ Ruby', SoLuongBan: 45, DoanhThu: 9000000 },
-    { TenSanPham: 'Kem dưỡng ẩm ban ngày', SoLuongBan: 38, DoanhThu: 5700000 },
-    { TenSanPham: 'Serum vitamin C', SoLuongBan: 32, DoanhThu: 7040000 },
-    { TenSanPham: 'Sữa rửa mặt làm sạch sâu', SoLuongBan: 29, DoanhThu: 3480000 }
-  ];
-
-  const currentData = reportsData[selectedPeriod] || {};
-
-  return (
-    <div className={styles.module}>
-      <div className={styles.moduleHeader}>
-        <h2>📊 Báo cáo & Phân tích</h2>
-        <select
-          value={selectedPeriod}
-          onChange={(e) => setSelectedPeriod(e.target.value)}
-          className={styles.filterSelect}
-        >
-          <option value="today">Hôm nay</option>
-          <option value="week">Tuần này</option>
-          <option value="month">Tháng này</option>
-        </select>
-      </div>
-
-      <div className={styles.reportsStats}>
-        <div className={styles.statCard}>
-          <div className={styles.statValue}>{formatCurrency(currentData.revenue || 0)}</div>
-          <div className={styles.statTitle}>Doanh thu</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statValue}>{currentData.orders || 0}</div>
-          <div className={styles.statTitle}>Đơn hàng</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statValue}>{currentData.customers || 0}</div>
-          <div className={styles.statTitle}>Khách hàng</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statValue}>{formatCurrency(currentData.avgOrderValue || 0)}</div>
-          <div className={styles.statTitle}>Giá trị TB/đơn</div>
-        </div>
-      </div>
-
-      <div className={styles.reportsGrid}>
-        <div className={styles.reportCard}>
-          <h3>Sản phẩm bán chạy</h3>
-          <div className={styles.topProductsList}>
-            {topProducts.map((product, index) => (
-              <div key={index} className={styles.topProductItem}>
-                <span className={styles.rank}>#{index + 1}</span>
-                <div className={styles.productInfo}>
-                  <div className={styles.productName}>{product.TenSanPham}</div>
-                  <div className={styles.productStats}>
-                    Đã bán: {product.SoLuongBan} | Doanh thu: {formatCurrency(product.DoanhThu)}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className={styles.reportCard}>
-          <h3>Biểu đồ doanh thu</h3>
-          <div className={styles.chartPlaceholder}>
-            📊 Biểu đồ doanh thu theo thời gian
-            <br />Tích hợp Chart.js để hiển thị biểu đồ thực tế
-          </div>
-        </div>
-      </div>
-
-      <div className={styles.customerAnalytics}>
-        <h3>Phân tích khách hàng</h3>
-        <div className={styles.customerSegments}>
-          <div className={styles.segmentCard}>
-            <h4>Khách hàng VIP</h4>
-            <div className={styles.segmentValue}>15</div>
-            <div className={styles.segmentDesc}>Chi tiêu trên 5M</div>
-          </div>
-          <div className={styles.segmentCard}>
-            <h4>Khách hàng thường</h4>
-            <div className={styles.segmentValue}>120</div>
-            <div className={styles.segmentDesc}>Chi tiêu 1M-5M</div>
-          </div>
-          <div className={styles.segmentCard}>
-            <h4>Khách hàng mới</h4>
-            <div className={styles.segmentValue}>35</div>
-            <div className={styles.segmentDesc}>Dưới 1M</div>
           </div>
         </div>
       </div>

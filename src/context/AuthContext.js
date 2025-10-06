@@ -1,39 +1,27 @@
-// src/context/AuthContext.js
-import { createContext, useState, useEffect, useContext } from "react";
+// context/AuthContext.js
+import { createContext, useState, useContext } from "react";
+import { GoogleOAuthProvider, googleLogout } from "@react-oauth/google";
 
-// Tạo context
 const AuthContext = createContext();
 
-// Provider
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // lưu thông tin user
-  const [loading, setLoading] = useState(true);
+export const useAuth = () => useContext(AuthContext);
 
-  // Giả lập lấy user từ localStorage hoặc API khi load app
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
-  }, []);
+export function AuthProvider({ children }) {
+  const [authUser, setAuthUser] = useState(null);
 
-  const login = (userData) => {
-    setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
-  };
-
+  const login = (user) => setAuthUser(user);
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem("user");
+    googleLogout(); // Nếu dùng Google OAuth
+    setAuthUser(null);
   };
+
+  const isAuthenticated = !!authUser;
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
-      {children}
-    </AuthContext.Provider>
+    <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
+      <AuthContext.Provider value={{ authUser, isAuthenticated, login, logout }}>
+        {children}
+      </AuthContext.Provider>
+    </GoogleOAuthProvider>
   );
-};
-
-// Hook tiện lợi để dùng context
-export const useAuth = () => useContext(AuthContext);
+}

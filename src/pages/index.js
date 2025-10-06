@@ -1,19 +1,20 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import styles from '../styles/Home.module.css';
-// import { useEffect, useState } from "react";
-// import Image from "next/image";
+import { useAuth } from "../context/AuthContext";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/router";
-// import { Search } from "lucide-react"; 
 
-
-export default function Home({ user, onLogout }) {
+export default function HomePage() {
+  // const [authUser, setAuthUser] = useState(null);
+  const { authUser, isAuthenticated, logout } = useAuth();
   const [isLoaded, setIsLoaded] = useState(false);
   const [cartItems, setCartItems] = useState(0);
   const [wishlistItems, setWishlistItems] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
+
 
   useEffect(() => {
     setIsLoaded(true);
@@ -21,6 +22,23 @@ export default function Home({ user, onLogout }) {
     setCartItems(Math.floor(Math.random() * 5));
     setWishlistItems(Math.floor(Math.random() * 8));
   }, []);
+  
+  
+   // Handle search functionality
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      // Navigate to search page with query parameter
+      router.push(`/tim-kiem?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
+  // Handle Enter key press in search input
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch(e);
+    }
+  };
 
   const addToCart = (productId) => {
     setCartItems(prev => prev + 1);
@@ -37,6 +55,15 @@ export default function Home({ user, onLogout }) {
   const addToWishlist = (productId) => {
     setWishlistItems(prev => prev + 1);
   };
+
+  const copyPromoCode = (code) => {
+    navigator.clipboard.writeText(code).then(() => {
+      alert(`Đã copy mã ${code} vào clipboard!`);
+    }).catch(err => {
+      console.error('Lỗi khi copy: ', err);
+    });
+  };
+
 
   // Featured Products Data (5x3 = 15 products)
   const featuredProducts = [
@@ -176,7 +203,51 @@ export default function Home({ user, onLogout }) {
       discount: "28%"
     }
   ];
- // Sale Products Data
+    
+const moreNewsEvents= [
+  {
+    id: 1,
+    title: "Bí quyết chăm sóc da mùa hè",
+    description: "Hướng dẫn các bước dưỡng da giúp da luôn mịn màng trong mùa nóng.",
+    videoThumbnail: "/images/video1.jpg",
+    videoUrl: "https://www.youtube.com/watch?v=EBc1QZ1mW4g", // video thật
+    duration: "5:32",
+    views: 12500,
+    uploadDate: "01/10/2025"
+  },
+  {
+    id: 2,
+    title: "Trang điểm dự tiệc sang trọng",
+    description: "Video hướng dẫn make-up tone Tây sang trọng, dễ áp dụng.",
+    videoThumbnail: "/images/video2.jpg",
+    videoUrl: "https://www.youtube.com/watch?v=bPZrJ9tX2nI", // video thật
+    duration: "8:15",
+    views: 9800,
+    uploadDate: "28/09/2025"
+  },
+  {
+    id: 3,
+    title: "Chăm sóc da ban đêm đúng cách",
+    description: "Cách chọn sản phẩm dưỡng da phù hợp cho buổi tối.",
+    videoThumbnail: "/images/video3.jpg",
+    videoUrl: "https://www.youtube.com/watch?v=Gg1QUsSPBhc", // video thật
+    duration: "6:45",
+    views: 8700,
+    uploadDate: "25/09/2025"
+  },
+  {
+    id: 4,
+    title: "Top 5 sản phẩm dưỡng ẩm tốt nhất 2025",
+    description: "Review chi tiết các sản phẩm dưỡng ẩm được yêu thích nhất.",
+    videoThumbnail: "/images/products/video1.mp4",
+    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // video thật
+    duration: "7:58",
+    views: 15200,
+    uploadDate: "20/09/2025"
+  }
+];
+
+  // Sale Products Data
   const saleProducts = [
     {
       id: 101,
@@ -286,101 +357,165 @@ export default function Home({ user, onLogout }) {
     }
   ];
 
+  // News Events Data
+   const newsEvents = [
+    {
+      id: 1,
+      title: "Xu hướng chăm sóc da mùa hè 2025",
+      description: "Khám phá những bí quyết chăm sóc da mới nhất cho mùa hè năm nay",
+      videoThumbnail: "/images/banners/1.jpg",
+      duration: "5:30",
+      views: "12K",
+      likes: "1.2K",
+      uploadDate: "2 ngày trước"
+    },
+    {
+      id: 2,
+      title: "Review sản phẩm mỹ phẩm hot nhất",
+      description: "Đánh giá chi tiết những sản phẩm được yêu thích nhất hiện tại",
+      videoThumbnail: "/images/banners/2.jpg",
+      duration: "8:15",
+      views: "25K",
+      likes: "2.1K",
+      uploadDate: "1 tuần trước"
+    },
+    {
+      id: 3,
+      title: "Makeup tutorial cho da nhạy cảm",
+      description: "Hướng dẫn trang điểm an toàn và hiệu quả cho làn da nhạy cảm",
+      videoThumbnail: "/images/banners/3.jpg",
+      duration: "12:45",
+      views: "35K",
+      likes: "3.5K",
+      uploadDate: "3 ngày trước"
+    },
+    {
+      id: 4,
+      title: "Skincare routine 10 bước",
+      description: "Quy trình chăm sóc da 10 bước từ các chuyên gia hàng đầu",
+      videoThumbnail: "/images/banners/4.jpg",
+      duration: "15:20",
+      views: "48K",
+      likes: "4.8K",
+      uploadDate: "5 ngày trước"
+    }
+  ];
 
   return (
     <div className={styles.container}>
-      {/* Simple Navigation with Background Color */}
+      {/* Beautiful Navigation - Căn giữa và làm đẹp */}
       <nav className={styles.navigation}>
-        <div className={styles.navContainer}>
-          <Link href="/" className={styles.navLink}>
-            <span className={styles.navIcon}></span>
-            <span className={styles.navText}>Trang chính</span>
-          </Link>
-          <Link href="/gioithieu" className={styles.navLink}>
-            <span className={styles.navIcon}></span>
-            <span className={styles.navText}>Giới thiệu</span>
-          </Link>
-          <Link href="/danhmucSP" className={styles.navLink}>
-            <span className={styles.navIcon}></span>
-            <span className={styles.navText}>Danh mục sản phẩm</span>
-          </Link>
-          <div className={styles.searchWrapper} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-  {/* Ô nhập dữ liệu */}
-  <input
-    type="text"
-    name="q"
-    placeholder="Nhập sản phẩm cần tìm..."
-    className={styles.searchInput} 
-    style={{ padding: '8px 12px', flex: 1, borderRadius: '6px', border: '1px solid #ccc' }}
-  />
+      <div className={styles.navContainer}>
+        <Link href="/" className={styles.navLink}>🏠 Trang chính</Link>
+        <Link href="/gioithieu" className={styles.navLink}>ℹ️ Giới thiệu</Link>
+        <Link href="/danhmucSP" className={styles.navLink}>📦 Danh mục sản phẩm</Link>
+        <Link href="/cuahang" className={styles.navLink}>🏪 Cửa hàng</Link>
+        <Link href="/giohang" className={styles.navLink}>🛒 Giỏ hàng</Link>
+        <Link href="/baohanh" className={styles.navLink}>🛡️ Bảo hành</Link>
+        <Link href="/hotroKH" className={styles.navLink}>💬 Hỗ trợ KH</Link>
 
-  {/* Nút Tìm kiếm */}
-  <Link href="/tim-kiem" className={styles.navLink}>
-    <span className={styles.navIcon}></span>
-    <span className={styles.navText}> 
-</span>
-  </Link>
-</div>
-
-          <Link href="/cuahang" className={styles.navLink}>
-            <span className={styles.navIcon}></span>
-            <span className={styles.navText}> Hê Thống Cửa hàng</span>
-          </Link>
-          <Link href="/yeu-thich" className={styles.navLink}>
-            <span className={styles.navIcon}></span>
-            <span className={styles.navText}>Yêu thích</span>
-          </Link>
-          <Link href="/bao-hanh" className={styles.navLink}>
-            <span className={styles.navIcon}></span>
-            <span className={styles.navText}>Bảo hành</span>
-          </Link>
-          <Link href="/ho-tro-khach-hang" className={styles.navLink}>
-            <span className={styles.navIcon}></span>
-            <span className={styles.navText}>Hỗ trợ KH</span>
-          </Link>
-          <Link href="/tai-khoan" className={styles.navLink}>
-            <span className={styles.navIcon}></span>
-            <span className={styles.navText}>Tài khoản</span>
-          </Link>
+        {/* 🔑 Phần tài khoản */}
+        <div className={styles.userSection}>
+          {isAuthenticated ? (
+            <div className={styles.userMenu}>
+              <div className={styles.userInfo} onClick={handleAccountClick}>
+                <img
+                  src={authUser?.picture || "/default-avatar.png"}
+                  alt={authUser?.name || "User"}
+                  className={styles.userAvatar}
+                />
+                <span className={styles.userName}>{authUser?.name}</span>
+              </div>
+              <button
+                onClick={logout}
+                className={styles.logoutButton}
+                title="Đăng xuất"
+              >
+                🚪
+              </button>
+            </div>
+          ) : (
+            <Link href="/login" className={styles.navLink}>
+              👤 Tài khoản
+            </Link>
+          )}
         </div>
-      </nav>
+      </div>
+    </nav>
 
-     
-      {/* Dual Banner Section - RỘNG TOÀN MÀN HÌNH */}
-      <div className={styles.bannersContainer}>
-        <div className={styles.mainBanner}>
-          <Image
-            src="/images/banners/banner1.jpg"
-            alt="Main Beauty Banner"
-            width={20020}
-            height={6000}
-            className={styles.bannerImage}
-            priority
-          />
-          <div className={styles.bannerContent}>
-            <h1 className={styles.bannerTitle}>CHĂM SÓC DA NAM CHUYÊN NGHIỆP</h1>
-            <p className={styles.bannerSubtitle}>Khám phá bộ sưu tập sản phẩm làm đẹp hàng đầu</p>
-            <button className={styles.bannerCTA}>
-              <span>KHÁM PHÁ NGAY</span>
-              <span>🚀</span>
-            </button>
-          </div>
-        </div>
+      {/* Simple Banner Section - Đã bỏ layout phức tạp */}
+      <div className={styles.bannerSection}>
+        <Image
+          src="/images/banners/banner1.jpg"
+          alt="Main Beauty Banner"
+          width={2000}
+          height={900}
+          className={styles.bannerImage}
+          priority
+        />
+        
+      </div>
 
-        <div className={styles.sideBanner}>
-          <Image
-            src="/images/banners/banner2.jpg"
-            alt="Side Promotion"
-            width={960}
-            height={400}
-          />
-          <div className={styles.sideBannerContent}>
-            <h3>GIẢM GIÁ 50%</h3>
-            <p>Sản phẩm chọn lọc</p>
+      {/* Mã khuyến mại Section */}
+      <div className={styles.promoSection}>
+        <div className={styles.sectionContainer}>
+          <h2 className={styles.promoTitle}>🎟️ MÃ KHUYẾN MÃI HOT</h2>
+          <p className={styles.promoSubtitle}>Sử dụng ngay để nhận ưu đãi tốt nhất!</p>
+          <div className={styles.promoGrid}>
+            <div className={styles.promoCard}>
+              <div className={styles.promoIcon}>💎</div>
+              <div className={styles.promoInfo}>
+                <h3 className={styles.promoCode}>WELCOME50</h3>
+                <p className={styles.promoDesc}>Giảm 50% cho đơn hàng đầu tiên</p>
+                <p className={styles.promoCondition}>Đơn hàng từ 500.000đ</p>
+              </div>
+              <button 
+                className={styles.copyBtn}
+                onClick={() => copyPromoCode('WELCOME50')}
+              >📋 Copy</button>
+            </div>
+            
+            <div className={styles.promoCard}>
+              <div className={styles.promoIcon}>🔥</div>
+              <div className={styles.promoInfo}>
+                <h3 className={styles.promoCode}>FREESHIP99</h3>
+                <p className={styles.promoDesc}>Miễn phí vận chuyển toàn quốc</p>
+                <p className={styles.promoCondition}>Không giới hạn đơn hàng</p>
+              </div>
+              <button 
+                className={styles.copyBtn}
+                onClick={() => copyPromoCode('FREESHIP99')}
+              >📋 Copy</button>
+            </div>
+            
+            <div className={styles.promoCard}>
+              <div className={styles.promoIcon}>⭐</div>
+              <div className={styles.promoInfo}>
+                <h3 className={styles.promoCode}>VIP30</h3>
+                <p className={styles.promoDesc}>Giảm 30% cho thành viên VIP</p>
+                <p className={styles.promoCondition}>Đơn hàng từ 1.000.000đ</p>
+              </div>
+              <button 
+                className={styles.copyBtn}
+                onClick={() => copyPromoCode('VIP30')}
+              >📋 Copy</button>
+            </div>
+            
+            <div className={styles.promoCard}>
+              <div className={styles.promoIcon}>🎁</div>
+              <div className={styles.promoInfo}>
+                <h3 className={styles.promoCode}>COMBO25</h3>
+                <p className={styles.promoDesc}>Giảm 25% khi mua combo 3 món</p>
+                <p className={styles.promoCondition}>Áp dụng cho combo sản phẩm</p>
+              </div>
+              <button 
+                className={styles.copyBtn}
+                onClick={() => copyPromoCode('COMBO25')}
+              >📋 Copy</button>
+            </div>
           </div>
         </div>
       </div>
-
 
       {/* Sale Section - Flash Sale */}
       <div className={styles.saleSection}>
@@ -444,7 +579,7 @@ export default function Home({ user, onLogout }) {
       {/* Featured Products Section */}
       <div className={styles.productsSection}>
         <div className={styles.sectionContainer}>
-          <h2 className={styles.sectionTitle}>🌟 SAN PHẨM NỔI BẬT</h2>
+          <h2 className={styles.sectionTitle}>🌟 SẢN PHẨM NỔI BẬT</h2>
           <p className={styles.sectionSubtitle}>Khám phá những sản phẩm được yêu thích nhất</p>
           <div className={styles.productsGrid}>
             {featuredProducts.map((product) => (
@@ -524,6 +659,58 @@ export default function Home({ user, onLogout }) {
           </div>
         </div>
       </div>
+       
+      {/* News and Events Section */}
+<div className={styles.newsSection}>
+  <div className={styles.sectionContainer}>
+    <h2 className={styles.sectionTitle}>📰 TIN TỨC & SỰ KIỆN</h2>
+    <p className={styles.sectionSubtitle}>
+      Cập nhật những thông tin mới nhất về làm đẹp và chăm sóc da
+    </p>
+
+    <div className={styles.newsGrid}>
+      {newsEvents.map((news) => (
+        <div key={news.id} className={styles.newsCard}>
+          {/* Ảnh/video có thể click mở link */}
+          <a href={news.videoUrl} target="_blank" rel="noopener noreferrer">
+            <div className={styles.videoContainer}>
+              <Image
+                src={news.videoThumbnail}
+                alt={news.title}
+                width={320}
+                height={180}
+                className={styles.videoThumbnail}
+              />
+              <div className={styles.playButton}>
+                <span>▶️</span>
+              </div>
+              <div className={styles.videoDuration}>{news.duration}</div>
+            </div>
+          </a>
+            
+          {/* Thông tin video */}
+          <div className={styles.newsInfo}>
+            <h3 className={styles.newsTitle}>{news.title}</h3>
+            <p className={styles.newsDescription}>{news.description}</p>
+            <div className={styles.newsStats}>
+              <span className={styles.newsViews}>👁️ {news.views} lượt xem</span>
+              <span className={styles.newsDate}>📅 {news.uploadDate}</span>
+            </div>
+
+            {/* Nút xem ngay */}
+            <a href={news.videoUrl} target="_blank" rel="noopener noreferrer">
+              <button className={styles.watchBtn}>
+                <span>🎥</span>
+                <span>XEM NGAY</span>
+              </button>
+            </a>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
 
       {/* Newsletter Section */}
       <div className={styles.newsletterSection}>
@@ -541,34 +728,87 @@ export default function Home({ user, onLogout }) {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className={styles.footer}>
-        <div className={styles.footerContainer}>
-          <div className={styles.footerContent}>
-            <div className={styles.footerSection}>
-              <h3>VỀ CHÚNG TÔI</h3>
-              <p>Chuyên cung cấp sản phẩm chăm sóc da nam chất lượng cao từ các thương hiệu uy tín trên thế giới.</p>
-            </div>
-            <div className={styles.footerSection}>
-              <h3>LIÊN HỆ</h3>
-              <p>📞 Hotline: 1900 1234</p>
-              <p>📧 Email: support@menbeauty.vn</p>
-              <p>📍 Địa chỉ: 123 Đường ABC, Quận 1, TP.HCM</p>
-            </div>
-            <div className={styles.footerSection}>
-              <h3>THEO DÕI</h3>
-              <div className={styles.socialLinks}>
-                <a href="#">Facebook</a>
-                <a href="#">Instagram</a>
-                <a href="#">YouTube</a>
-              </div>
-            </div>
-          </div>
-          <div className={styles.footerBottom}>
-            <p>&copy; 2025 Men Beauty Store. Tất cả quyền được bảo lưu.</p>
-          </div>
-        </div>
-      </footer>
+      {/* 🎆 FOOTER 4 CỘT CỰC ĐẸP */}
+      <div className={styles.footerContent}>
+
+  <div className={styles.footerSection}>
+    <h3>🏢 VỀ CHÚNG TÔI</h3>
+    <p>
+      Chúng tôi là cửa hàng hàng đầu chuyên cung cấp sản phẩm chăm sóc da nam chất lượng cao.
+    </p>
+    <nav>
+      <a href="#">📊 Lịch sử hình thành</a>
+      <a href="#">📋 Tầm nhìn & Sứ mệnh</a>
+      <a href="#">🏆 Giải thưởng & Chứng nhận</a>
+      <a href="#">💰 Thông tin tài chính</a>
+      <a href="#">📰 Tin tức & Sự kiện</a>
+    </nav>
+  </div>
+
+  <div className={styles.footerSection}>
+    <h3>👤 CHĂM SÓC KHÁCH HÀNG</h3>
+    <nav>
+      <a href="#">📞 Hỗ trợ trực tuyến 24/7</a>
+      <a href="#">❓ Câu hỏi thường gặp (FAQ)</a>
+      <a href="#">📝 Hướng dẫn mua hàng</a>
+      <a href="#">🚚 Hướng dẫn giao hàng</a>
+      <a href="#">🔄 Hướng dẫn đổi trả</a>
+      <a href="#">💳 Hướng dẫn thanh toán</a>
+      <a href="#">🎯 Kích hoạt bảo hành</a>
+    </nav>
+  </div>
+
+  <div className={styles.footerSection}>
+    <h3>📜 CHÍNH SÁCH</h3>
+    <nav>
+      <a href="#">🔒 Chính sách bảo mật</a>
+      <a href="#">📋 Điều khoản sử dụng</a>
+      <a href="#">🚚 Chính sách giao hàng</a>
+      <a href="#">🔄 Chính sách đổi trả</a>
+      <a href="#">💰 Chính sách hoàn tiền</a>
+      <a href="#">🎁 Chính sách khuyến mại</a>
+      <a href="#">🔐 Bảo mật thông tin</a>
+    </nav>
+  </div>
+
+  <div className={styles.footerSection}>
+    <h3>📞 LIÊN HỆ & MẠNG XÃ HỘI</h3>
+
+    <div className={styles.contactInfo}>
+      <div className={styles.contactItem}>
+        <span className={styles.contactIcon}>📞</span>
+        <span>Hotline: 1900 1234</span>
+      </div>
+      <div className={styles.contactItem}>
+        <span className={styles.contactIcon}>📧</span>
+        <span>support@menbeauty.vn</span>
+      </div>
+      <div className={styles.contactItem}>
+        <span className={styles.contactIcon}>📍</span>
+        <span>123 Đường ABC, Quận 1, TP.HCM</span>
+      </div>
+      <div className={styles.contactItem}>
+        <span className={styles.contactIcon}>⏰</span>
+        <span>8:00 - 22:00 (T2 - CN)</span>
+      </div>
+    </div>
+
+    <div className={styles.socialLinks}>
+      <a href="#" title="Facebook">🕵️</a>
+      <a href="#" title="Instagram">📷</a>
+      <a href="#" title="YouTube">🎥</a>
+      <a href="#" title="TikTok">🎵</a>
+      <a href="#" title="Zalo">💬</a>
+      <a href="#" title="Telegram">✈️</a>
+    </div>
+  </div>
+
+</div>
+
+<div className={styles.footerBottom}>
+  <p>&copy; 2025 Men Beauty Store - Chuyên gia chăm sóc da nam hàng đầu Việt Nam. Tất cả quyền được bảo lưu.</p>
+</div>
+
     </div>
   );
 }
