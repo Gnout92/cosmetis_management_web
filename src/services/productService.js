@@ -1,65 +1,40 @@
 // src/services/productService.js
-import { connect } from "@/lib/db";
+import { query } from "@/lib/database/db";
 
-/**
- * Lấy tất cả sản phẩm
- */
+const TABLE = "SanPham";
+
 export async function getAllProducts() {
-  const connection = await connect();
-  const [rows] = await connection.query("SELECT * FROM products");
-  await connection.end();
+  const rows = await query(
+    `SELECT MaSanPham, TenSanPham, MoTa, MaDanhMuc, Gia, GiaGoc, SoLuong, NgayTao, NgayCapNhat FROM ${TABLE}`
+  );
   return rows;
 }
 
-/**
- * Lấy sản phẩm theo ID
- * @param {number} id - ID sản phẩm
- */
 export async function getProductById(id) {
-  const connection = await connect();
-  const [rows] = await connection.query("SELECT * FROM products WHERE id = ?", [id]);
-  await connection.end();
-  return rows[0];
+  const rows = await query(
+    `SELECT MaSanPham, TenSanPham, MoTa, MaDanhMuc, Gia, GiaGoc, SoLuong, NgayTao, NgayCapNhat FROM ${TABLE} WHERE MaSanPham = ?`,
+    [id]
+  );
+  return rows[0] || null;
 }
 
-/**
- * Thêm sản phẩm mới
- * @param {object} product - thông tin sản phẩm
- */
-export async function addProduct(product) {
-  const connection = await connect();
-  const { name, price, image, inStock, discount } = product;
-  const [result] = await connection.query(
-    "INSERT INTO products (name, price, image, inStock, discount) VALUES (?, ?, ?, ?, ?)",
-    [name, price, image, inStock ? 1 : 0, discount || null]
+export async function addProduct({ TenSanPham, MoTa, MaDanhMuc, Gia, GiaGoc = null, SoLuong = 0 }) {
+  const result = await query(
+    `INSERT INTO ${TABLE} (TenSanPham, MoTa, MaDanhMuc, Gia, GiaGoc, SoLuong) VALUES (?, ?, ?, ?, ?, ?)`,
+    [TenSanPham, MoTa, MaDanhMuc, Gia, GiaGoc, SoLuong]
   );
-  await connection.end();
-  return result.insertId;
+  return result.insertId; // MaSanPham
 }
 
-/**
- * Cập nhật sản phẩm
- * @param {number} id - ID sản phẩm
- * @param {object} product - dữ liệu cập nhật
- */
-export async function updateProduct(id, product) {
-  const connection = await connect();
-  const { name, price, image, inStock, discount } = product;
-  const [result] = await connection.query(
-    "UPDATE products SET name = ?, price = ?, image = ?, inStock = ?, discount = ? WHERE id = ?",
-    [name, price, image, inStock ? 1 : 0, discount || null, id]
+export async function updateProduct(id, { TenSanPham, MoTa, MaDanhMuc, Gia, GiaGoc, SoLuong }) {
+  const result = await query(
+    `UPDATE ${TABLE} SET TenSanPham = ?, MoTa = ?, MaDanhMuc = ?, Gia = ?, GiaGoc = ?, SoLuong = ? WHERE MaSanPham = ?`,
+    [TenSanPham, MoTa, MaDanhMuc, Gia, GiaGoc, SoLuong, id]
   );
-  await connection.end();
   return result.affectedRows;
 }
 
-/**
- * Xóa sản phẩm theo ID
- * @param {number} id - ID sản phẩm
- */
 export async function deleteProduct(id) {
-  const connection = await connect();
-  const [result] = await connection.query("DELETE FROM products WHERE id = ?", [id]);
-  await connection.end();
+  const result = await query(`DELETE FROM ${TABLE} WHERE MaSanPham = ?`, [id]);
   return result.affectedRows;
 }

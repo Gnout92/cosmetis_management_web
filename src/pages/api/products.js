@@ -1,4 +1,4 @@
-import { connect } from "../../lib/db";
+import { connect } from "../../lib/database/db";
 
 export default async function handler(req, res) {
   try {

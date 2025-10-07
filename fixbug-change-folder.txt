@@ -1,0 +1,6 @@
+// src/lib/database/schemas.js
+- có đoạn định nghĩa tên các bảng/collection
+- Khi truy vấn db, dùng TABLE.USERS, TABLE.ORDERS,..thay vì viết trực tiếp tên bảng
+- Nếu sau này muốn đổi tên bảng, chỉ cần sửa ở TABLE 
+
+//db: dùng docker-compose: lưu làm container 

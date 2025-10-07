@@ -1,65 +1,38 @@
 // src/services/customerService.js
-import { connect } from "@/lib/db";
+import { query } from "@/lib/database/db";
 
-/**
- * Lấy danh sách tất cả khách hàng
- */
+const TABLE = "KhachHang";
+
 export async function getAllCustomers() {
-  const connection = await connect();
-  const [rows] = await connection.query("SELECT * FROM customers");
-  await connection.end();
+  const rows = await query(`SELECT MaKH, HoVaTen, DienThoai, Email, NgayTao, NgayCapNhat FROM ${TABLE}`);
   return rows;
 }
 
-/**
- * Lấy thông tin khách hàng theo ID
- * @param {number} id - ID của khách hàng
- */
 export async function getCustomerById(id) {
-  const connection = await connect();
-  const [rows] = await connection.query("SELECT * FROM customers WHERE id = ?", [id]);
-  await connection.end();
-  return rows[0];
-}
-
-/**
- * Thêm khách hàng mới
- * @param {object} customer - thông tin khách hàng
- */
-export async function addCustomer(customer) {
-  const connection = await connect();
-  const { name, email, phone } = customer;
-  const [result] = await connection.query(
-    "INSERT INTO customers (name, email, phone) VALUES (?, ?, ?)",
-    [name, email, phone]
+  const rows = await query(
+    `SELECT MaKH, HoVaTen, DienThoai, Email, NgayTao, NgayCapNhat FROM ${TABLE} WHERE MaKH = ?`,
+    [id]
   );
-  await connection.end();
-  return result.insertId;
+  return rows[0] || null;
 }
 
-/**
- * Cập nhật thông tin khách hàng
- * @param {number} id - ID khách hàng
- * @param {object} customer - dữ liệu cập nhật
- */
-export async function updateCustomer(id, customer) {
-  const connection = await connect();
-  const { name, email, phone } = customer;
-  const [result] = await connection.query(
-    "UPDATE customers SET name = ?, email = ?, phone = ? WHERE id = ?",
-    [name, email, phone, id]
+export async function addCustomer({ HoVaTen, DienThoai, Email, MatKhau = null }) {
+  const result = await query(
+    `INSERT INTO ${TABLE} (HoVaTen, DienThoai, Email, MatKhau) VALUES (?, ?, ?, ?)`,
+    [HoVaTen, DienThoai, Email, MatKhau]
   );
-  await connection.end();
-  return result.affectedRows;
+  return result.insertId; // MaKH mới
 }
 
-/**
- * Xóa khách hàng theo ID
- * @param {number} id - ID khách hàng
- */
+export async function updateCustomer(id, { HoVaTen, DienThoai, Email, MatKhau = null }) {
+  const result = await query(
+    `UPDATE ${TABLE} SET HoVaTen = ?, DienThoai = ?, Email = ?, MatKhau = ? WHERE MaKH = ?`,
+    [HoVaTen, DienThoai, Email, MatKhau, id]
+  );
+  return result.affectedRows; // 1 nếu OK
+}
+
 export async function deleteCustomer(id) {
-  const connection = await connect();
-  const [result] = await connection.query("DELETE FROM customers WHERE id = ?", [id]);
-  await connection.end();
+  const result = await query(`DELETE FROM ${TABLE} WHERE MaKH = ?`, [id]);
   return result.affectedRows;
 }

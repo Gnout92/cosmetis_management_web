@@ -1,65 +1,40 @@
 // src/services/employeeService.js
-import { connect } from "@/lib/db";
+import { query } from "@/lib/database/db";
 
-/**
- * Lấy danh sách tất cả nhân viên
- */
+const TABLE = "NhanVien";
+
 export async function getAllEmployees() {
-  const connection = await connect();
-  const [rows] = await connection.query("SELECT * FROM employees");
-  await connection.end();
+  const rows = await query(
+    `SELECT MaNV, HoVaTen, DienThoai, Email, VaiTro, NgayTao, NgayCapNhat FROM ${TABLE}`
+  );
   return rows;
 }
 
-/**
- * Lấy thông tin nhân viên theo ID
- * @param {number} id - ID của nhân viên
- */
 export async function getEmployeeById(id) {
-  const connection = await connect();
-  const [rows] = await connection.query("SELECT * FROM employees WHERE id = ?", [id]);
-  await connection.end();
-  return rows[0];
+  const rows = await query(
+    `SELECT MaNV, HoVaTen, DienThoai, Email, VaiTro, NgayTao, NgayCapNhat FROM ${TABLE} WHERE MaNV = ?`,
+    [id]
+  );
+  return rows[0] || null;
 }
 
-/**
- * Thêm nhân viên mới
- * @param {object} employee - thông tin nhân viên
- */
-export async function addEmployee(employee) {
-  const connection = await connect();
-  const { name, email, phone, position } = employee;
-  const [result] = await connection.query(
-    "INSERT INTO employees (name, email, phone, position) VALUES (?, ?, ?, ?)",
-    [name, email, phone, position]
+export async function addEmployee({ HoVaTen, DienThoai, Email, MatKhau, VaiTro = "NhanVien" }) {
+  const result = await query(
+    `INSERT INTO ${TABLE} (HoVaTen, DienThoai, Email, MatKhau, VaiTro) VALUES (?, ?, ?, ?, ?)`,
+    [HoVaTen, DienThoai, Email, MatKhau, VaiTro]
   );
-  await connection.end();
-  return result.insertId;
+  return result.insertId; // MaNV
 }
 
-/**
- * Cập nhật thông tin nhân viên
- * @param {number} id - ID nhân viên
- * @param {object} employee - dữ liệu cập nhật
- */
-export async function updateEmployee(id, employee) {
-  const connection = await connect();
-  const { name, email, phone, position } = employee;
-  const [result] = await connection.query(
-    "UPDATE employees SET name = ?, email = ?, phone = ?, position = ? WHERE id = ?",
-    [name, email, phone, position, id]
+export async function updateEmployee(id, { HoVaTen, DienThoai, Email, MatKhau, VaiTro }) {
+  const result = await query(
+    `UPDATE ${TABLE} SET HoVaTen = ?, DienThoai = ?, Email = ?, MatKhau = ?, VaiTro = ? WHERE MaNV = ?`,
+    [HoVaTen, DienThoai, Email, MatKhau, VaiTro, id]
   );
-  await connection.end();
   return result.affectedRows;
 }
 
-/**
- * Xóa nhân viên theo ID
- * @param {number} id - ID nhân viên
- */
 export async function deleteEmployee(id) {
-  const connection = await connect();
-  const [result] = await connection.query("DELETE FROM employees WHERE id = ?", [id]);
-  await connection.end();
+  const result = await query(`DELETE FROM ${TABLE} WHERE MaNV = ?`, [id]);
   return result.affectedRows;
 }
