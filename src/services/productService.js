@@ -20,7 +20,10 @@ export async function addProduct(product) {
   const vals = Object.values(payload);
   const sql = `INSERT INTO ${TABLE} (${cols.join(", ")}) VALUES (${cols.map(() => "?").join(", ")})`;
   const result = await query(sql, vals);
-  return result.insertId;
+  
+  return { id: result.insertId };
+
+
 }
 
 export async function updateProduct(id, product) {

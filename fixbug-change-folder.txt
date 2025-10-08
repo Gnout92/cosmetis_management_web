@@ -17,3 +17,5 @@ Nó chứa:
 //sale-services: 
 - bảng  giả định sale
     Dịch từ bảng giả định sale(TA) - 1 dòng = 1 giao dịch sang schema thật_ HoaDon (header) + ChiTietHoaDon (items)
+
+   
