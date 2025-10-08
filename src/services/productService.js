@@ -1,40 +1,39 @@
-// src/services/productService.js
+//src/services/productService:
 import { query } from "@/lib/database/db";
+import { TABLES, COLUMNS, selectList, toDbPayload } from "@/lib/database/schema";
 
-const TABLE = "SanPham";
+const MAP = COLUMNS.products;
+const TABLE = TABLES.PRODUCTS;
 
 export async function getAllProducts() {
-  const rows = await query(
-    `SELECT MaSanPham, TenSanPham, MoTa, MaDanhMuc, Gia, GiaGoc, SoLuong, NgayTao, NgayCapNhat FROM ${TABLE}`
-  );
-  return rows;
+  return query(`SELECT ${selectList(MAP)} FROM ${TABLE}`);
 }
 
 export async function getProductById(id) {
-  const rows = await query(
-    `SELECT MaSanPham, TenSanPham, MoTa, MaDanhMuc, Gia, GiaGoc, SoLuong, NgayTao, NgayCapNhat FROM ${TABLE} WHERE MaSanPham = ?`,
-    [id]
-  );
-  return rows[0] || null;
+  const [row] = await query(`SELECT ${selectList(MAP)} FROM ${TABLE} WHERE ${MAP.id} = ?`, [id]);
+  return row || null;
 }
 
-export async function addProduct({ TenSanPham, MoTa, MaDanhMuc, Gia, GiaGoc = null, SoLuong = 0 }) {
-  const result = await query(
-    `INSERT INTO ${TABLE} (TenSanPham, MoTa, MaDanhMuc, Gia, GiaGoc, SoLuong) VALUES (?, ?, ?, ?, ?, ?)`,
-    [TenSanPham, MoTa, MaDanhMuc, Gia, GiaGoc, SoLuong]
-  );
-  return result.insertId; // MaSanPham
+export async function addProduct(product) {
+  const payload = toDbPayload(product, MAP);
+  const cols = Object.keys(payload);
+  const vals = Object.values(payload);
+  const sql = `INSERT INTO ${TABLE} (${cols.join(", ")}) VALUES (${cols.map(() => "?").join(", ")})`;
+  const result = await query(sql, vals);
+  return result.insertId;
 }
 
-export async function updateProduct(id, { TenSanPham, MoTa, MaDanhMuc, Gia, GiaGoc, SoLuong }) {
+export async function updateProduct(id, product) {
+  const payload = toDbPayload(product, MAP);
+  const sets = Object.keys(payload).map((c) => `${c} = ?`).join(", ");
   const result = await query(
-    `UPDATE ${TABLE} SET TenSanPham = ?, MoTa = ?, MaDanhMuc = ?, Gia = ?, GiaGoc = ?, SoLuong = ? WHERE MaSanPham = ?`,
-    [TenSanPham, MoTa, MaDanhMuc, Gia, GiaGoc, SoLuong, id]
+    `UPDATE ${TABLE} SET ${sets} WHERE ${MAP.id} = ?`,
+    [...Object.values(payload), id]
   );
   return result.affectedRows;
 }
 
 export async function deleteProduct(id) {
-  const result = await query(`DELETE FROM ${TABLE} WHERE MaSanPham = ?`, [id]);
+  const result = await query(`DELETE FROM ${TABLE} WHERE ${MAP.id} = ?`, [id]);
   return result.affectedRows;
 }

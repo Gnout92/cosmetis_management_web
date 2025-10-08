@@ -1,38 +1,42 @@
-// src/services/customerService.js
+//src/services/customerSevice: 
 import { query } from "@/lib/database/db";
+import { TABLES, COLUMNS, selectList, toDbPayload, toAppRow } from "@/lib/database/schema";
 
-const TABLE = "KhachHang";
+const MAP = COLUMNS.customers;
+const TABLE = TABLES.CUSTOMERS;
 
 export async function getAllCustomers() {
-  const rows = await query(`SELECT MaKH, HoVaTen, DienThoai, Email, NgayTao, NgayCapNhat FROM ${TABLE}`);
-  return rows;
+  const rows = await query(`SELECT ${selectList(MAP)} FROM ${TABLE}`);
+  return rows; // đã AS theo app field (name,email,phone…)
 }
 
 export async function getCustomerById(id) {
-  const rows = await query(
-    `SELECT MaKH, HoVaTen, DienThoai, Email, NgayTao, NgayCapNhat FROM ${TABLE} WHERE MaKH = ?`,
-    [id]
-  );
-  return rows[0] || null;
+  const [row] = await query(`SELECT ${selectList(MAP)} FROM ${TABLE} WHERE ${MAP.id} = ?`, [id]);
+  return row || null;
 }
 
-export async function addCustomer({ HoVaTen, DienThoai, Email, MatKhau = null }) {
-  const result = await query(
-    `INSERT INTO ${TABLE} (HoVaTen, DienThoai, Email, MatKhau) VALUES (?, ?, ?, ?)`,
-    [HoVaTen, DienThoai, Email, MatKhau]
-  );
-  return result.insertId; // MaKH mới
+export async function addCustomer(customer) {
+  // customer: { name, email, phone, password? }
+  const payload = toDbPayload(customer, MAP); // -> { HoVaTen, Email, DienThoai, MatKhau? }
+  const cols = Object.keys(payload);
+  const vals = Object.values(payload);
+  const placeholders = cols.map(() => "?").join(", ");
+
+  const sql = `INSERT INTO ${TABLE} (${cols.join(", ")}) VALUES (${placeholders})`;
+  const result = await query(sql, vals);
+  return result.insertId;
 }
 
-export async function updateCustomer(id, { HoVaTen, DienThoai, Email, MatKhau = null }) {
-  const result = await query(
-    `UPDATE ${TABLE} SET HoVaTen = ?, DienThoai = ?, Email = ?, MatKhau = ? WHERE MaKH = ?`,
-    [HoVaTen, DienThoai, Email, MatKhau, id]
-  );
-  return result.affectedRows; // 1 nếu OK
+export async function updateCustomer(id, customer) {
+  const payload = toDbPayload(customer, MAP);
+  const sets = Object.keys(payload).map((c) => `${c} = ?`).join(", ");
+  const vals = Object.values(payload);
+  const sql = `UPDATE ${TABLE} SET ${sets} WHERE ${MAP.id} = ?`;
+  const result = await query(sql, [...vals, id]);
+  return result.affectedRows;
 }
 
 export async function deleteCustomer(id) {
-  const result = await query(`DELETE FROM ${TABLE} WHERE MaKH = ?`, [id]);
+  const result = await query(`DELETE FROM ${TABLE} WHERE ${MAP.id} = ?`, [id]);
   return result.affectedRows;
 }

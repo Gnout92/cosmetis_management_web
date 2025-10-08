@@ -1,8 +1,8 @@
 // src/lib/database/schemas.js
 
-// 🔹 (NEW) Freeze để tránh sửa nhầm runtime, export TABLES để tái sử dụng.
+//  Freeze để tránh sửa nhầm runtime, export TABLES để tái sử dụng.
 export const TABLES = Object.freeze({
-  USERS: "users",
+  USERS: "users",               
   ORDERS: "orders",
   PRODUCTS: "products",
   NOTIFICATIONS: "notifications",
