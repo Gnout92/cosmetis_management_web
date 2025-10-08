@@ -1,3 +1,4 @@
+//src/pages/api/products.js:
 import { connect } from "../../lib/database/db";
 
 export default async function handler(req, res) {

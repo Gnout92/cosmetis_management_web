@@ -1,6 +1,6 @@
 //src/services/customerSevice: 
 import { query } from "@/lib/database/db";
-import { TABLES, COLUMNS, selectList, toDbPayload, toAppRow } from "@/lib/database/schema";
+import { TABLES, COLUMNS, selectList, toDbPayload } from "@/lib/database/schema";
 
 const MAP = COLUMNS.customers;
 const TABLE = TABLES.CUSTOMERS;

@@ -2,6 +2,7 @@
 import { query } from "@/lib/database/db";
 import { TABLES, COLUMNS, selectList, toDbPayload } from "@/lib/database/schema";
 
+
 const MAP = COLUMNS.warehouses;
 const TABLE = TABLES.WAREHOUSE;
 

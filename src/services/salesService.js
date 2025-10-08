@@ -1,6 +1,7 @@
 // src/services/salesService.js
 import { getPool, query } from "@/lib/database/db";
-import { TABLES, COLUMNS, selectList } from "@/lib/database/schema";
+import { TABLES, COLUMNS, selectList, toDbPayload } from "@/lib/database/schema";
+
 
 /**
  * interface SalesService
@@ -13,8 +14,8 @@ import { TABLES, COLUMNS, selectList } from "@/lib/database/schema";
  *  - TongTien của HoaDon sẽ được cập nhật = SUM(ThanhTien) từ items
  */
 
-const T_HD = TABLES.ORDERS || "HoaDon";
-const T_CTHD = TABLES.ORDER_ITEMS || "ChiTietHoaDon";
+const T_HD = TABLES.ORDERS;
+const T_CTHD = TABLES.ORDER_ITEMS;
 
 // Map header dùng alias theo “code cũ”
 const HEADER_ALIAS = `
