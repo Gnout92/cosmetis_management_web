@@ -1,3 +1,4 @@
+// src/lib/api/handler.js
 export async function normalizeBody(req) {
   if (req.body && typeof req.body === "object") return req.body; // Next đã parse OK
 
