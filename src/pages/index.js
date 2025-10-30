@@ -1,3 +1,4 @@
+// src/pages/index.js
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import styles from '../styles/Home.module.css';

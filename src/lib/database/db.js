@@ -34,3 +34,11 @@ export async function query(sql, params = []) {
 export async function connect() {
   return getPool().getConnection();
 }
+//thêm helper transaction để rut gọn service
+export async function withTransaction(fn) {
+  const pool = getPool();
+  const conn = await pool.getConnection();
+  try { await conn.beginTransaction(); const r = await fn(conn); await conn.commit(); return r; }
+  catch (e) { await conn.rollback(); throw e; }
+  finally { conn.release(); }
+}
