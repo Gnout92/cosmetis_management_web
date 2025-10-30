@@ -49,9 +49,10 @@ function LoadingOverlay() {
   );
 }
 
+// Phần AppContent chạy BÊN TRONG AuthProvider, nên có thể gọi useAuth()
 function AppContent({ Component, pageProps }) {
   const router = useRouter();
-  const { loading } = useAuth();
+  const { loading } = useAuth(); // giờ chắc chắn có
   const [isRouting, setIsRouting] = useState(false);
 
   useEffect(() => {
@@ -72,22 +73,21 @@ function AppContent({ Component, pageProps }) {
   const showBusy = loading || isRouting;
   if (showBusy) return <LoadingOverlay />;
 
-  // Per-page layout pattern
-  const getLayout =
-    Component.getLayout ||
-    ((page) => <MainLayout>{page}</MainLayout>);
+  // hỗ trợ per-page layout, fallback MainLayout
+  const getLayout = Component.getLayout || ((page) => <MainLayout>{page}</MainLayout>);
 
   return getLayout(<Component {...pageProps} />);
 }
 
-export default function MyApp(props) {
+export default function MyApp({ Component, pageProps }) {
   return (
     <AuthProvider>
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>KaKa Cosmetics</title>
       </Head>
-      <AppContent {...props} />
+
+      <AppContent Component={Component} pageProps={pageProps} />
     </AuthProvider>
   );
 }

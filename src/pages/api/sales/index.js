@@ -1,12 +1,24 @@
 import { createHandler } from "@/lib/api/handler";
 import { getAllSales, addSale } from "@/services/salesService";
 
+
 export default createHandler({
   async GET(req, res) {
-    const rows = await getAllSales(); // tổng hợp theo hóa đơn
-    return res.status(200).json({ data: rows });
-  },
+    const { id, customerId } = req.query;
 
+    // /api/sales?id=123 -> chi tiết 1 đơn
+    if (id) {
+      const sale = await getSaleById(Number(id));
+      if (!sale) return res.status(404).json({ error: "Not found" });
+      return res.status(200).json(sale);
+    }
+
+    // /api/sales?customerId=5 -> danh sách đơn của user
+    const list = await getAllSales({
+      customerId: customerId ? Number(customerId) : undefined,
+    });
+    return res.status(200).json(list);
+  },
   async POST(req, res) {
     // body: { productId, quantity, totalPrice, customerId }
     const body = req.parsedBody || {}; 

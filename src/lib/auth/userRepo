@@ -1,0 +1,31 @@
+import { query } from "@/lib/database/db";
+
+/**
+ * Lấy khách hàng theo email
+ */
+export async function findCustomerByEmail(email) {
+  const rows = await query(
+    "SELECT MaKH, HoVaTen, DienThoai, Email, NgayTao, NgayCapNhat FROM khachhang WHERE Email = ? LIMIT 1",
+    [email]
+  );
+  return rows[0] || null;
+}
+
+/**
+ * Tạo khách hàng mới từ info Google
+ */
+export async function createCustomerFromGoogle({ name, email }) {
+  const result = await query(
+    `INSERT INTO khachhang (HoVaTen, Email, MatKhau, DienThoai)
+     VALUES (?, ?, NULL, NULL)`,
+    [name || "Khách hàng", email]
+  );
+
+  // Lấy lại record vừa tạo
+  const newId = result.insertId;
+  const rows = await query(
+    "SELECT MaKH, HoVaTen, DienThoai, Email, NgayTao, NgayCapNhat FROM khachhang WHERE MaKH = ?",
+    [newId]
+  );
+  return rows[0] || null;
+}

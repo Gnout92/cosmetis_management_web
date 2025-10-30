@@ -26,26 +26,26 @@ const HEADER_ALIAS = `
   h.TrangThai   AS status
 `;
 
-// ------------------------------
-// GET: danh sách sales (per order)
-// ------------------------------
-export async function getAllSales() {
-  // Trả 1 dòng / 1 hóa đơn (tổng hợp)
+export async function getAllSales({ customerId } = {}) {
   const rows = await query(
     `
     SELECT
-      ${HEADER_ALIAS},
+      h.MaHD        AS id,
+      h.MaKH        AS customerId,
+      h.NgayLap     AS createdAt,
+      h.TongTien    AS totalPrice,
+      h.TrangThai   AS status,
       COUNT(i.MaCTHD) AS itemCount
-    FROM ${T_HD} h
-    LEFT JOIN ${T_CTHD} i ON i.MaHD = h.MaHD
+    FROM hoadon h
+    LEFT JOIN chitiethoadon i ON i.MaHD = h.MaHD
+    ${customerId ? "WHERE h.MaKH = ?" : ""}
     GROUP BY h.MaHD
     ORDER BY h.NgayLap DESC
-    `
+    `,
+    customerId ? [customerId] : []
   );
 
-  // Giữ trường quen thuộc: id, customerId, totalPrice, createdAt
-  // (status, itemCount là bổ sung an toàn)
-  return rows.map((r) => ({
+  return rows.map(r => ({
     id: r.id,
     customerId: r.customerId,
     totalPrice: Number(r.totalPrice || 0),
@@ -55,10 +55,8 @@ export async function getAllSales() {
   }));
 }
 
-// ------------------------------
-// GET: 1 sale + items
-// ------------------------------
-export async function getSaleById(id) {
+ 
+export async function getSaleById(id) {// GET: 1 sale + items
   const [header] = await query(
     `
     SELECT
@@ -100,12 +98,8 @@ export async function getSaleById(id) {
       lineTotal: Number(it.lineTotal || 0),
     })),
   };
-}
-
-// ------------------------------
-// POST: tạo sale 1 dòng (tương thích code cũ)
-// ------------------------------
-export async function addSale({ productId, quantity, totalPrice, customerId }) {
+} 
+export async function addSale({ productId, quantity, totalPrice, customerId }) {// POST: tạo sale 1 dòng
   const pool = getPool();
   const conn = await pool.getConnection();
   try {
@@ -231,11 +225,7 @@ export async function updateSale(id, sale) {
     conn.release();
   }
 }
-
-// ------------------------------
-// DELETE: xóa sale (header + items)
-// ------------------------------
-export async function deleteSale(id) {
+export async function deleteSale(id) {// DELETE: xóa sale (header + items)
   const pool = getPool();
   const conn = await pool.getConnection();
   try {

@@ -1,3 +1,4 @@
+// src/pages/api/products/[id].js
 import { createHandler } from "@/lib/api/handler";
 import { getProductById, updateProduct, deleteProduct } from "@/services/productService";
 

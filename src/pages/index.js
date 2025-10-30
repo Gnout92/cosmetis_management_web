@@ -7,6 +7,11 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/router";
 
+const handleAccountClick = () => {
+  router.push("/account");
+};
+
+
 export default function HomePage() {
   // const [authUser, setAuthUser] = useState(null);
   const { authUser, isAuthenticated, logout } = useAuth();

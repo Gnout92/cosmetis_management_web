@@ -1,3 +1,4 @@
+// src/pages/api/products/index.js
 import { createHandler } from "@/lib/api/handler";
 import {
   getAllProducts,
