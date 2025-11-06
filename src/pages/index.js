@@ -3,8 +3,18 @@ import Image from "next/image";
 import styles from '../styles/Home.module.css';
 import { useAuth } from "../context/AuthContext";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+
 import { useRouter } from "next/router";
+import { 
+  HiHome, 
+  HiInformationCircle, 
+  HiCube, 
+  HiShoppingBag, 
+  HiShoppingCart, 
+  HiShieldCheck, 
+  HiChatAlt2, 
+  HiUser 
+} from 'react-icons/hi';
 
 export default function HomePage() {
   // const [authUser, setAuthUser] = useState(null);
@@ -13,47 +23,180 @@ export default function HomePage() {
   const [cartItems, setCartItems] = useState(0);
   const [wishlistItems, setWishlistItems] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [countdown, setCountdown] = useState({ hours: '23', minutes: '59', seconds: '59' });
   const router = useRouter();
 
-
+  // Smooth scroll và scroll effects
   useEffect(() => {
     setIsLoaded(true);
+    
     // Simulate loading cart items from localStorage
-    setCartItems(Math.floor(Math.random() * 5));
-    setWishlistItems(Math.floor(Math.random() * 8));
+    const cartCount = localStorage.getItem('cartCount') || Math.floor(Math.random() * 5);
+    const wishlistCount = localStorage.getItem('wishlistCount') || Math.floor(Math.random() * 8);
+    setCartItems(parseInt(cartCount));
+    setWishlistItems(parseInt(wishlistCount));
+
+    // Scroll listener cho navigation effects
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    // Intersection Observer cho animations
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            // Add animation classes for smooth reveal
+            entry.target.classList.add('fade-in-up');
+          }
+        });
+      },
+      { 
+        threshold: 0.1,
+        rootMargin: '50px'
+      }
+    );
+
+    // Observe all animatable elements
+    const animationElements = document.querySelectorAll('[data-animation-id]');
+    animationElements.forEach((el) => observer.observe(el));
+
+    // Countdown timer - đếm ngược đến nửa đêm
+    const timer = setInterval(() => {
+      const now = new Date();
+      const midnight = new Date();
+      midnight.setHours(24, 0, 0, 0);
+      const diff = midnight - now;
+      
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      
+      setCountdown({
+        hours: String(hours).padStart(2, '0'),
+        minutes: String(minutes).padStart(2, '0'),
+        seconds: String(seconds).padStart(2, '0')
+      });
+    }, 1000);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      observer.disconnect();
+      clearInterval(timer);
+    };
   }, []);
   
   
-   // Handle search functionality
+   // Handle account click
+  const handleAccountClick = () => {
+    router.push('/tai-khoan');
+  };
+
+  // Enhanced search functionality
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // Navigate to search page with query parameter
-      router.push(`/tim-kiem?q=${encodeURIComponent(searchQuery.trim())}`);
+      // Smooth scroll to top before navigation
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => {
+        router.push(`/tim-kiem?q=${encodeURIComponent(searchQuery.trim())}`);
+      }, 300);
     }
   };
+
+  // Newsletter subscription handler
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault();
+    const emailInput = e.target.querySelector('input[type="email"]');
+    const email = emailInput?.value?.trim();
+    
+    if (!email) {
+      alert('Vui lòng nhập email hợp lệ!');
+      return;
+    }
+    
+    // Simple email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert('Vui lòng nhập email hợp lệ!');
+      return;
+    }
+    
+    // Simulate successful subscription
+    emailInput.value = '';
+    alert('Đăng ký thành công! Bạn sẽ nhận được thông tin mới nhất qua email.');
+  };
+
+  // Enhanced add to cart with better UX
+  function handleAddToCart(productId) {
+    const newCount = cartItems + 1;
+    setCartItems(newCount);
+    localStorage.setItem('cartCount', newCount.toString());
+    
+    // Enhanced animation effect
+    const button = document.querySelector(`[data-product-id="${productId}"]`);
+    if (button) {
+      // Create ripple effect
+      const ripple = document.createElement('span');
+      ripple.style.cssText = `
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.6);
+        transform: scale(0);
+        animation: ripple 0.6s linear;
+        pointer-events: none;
+        width: 20px;
+        height: 20px;
+        left: 50%;
+        top: 50%;
+        margin-left: -10px;
+        margin-top: -10px;
+      `;
+      
+      button.style.position = 'relative';
+      button.style.overflow = 'hidden';
+      button.appendChild(ripple);
+      
+      setTimeout(() => {
+        ripple.remove();
+      }, 600);
+      
+      // Add bounce animation
+      button.style.transform = 'scale(1.1)';
+      button.style.transition = 'transform 0.2s ease';
+      setTimeout(() => {
+        button.style.transform = 'scale(1)';
+      }, 200);
+    }
+  }
+
+  // Enhanced wishlist functionality
+  function handleAddToWishlist(productId) {
+    const newCount = wishlistItems + 1;
+    setWishlistItems(newCount);
+    localStorage.setItem('wishlistCount', newCount.toString());
+    
+    // Show heart animation
+    const heartBtn = document.querySelector(`[data-wishlist-id="${productId}"]`);
+    if (heartBtn) {
+      heartBtn.style.transform = 'scale(1.3)';
+      heartBtn.style.color = '#EF4444';
+      setTimeout(() => {
+        heartBtn.style.transform = 'scale(1)';
+        heartBtn.style.color = '';
+      }, 300);
+    }
+  }
 
   // Handle Enter key press in search input
   const handleSearchKeyDown = (e) => {
     if (e.key === 'Enter') {
       handleSearch(e);
     }
-  };
-
-  const addToCart = (productId) => {
-    setCartItems(prev => prev + 1);
-    // Add animation effect
-    const button = document.querySelector(`[data-product-id="${productId}"]`);
-    if (button) {
-      button.style.transform = 'scale(1.1)';
-      setTimeout(() => {
-        button.style.transform = 'scale(1)';
-      }, 200);
-    }
-  };
-
-  const addToWishlist = (productId) => {
-    setWishlistItems(prev => prev + 1);
   };
 
   const copyPromoCode = (code) => {
@@ -209,18 +352,19 @@ const moreNewsEvents= [
     id: 1,
     title: "Bí quyết chăm sóc da mùa hè",
     description: "Hướng dẫn các bước dưỡng da giúp da luôn mịn màng trong mùa nóng.",
-    videoThumbnail: "/images/video1.jpg",
-    videoUrl: "https://www.youtube.com/watch?v=EBc1QZ1mW4g", // video thật
+    videoThumbnail: "/images/banners/111.jpg",
+    videoUrl: "https://www.youtube.com/watch?v=BtZJhZUWeuA&pp=ygUZcXXhuqNuZyBjw6FvIG3hu7kgcGjhuqltIA%3D%3D", // video thật
     duration: "5:32",
     views: 12500,
     uploadDate: "01/10/2025"
   },
+  
   {
     id: 2,
     title: "Trang điểm dự tiệc sang trọng",
     description: "Video hướng dẫn make-up tone Tây sang trọng, dễ áp dụng.",
-    videoThumbnail: "/images/video2.jpg",
-    videoUrl: "https://www.youtube.com/watch?v=bPZrJ9tX2nI", // video thật
+    videoThumbnail: "/images/banners/102.jpg",
+    videoUrl: "https://www.youtube.com/watch?v=KnCVu-R4hCg&pp=ygUmVHJhbmcgxJFp4buDbSBk4buxIHRp4buHYyBzYW5nIHRy4buNbmc%3D", // video thật
     duration: "8:15",
     views: 9800,
     uploadDate: "28/09/2025"
@@ -229,9 +373,8 @@ const moreNewsEvents= [
     id: 3,
     title: "Chăm sóc da ban đêm đúng cách",
     description: "Cách chọn sản phẩm dưỡng da phù hợp cho buổi tối.",
-    videoThumbnail: "/images/video3.jpg",
-    videoUrl: "https://www.youtube.com/watch?v=Gg1QUsSPBhc", // video thật
-    duration: "6:45",
+    videoThumbnail: "/images/banners/101.jpg",
+    videoUrl: "https://www.youtube.com/watch?v=ctq_Qj7oSVQ",
     views: 8700,
     uploadDate: "25/09/2025"
   },
@@ -239,11 +382,11 @@ const moreNewsEvents= [
     id: 4,
     title: "Top 5 sản phẩm dưỡng ẩm tốt nhất 2025",
     description: "Review chi tiết các sản phẩm dưỡng ẩm được yêu thích nhất.",
-    videoThumbnail: "/images/products/video1.mp4",
-    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // video thật
+    videoThumbnail: "/images/banners/100.jpg",
+    videoUrl: "https://www.youtube.com/watch?v=WfUbudHyfWA&pp=ygUzVG9wIDUgc-G6o24gcGjhuqltIGTGsOG7oW5nIOG6qW0gdOG7kXQgbmjhuqV0IDIwMjUi",
     duration: "7:58",
     views: 15200,
-    uploadDate: "20/09/2025"
+    // uploadDate: "20/09/2025"
   }
 ];
 
@@ -313,49 +456,55 @@ const moreNewsEvents= [
 
   // Featured Brands Data  
   const featuredBrands = [
-    {
-      id: 1,
-      name: "L'Oréal Men Expert",
-      logo: "/images/banners/f.jpg",
-      description: "Thương hiệu số 1 thế giới về chăm sóc da nam",
-      products: 25
-    },
-    {
-      id: 2,
-      name: "Nivea Men",
-      logo: "/images/banners/e.jpg", 
-      description: "Chăm sóc da toàn diện cho phái mạnh",
-      products: 18
-    },
-    {
-      id: 3,
-      name: "Vichy Homme",
-      logo: "/images/banners/w.jpg",
-      description: "Giải pháp da nhạy cảm chuyên nghiệp",
-      products: 15
-    },
-    {
-      id: 4,
-      name: "Kiehl's",
-      logo: "/images/banners/v.jpg",
-      description: "Sản phẩm thiên nhiên cao cấp từ New York",
-      products: 22
-    },
-    {
-      id: 5,
-      name: "Clinique For Men",
-      logo: "/images/banners/n.jpg",
-      description: "Chăm sóc da không gây dị ứng",
-      products: 12
-    },
-    {
-      id: 6,
-      name: "The Body Shop",
-      logo: "/images/banners/x.jpg",
-      description: "Sản phẩm organic thân thiện môi trường",
-      products: 30
-    }
-  ];
+  {
+    id: 1,
+    name: "L'Oréal Men Expert",
+    logo: "/images/banners/f.jpg",
+    description: "Thương hiệu số 1 thế giới về chăm sóc da nam",
+    products: 25,
+    url: "/trangbao/1"
+  },
+  {
+    id: 2,
+    name: "Nivea Men",
+    logo: "/images/banners/e.jpg", 
+    description: "Chăm sóc da toàn diện cho phái mạnh",
+    products: 18,
+    url: "/trangbao/2"
+  },
+  {
+    id: 3,
+    name: "Vichy Homme",
+    logo: "/images/banners/w.jpg",
+    description: "Giải pháp da nhạy cảm chuyên nghiệp",
+    products: 15,
+    url: "/trangbao/3"
+  },
+  {
+    id: 4,
+    name: "Kiehl's",
+    logo: "/images/banners/v.jpg",
+    description: "Sản phẩm thiên nhiên cao cấp từ New York",
+    products: 22,
+    url: "/trangbao/4"
+  },
+  {
+    id: 5,
+    name: "Clinique For Men",
+    logo: "/images/banners/n.jpg",
+    description: "Chăm sóc da không gây dị ứng",
+    products: 12,
+    url: "/trangbao/5"
+  },
+  {
+    id: 6,
+    name: "The Body Shop",
+    logo: "/images/banners/x.jpg",
+    description: "Sản phẩm organic thân thiện môi trường",
+    products: 30,
+    url: "/trangbao/6"
+  }
+];
 
   // News Events Data
    const newsEvents = [
@@ -404,15 +553,36 @@ const moreNewsEvents= [
   return (
     <div className={styles.container}>
       {/* Beautiful Navigation - Căn giữa và làm đẹp */}
-      <nav className={styles.navigation}>
+      <nav className={`${styles.navigation} ${isScrolled ? styles.scrolled : ''}`}>
       <div className={styles.navContainer}>
-        <Link href="/" className={styles.navLink}>🏠 Trang chính</Link>
-        <Link href="/gioithieu" className={styles.navLink}>ℹ️ Giới thiệu</Link>
-        <Link href="/danhmucSP" className={styles.navLink}>📦 Danh mục sản phẩm</Link>
-        <Link href="/cuahang" className={styles.navLink}>🏪 Cửa hàng</Link>
-        <Link href="/giohang" className={styles.navLink}>🛒 Giỏ hàng</Link>
-        <Link href="/baohanh" className={styles.navLink}>🛡️ Bảo hành</Link>
-        <Link href="/hotroKH" className={styles.navLink}>💬 Hỗ trợ KH</Link>
+        <Link href="/" className={`${styles.navLink} pro-nav-item`}>
+          <span className="nav-icon"><HiHome /></span>
+          <span className="nav-text">Trang chính</span>
+        </Link>
+        <Link href="/gioithieu" className={`${styles.navLink} pro-nav-item`}>
+          <span className="nav-icon"><HiInformationCircle /></span>
+          <span className="nav-text">Giới thiệu</span>
+        </Link>
+        <Link href="/danhmucSP" className={`${styles.navLink} pro-nav-item`}>
+          <span className="nav-icon"><HiCube /></span>
+          <span className="nav-text">Danh mục sản phẩm</span>
+        </Link>
+        <Link href="/cuahang" className={`${styles.navLink} pro-nav-item`}>
+          <span className="nav-icon"><HiShoppingBag /></span>
+          <span className="nav-text">Cửa hàng</span>
+        </Link>
+        <Link href="/giohang" className={`${styles.navLink} pro-nav-item`}>
+          <span className="nav-icon"><HiShoppingCart /></span>
+          <span className="nav-text">Giỏ hàng</span>
+        </Link>
+        <Link href="/baohanh" className={`${styles.navLink} pro-nav-item`}>
+          <span className="nav-icon"><HiShieldCheck /></span>
+          <span className="nav-text">Bảo hành</span>
+        </Link>
+        <Link href="/hotroKH" className={`${styles.navLink} pro-nav-item`}>
+          <span className="nav-icon"><HiChatAlt2 /></span>
+          <span className="nav-text">Hỗ trợ KH</span>
+        </Link>
 
         {/* 🔑 Phần tài khoản */}
         <div className={styles.userSection}>
@@ -435,8 +605,9 @@ const moreNewsEvents= [
               </button>
             </div>
           ) : (
-            <Link href="/login" className={styles.navLink}>
-              👤 Tài khoản
+            <Link href="/login" className={`${styles.navLink} pro-nav-item`}>
+              <span className="nav-icon"><HiUser /></span>
+              <span className="nav-text">Tài khoản</span>
             </Link>
           )}
         </div>
@@ -457,7 +628,7 @@ const moreNewsEvents= [
       </div>
 
       {/* Mã khuyến mại Section */}
-      <div className={styles.promoSection}>
+      <div className={styles.promoSection} data-animation-id="promo-section">
         <div className={styles.sectionContainer}>
           <h2 className={styles.promoTitle}>🎟️ MÃ KHUYẾN MÃI HOT</h2>
           <p className={styles.promoSubtitle}>Sử dụng ngay để nhận ưu đãi tốt nhất!</p>
@@ -518,7 +689,7 @@ const moreNewsEvents= [
       </div>
 
       {/* Sale Section - Flash Sale */}
-      <div className={styles.saleSection}>
+      <div className={styles.saleSection} data-animation-id="sale-section">
         <div className={styles.sectionContainer}>
           <h2 className={styles.sectionTitle}>⚡ FLASH SALE - SĂN SALE NGAY!</h2>
           <p className={styles.sectionSubtitle}>⏰ Thời gian có hạn - Giảm đến 50% cho các sản phẩm chọn lọc</p>
@@ -539,11 +710,16 @@ const moreNewsEvents= [
                   <div className={styles.productActions}>
                     <button 
                       className={styles.wishlistBtn}
-                      onClick={() => addToWishlist(product.id)}
+                      data-wishlist-id={product.id}
+                      onClick={() => handleAddToWishlist(product.id)}
+                      title="Thêm vào yêu thích"
                     >
                       ❤️
                     </button>
-                    <button className={styles.quickViewBtn}>
+                    <button 
+                      className={styles.quickViewBtn}
+                      title="Xem nhanh"
+                    >
                       👁️
                     </button>
                   </div>
@@ -559,12 +735,12 @@ const moreNewsEvents= [
                     <span className={styles.originalPrice}>{product.originalPrice}</span>
                   </div>
                   <div className={styles.saleTimer}>
-                    ⏰ Kết thúc trong: <strong>{product.saleEndTime}</strong>
+                    ⏰ Kết thúc trong: <strong>{countdown.hours}:{countdown.minutes}:{countdown.seconds}</strong>
                   </div>
                   <button 
                     className={styles.addToCartBtn}
                     data-product-id={product.id}
-                    onClick={() => addToCart(product.id)}
+                    onClick={() => handleAddToCart(product.id)}
                   >
                     <span>🛒</span>
                     <span>MUA NGAY</span>
@@ -577,7 +753,7 @@ const moreNewsEvents= [
       </div>
 
       {/* Featured Products Section */}
-      <div className={styles.productsSection}>
+      <div className={styles.productsSection} data-animation-id="products-section">
         <div className={styles.sectionContainer}>
           <h2 className={styles.sectionTitle}>🌟 SẢN PHẨM NỔI BẬT</h2>
           <p className={styles.sectionSubtitle}>Khám phá những sản phẩm được yêu thích nhất</p>
@@ -596,11 +772,16 @@ const moreNewsEvents= [
                   <div className={styles.productActions}>
                     <button 
                       className={styles.wishlistBtn}
-                      onClick={() => addToWishlist(product.id)}
+                      data-wishlist-id={product.id}
+                      onClick={() => handleAddToWishlist(product.id)}
+                      title="Thêm vào yêu thích"
                     >
                       ❤️
                     </button>
-                    <button className={styles.quickViewBtn}>
+                    <button 
+                      className={styles.quickViewBtn}
+                      title="Xem nhanh"
+                    >
                       👁️
                     </button>
                   </div>
@@ -618,7 +799,7 @@ const moreNewsEvents= [
                   <button 
                     className={styles.addToCartBtn}
                     data-product-id={product.id}
-                    onClick={() => addToCart(product.id)}
+                    onClick={() => handleAddToCart(product.id)}
                   >
                     <span>🛒</span>
                     <span>THÊM VÀO GIỎ</span>
@@ -631,37 +812,39 @@ const moreNewsEvents= [
       </div>
 
       {/* Featured Brands Section */}
-      <div className={styles.brandsSection}>
+      <div className={styles.brandsSection} data-animation-id="brands-section">
         <div className={styles.sectionContainer}>
           <h2 className={styles.sectionTitle}>🏆 THƯƠNG HIỆU NỔI TIẾNG</h2>
           <p className={styles.sectionSubtitle}>Những thương hiệu uy tín hàng đầu thế giới về chăm sóc da nam</p>
           <div className={styles.brandsGrid}>
-            {featuredBrands.map((brand) => (
-              <div key={brand.id} className={styles.brandCard}>
-                <div className={styles.brandImageWrapper}>
-                  <Image
-                    src={brand.logo}
-                    alt={brand.name}
-                    width={120}
-                    height={120}
-                    className={styles.brandLogo}
-                  />
-                </div>
-                <div className={styles.brandInfo}>
-                  <h3 className={styles.brandName}>{brand.name}</h3>
-                  <p className={styles.brandDescription}>{brand.description}</p>
-                  <div className={styles.brandStats}>
-                    <span className={styles.productCount}>{brand.products} sản phẩm</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+      {featuredBrands.map((brand) => (
+        <Link key={brand.id} href={brand.url} className={styles.brandCard}>
+          <div className={styles.brandImageWrapper}>
+            <Image
+              src={brand.logo}
+              alt={brand.name}
+              width={120}
+              height={120}
+              className={styles.brandLogo}
+            />
           </div>
+          <div className={styles.brandInfo}>
+            <h3 className={styles.brandName}>{brand.name}</h3>
+            <p className={styles.brandDescription}>{brand.description}</p>
+            <div className={styles.brandStats}>
+              <span className={styles.productCount}>
+                {brand.products} sản phẩm
+              </span>
+            </div>
+          </div>
+        </Link>
+      ))}
+    </div>
         </div>
       </div>
        
       {/* News and Events Section */}
-<div className={styles.newsSection}>
+<div className={styles.newsSection} data-animation-id="news-section">
   <div className={styles.sectionContainer}>
     <h2 className={styles.sectionTitle}>📰 TIN TỨC & SỰ KIỆN</h2>
     <p className={styles.sectionSubtitle}>
@@ -669,145 +852,315 @@ const moreNewsEvents= [
     </p>
 
     <div className={styles.newsGrid}>
-      {newsEvents.map((news) => (
-        <div key={news.id} className={styles.newsCard}>
-          {/* Ảnh/video có thể click mở link */}
-          <a href={news.videoUrl} target="_blank" rel="noopener noreferrer">
-            <div className={styles.videoContainer}>
-              <Image
-                src={news.videoThumbnail}
-                alt={news.title}
-                width={320}
-                height={180}
-                className={styles.videoThumbnail}
-              />
-              <div className={styles.playButton}>
-                <span>▶️</span>
-              </div>
-              <div className={styles.videoDuration}>{news.duration}</div>
-            </div>
-          </a>
-            
-          {/* Thông tin video */}
-          <div className={styles.newsInfo}>
-            <h3 className={styles.newsTitle}>{news.title}</h3>
-            <p className={styles.newsDescription}>{news.description}</p>
-            <div className={styles.newsStats}>
-              <span className={styles.newsViews}>👁️ {news.views} lượt xem</span>
-              <span className={styles.newsDate}>📅 {news.uploadDate}</span>
-            </div>
-
-            {/* Nút xem ngay */}
-            <a href={news.videoUrl} target="_blank" rel="noopener noreferrer">
-              <button className={styles.watchBtn}>
-                <span>🎥</span>
-                <span>XEM NGAY</span>
-              </button>
-            </a>
+  {moreNewsEvents.map((news) => (
+    <div key={news.id} className={styles.newsCard}>
+      {/* Khi click sẽ mở link YouTube */}
+      <a href={news.videoUrl} target="_blank" rel="noopener noreferrer">
+        <div className={styles.videoContainer}>
+          <Image
+            src={news.videoThumbnail}
+            alt={news.title}
+            width={320}
+            height={180}
+            className={styles.videoThumbnail}
+          />
+          <div className={styles.playButton}>
+            <span>▶️</span>
           </div>
+          <div className={styles.videoDuration}>{news.duration}</div>
         </div>
-      ))}
+      </a>
+
+      {/* Thông tin mô tả dưới thumbnail */}
+      <div className={styles.videoInfo}>
+        <h3 className={styles.videoTitle}>{news.title}</h3>
+        <p className={styles.videoDesc}>{news.description}</p>
+        <p className={styles.videoMeta}>
+          {news.views.toLocaleString()} lượt xem • {news.uploadDate}
+        </p>
+      </div>
     </div>
+  ))}
+</div>
+
   </div>
 </div>
 
 
       {/* Newsletter Section */}
-      <div className={styles.newsletterSection}>
+      <div className={styles.newsletterSection} data-animation-id="newsletter-section">
         <div className={styles.sectionContainer}>
           <h2 className={styles.newsletterTitle}>📧 ĐĂNG KÝ NHẬN TIN</h2>
           <p className={styles.newsletterSubtitle}>Nhận thông tin về sản phẩm mới và ưu đãi đặc biệt</p>
-          <div className={styles.newsletterForm}>
+          <form className={styles.newsletterForm} onSubmit={handleNewsletterSubmit}>
             <input 
               type="email" 
-              placeholder="Nhập email của bạn..."
+              placeholder="📧 Nhập email để nhận ưu đãi đặc biệt..."
               className={styles.newsletterInput}
+              required
             />
-            <button className={styles.newsletterBtn}>ĐĂNG KÝ NGAY</button>
+            <button className={styles.newsletterBtn} type="submit">
+              ✨ ĐĂNG KÝ NGAY
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {/* 🚀 FOOTER THÔNG MINH & HIỆN ĐẠI */}
+      <div className={styles.footerModern}>
+        <div className={styles.footerGrid}>
+          
+          {/* 🏢 VỀ CHÚNG TÔI - SMART VERSION */}
+          <div className={styles.footerCard}>
+            <div className={styles.footerHeader}>
+              <div className={styles.footerIcon}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+                </svg>
+              </div>
+              <h3>VỀ CHÚNG TÔI</h3>
+            </div>
+            <p className={styles.footerDescription}>
+              Chúng tôi là cửa hàng hàng đầu chuyên cung cấp sản phẩm chăm sóc da nam chất lượng cao với hơn 10 năm kinh nghiệm.
+            </p>
+            <div className={styles.footerStats}>
+              <div className={styles.statItem}>
+                <span className={styles.statNumber}>50K+</span>
+                <span className={styles.statLabel}>Khách hàng</span>
+              </div>
+              <div className={styles.statItem}>
+                <span className={styles.statNumber}>500+</span>
+                <span className={styles.statLabel}>Sản phẩm</span>
+              </div>
+            </div>
+            <nav className={styles.footerNav}>
+              <a href="#" className={styles.navLink}>
+                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                Lịch sử hình thành
+              </a>
+              <a href="#" className={styles.navLink}>
+                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                Tầm nhìn & Sứ mệnh
+              </a>
+              <a href="#" className={styles.navLink}>
+                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                Giải thưởng & Chứng nhận
+              </a>
+              <a href="#" className={styles.navLink}>
+                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/></svg>
+                Tin tức & Sự kiện
+              </a>
+            </nav>
+          </div>
+
+          {/* 👤 CHĂM SÓC KHÁCH HÀNG - SMART SUPPORT */}
+          <div className={styles.footerCard}>
+            <div className={styles.footerHeader}>
+              <div className={styles.footerIcon}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0 0 18.9 8H16c-.8 0-1.54.37-2.01 1.01L12.5 10.5c-.47-.47-1.12-.75-1.83-.82L9.17 9.33c-.71-.18-1.46-.08-2.01.33l-2.5 1.87c-.83.62-1.16 1.71-.83 2.71l1.24 3.71c.33 1 1.47 1.49 2.36.98L10 16.5l2.5 2.5z"/>
+                </svg>
+              </div>
+              <h3>CHĂM SÓC KHÁCH HÀNG</h3>
+              <div className={styles.liveSupport}>
+                <div className={styles.onlineIndicator}></div>
+                <span>Hỗ trợ trực tuyến</span>
+              </div>
+            </div>
+            <nav className={styles.footerNav}>
+              <a href="#" className={styles.navLink}>
+                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                Hỗ trợ trực tuyến 24/7
+              </a>
+              <a href="#" className={styles.navLink}>
+                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+                Câu hỏi thường gặp (FAQ)
+              </a>
+              <a href="#" className={styles.navLink}>
+                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                Hướng dẫn mua hàng
+              </a>
+              <a href="#" className={styles.navLink}>
+                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+                Theo dõi đơn hàng
+              </a>
+              <a href="#" className={styles.navLink}>
+                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                Chính sách bảo hành
+              </a>
+            </nav>
+          </div>
+
+          {/* 📜 CHÍNH SÁCH - SMART POLICIES */}
+          <div className={styles.footerCard}>
+            <div className={styles.footerHeader}>
+              <div className={styles.footerIcon}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                </svg>
+              </div>
+              <h3>CHÍNH SÁCH</h3>
+            </div>
+            <nav className={styles.footerNav}>
+              <a href="#" className={styles.navLink}>
+                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                Chính sách bảo mật
+              </a>
+              <a href="#" className={styles.navLink}>
+                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>
+                Điều khoản sử dụng
+              </a>
+              <a href="#" className={styles.navLink}>
+                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+                Chính sách giao hàng
+              </a>
+              <a href="#" className={styles.navLink}>
+                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+                Chính sách đổi trả
+              </a>
+              <a href="#" className={styles.navLink}>
+                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/></svg>
+                Chính sách hoàn tiền
+              </a>
+              <a href="#" className={styles.navLink}>
+                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                Bảo mật thông tin
+              </a>
+            </nav>
+          </div>
+
+          {/* 📞 LIÊN HỆ & MẠNG XÃ HỘI - SMART CONTACT */}
+          <div className={styles.footerCard}>
+            <div className={styles.footerHeader}>
+              <div className={styles.footerIcon}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                </svg>
+              </div>
+              <h3>LIÊN HỆ & MẠNG XÃ HỘI</h3>
+              <div className={styles.quickContact}>
+                <button className={styles.quickCallBtn}>
+                  <svg width="16" height="16" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                  Gọi ngay
+                </button>
+                <button className={styles.chatBtn}>
+                  <svg width="16" height="16" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4v4c0 .55.45 1 1 1s1-.45 1-1v-4h2l4 4V4c0-1.1-.9-2-2-2zm0 14H6v-2h14v2z"/></svg>
+                  Chat trực tiếp
+                </button>
+              </div>
+            </div>
+
+            <div className={styles.contactInfo}>
+              <div className={styles.contactItem}>
+                <div className={styles.contactIcon}>
+                  <svg width="16" height="16" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                </div>
+                <div className={styles.contactDetails}>
+                  <strong>Hotline:</strong> 1900 1234
+                  <span className={styles.available}>Tư vấn miễn phí</span>
+                </div>
+              </div>
+              <div className={styles.contactItem}>
+                <div className={styles.contactIcon}>
+                  <svg width="16" height="16" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                </div>
+                <div className={styles.contactDetails}>
+                  <strong>Email:</strong> support@menbeauty.vn
+                  <span className={styles.responseTime}>Phản hồi trong 1h</span>
+                </div>
+              </div>
+              <div className={styles.contactItem}>
+                <div className={styles.contactIcon}>
+                  <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                </div>
+                <div className={styles.contactDetails}>
+                  <strong>Địa chỉ:</strong> 123 Đường ABC, Quận 1, TP.HCM
+                  <span className={styles.mapLink}>Xem bản đồ</span>
+                </div>
+              </div>
+              <div className={styles.contactItem}>
+                <div className={styles.contactIcon}>
+                  <svg width="16" height="16" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                </div>
+                <div className={styles.contactDetails}>
+                  <strong>Giờ làm việc:</strong> 8:00 - 22:00
+                  <span className={styles.days}>(T2 - CN)</span>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.socialSection}>
+              <h4>Kết nối với chúng tôi</h4>
+              <div className={styles.socialLinks}>
+                <a href="#" className={styles.socialLink} data-platform="facebook">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                  <span className={styles.followerCount}>15K</span>
+                </a>
+                <a href="#" className={styles.socialLink} data-platform="instagram">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                  </svg>
+                  <span className={styles.followerCount}>28K</span>
+                </a>
+                <a href="#" className={styles.socialLink} data-platform="youtube">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                  </svg>
+                  <span className={styles.followerCount}>52K</span>
+                </a>
+                <a href="#" className={styles.socialLink} data-platform="tiktok">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                  </svg>
+                  <span className={styles.followerCount}>89K</span>
+                </a>
+                <a href="#" className={styles.socialLink} data-platform="zalo">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                  <span className={styles.followerCount}>32K</span>
+                </a>
+                <a href="#" className={styles.socialLink} data-platform="telegram">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                  </svg>
+                  <span className={styles.followerCount}>12K</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 🚀 SMART FOOTER BOTTOM */}
+        <div className={styles.footerBottom}>
+          <div className={styles.footerBottomContent}>
+            <div className={styles.copyright}>
+              <p>&copy; 2025 Men Beauty Store - Chuyên gia chăm sóc da nam hàng đầu Việt Nam</p>
+              <p>Được tin tưởng bởi hơn 50,000 khách hàng</p>
+            </div>
+            
+            {/* 🎯 QUICK ACTION BUTTONS */}
+            <div className={styles.quickActions}>
+              <button className={styles.actionBtn} title="Chatbot AI">
+                <svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                AI Assistant
+              </button>
+              <button className={styles.actionBtn} title="Gọi ngay">
+                <svg width="18" height="18" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                Call Now
+              </button>
+              <button className={styles.actionBtn} title="Theo dõi đơn hàng">
+                <svg width="18" height="18" viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+                Track Order
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 🎆 FOOTER 4 CỘT CỰC ĐẸP */}
-      <div className={styles.footerContent}>
 
-  <div className={styles.footerSection}>
-    <h3>🏢 VỀ CHÚNG TÔI</h3>
-    <p>
-      Chúng tôi là cửa hàng hàng đầu chuyên cung cấp sản phẩm chăm sóc da nam chất lượng cao.
-    </p>
-    <nav>
-      <a href="#">📊 Lịch sử hình thành</a>
-      <a href="#">📋 Tầm nhìn & Sứ mệnh</a>
-      <a href="#">🏆 Giải thưởng & Chứng nhận</a>
-      <a href="#">💰 Thông tin tài chính</a>
-      <a href="#">📰 Tin tức & Sự kiện</a>
-    </nav>
-  </div>
-
-  <div className={styles.footerSection}>
-    <h3>👤 CHĂM SÓC KHÁCH HÀNG</h3>
-    <nav>
-      <a href="#">📞 Hỗ trợ trực tuyến 24/7</a>
-      <a href="#">❓ Câu hỏi thường gặp (FAQ)</a>
-      <a href="#">📝 Hướng dẫn mua hàng</a>
-      <a href="#">🚚 Hướng dẫn giao hàng</a>
-      <a href="#">🔄 Hướng dẫn đổi trả</a>
-      <a href="#">💳 Hướng dẫn thanh toán</a>
-      <a href="#">🎯 Kích hoạt bảo hành</a>
-    </nav>
-  </div>
-
-  <div className={styles.footerSection}>
-    <h3>📜 CHÍNH SÁCH</h3>
-    <nav>
-      <a href="#">🔒 Chính sách bảo mật</a>
-      <a href="#">📋 Điều khoản sử dụng</a>
-      <a href="#">🚚 Chính sách giao hàng</a>
-      <a href="#">🔄 Chính sách đổi trả</a>
-      <a href="#">💰 Chính sách hoàn tiền</a>
-      <a href="#">🎁 Chính sách khuyến mại</a>
-      <a href="#">🔐 Bảo mật thông tin</a>
-    </nav>
-  </div>
-
-  <div className={styles.footerSection}>
-    <h3>📞 LIÊN HỆ & MẠNG XÃ HỘI</h3>
-
-    <div className={styles.contactInfo}>
-      <div className={styles.contactItem}>
-        <span className={styles.contactIcon}>📞</span>
-        <span>Hotline: 1900 1234</span>
-      </div>
-      <div className={styles.contactItem}>
-        <span className={styles.contactIcon}>📧</span>
-        <span>support@menbeauty.vn</span>
-      </div>
-      <div className={styles.contactItem}>
-        <span className={styles.contactIcon}>📍</span>
-        <span>123 Đường ABC, Quận 1, TP.HCM</span>
-      </div>
-      <div className={styles.contactItem}>
-        <span className={styles.contactIcon}>⏰</span>
-        <span>8:00 - 22:00 (T2 - CN)</span>
-      </div>
-    </div>
-
-    <div className={styles.socialLinks}>
-      <a href="#" title="Facebook">🕵️</a>
-      <a href="#" title="Instagram">📷</a>
-      <a href="#" title="YouTube">🎥</a>
-      <a href="#" title="TikTok">🎵</a>
-      <a href="#" title="Zalo">💬</a>
-      <a href="#" title="Telegram">✈️</a>
-    </div>
-  </div>
-
-</div>
-
-<div className={styles.footerBottom}>
-  <p>&copy; 2025 Men Beauty Store - Chuyên gia chăm sóc da nam hàng đầu Việt Nam. Tất cả quyền được bảo lưu.</p>
-</div>
 
     </div>
   );

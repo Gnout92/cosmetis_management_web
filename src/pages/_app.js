@@ -35,7 +35,7 @@ function AppContent({ Component, pageProps }) {
   const { isAuthenticated, authUser, logout, loading } = useAuth();
   const [isRouting, setIsRouting] = useState(false);
 
-  // ✅ Hiển thị loading khi đổi trang
+
   useEffect(() => {
     const handleStart = () => setIsRouting(true);
     const handleComplete = () => setIsRouting(false);

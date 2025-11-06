@@ -31,22 +31,22 @@ export default function GioiThieu() {
   // Data
   const showcaseImages = [
     {
-      src: "/images/banners/banner2.jpg",
+      src: "/images/banners/store1.jpg",
       alt: 'Cửa hàng KaKa',
       title: 'Không gian cửa hàng sang trọng'
     },
     {
-      src: "/images/banners/banner3.jpg",
+      src: "/images/banners/store2.jpg",
       alt: 'Bộ sưu tập sản phẩm',
       title: 'Bộ sưu tập sản phẩm đa dạng'
     },
     {
-      src: "/images/banners/banner1.jpg",
+      src: "/images/banners/store3.jpg",
       alt: 'Đội ngũ tư vấn',
       title: 'Đội ngũ tư vấn chuyên nghiệp'
     },
     {
-      src: "/images/banners/banner2.jpg",
+      src: "/images/banners/store4.jpg",
       alt: 'Phòng lab nghiên cứu',
       title: 'Phòng lab nghiên cứu hiện đại'
     }

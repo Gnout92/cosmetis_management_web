@@ -1,0 +1,50 @@
+python -m pip install pandas
+
+python -m pip instal upgrade pip
+
+Insert C:\Python27 into Path
+
+#Code example
+
+import pandas as pd
+import numpy as np
+import os
+
+from sklearn.datasets import load_iris
+from sklearn import tree
+
+X, y = load_iris(return_X_y=True)
+
+clf = tree.DecisionTreeClassifier()
+clf = clf.fit(X, y)
+
+# xuat model cay ra hinh
+import graphviz 
+from graphviz import Source
+dot_data = tree.export_graphviz(clf, out_file=None)
+graph = graphviz.Source(dot_data) 
+graph.render("dtree",view = True)
+
+
+# load dataset from csv file 
+data = pd.read_csv('weather.csv')
+data.head()
+
+// chuyen kieu DL tu string sang numeric
+from sklearn.preprocessing import LabelEncoder
+le = LabelEncoder()
+
+pro_data = data[data.columns[:]].apply(le.fit_transform)
+pro_data.head()
+
+y = pro_data['play']
+X = pro_data.ix[:, "outlook":"windy"]
+
+clf = tree.DecisionTreeClassifier()
+clf = clf.fit(X, y)
+
+
+
+
+
+
