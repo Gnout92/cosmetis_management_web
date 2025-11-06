@@ -488,6 +488,7 @@
 .productInfo {
   padding: 1.5rem;
 }
+<<<<<<< HEAD
 
 .productName {
   color: #333;
@@ -512,6 +513,8 @@
   overflow: hidden;
 }
 
+=======
+>>>>>>> 0335645dc3fce2063f89103c4bf6c1c3d096139a
 /* ⭐ PRODUCT RATING */
 .productRating {
   display: flex;

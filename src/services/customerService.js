@@ -1,65 +1,42 @@
-// src/services/customerService.js
-import { connect } from "@/lib/db";
+//src/services/customerSevice: 
+import { query } from "@/lib/database/db";
+import { TABLES, COLUMNS, selectList, toDbPayload } from "@/lib/database/schema";
 
-/**
- * Lấy danh sách tất cả khách hàng
- */
+const MAP = COLUMNS.customers;
+const TABLE = TABLES.CUSTOMERS;
+
 export async function getAllCustomers() {
-  const connection = await connect();
-  const [rows] = await connection.query("SELECT * FROM customers");
-  await connection.end();
-  return rows;
+  const rows = await query(`SELECT ${selectList(MAP)} FROM ${TABLE}`);
+  return rows; // đã AS theo app field (name,email,phone…)
 }
 
-/**
- * Lấy thông tin khách hàng theo ID
- * @param {number} id - ID của khách hàng
- */
 export async function getCustomerById(id) {
-  const connection = await connect();
-  const [rows] = await connection.query("SELECT * FROM customers WHERE id = ?", [id]);
-  await connection.end();
-  return rows[0];
+  const [row] = await query(`SELECT ${selectList(MAP)} FROM ${TABLE} WHERE ${MAP.id} = ?`, [id]);
+  return row || null;
 }
 
-/**
- * Thêm khách hàng mới
- * @param {object} customer - thông tin khách hàng
- */
 export async function addCustomer(customer) {
-  const connection = await connect();
-  const { name, email, phone } = customer;
-  const [result] = await connection.query(
-    "INSERT INTO customers (name, email, phone) VALUES (?, ?, ?)",
-    [name, email, phone]
-  );
-  await connection.end();
+  // customer: { name, email, phone, password? }
+  const payload = toDbPayload(customer, MAP); // -> { HoVaTen, Email, DienThoai, MatKhau? }
+  const cols = Object.keys(payload);
+  const vals = Object.values(payload);
+  const placeholders = cols.map(() => "?").join(", ");
+
+  const sql = `INSERT INTO ${TABLE} (${cols.join(", ")}) VALUES (${placeholders})`;
+  const result = await query(sql, vals);
   return result.insertId;
 }
 
-/**
- * Cập nhật thông tin khách hàng
- * @param {number} id - ID khách hàng
- * @param {object} customer - dữ liệu cập nhật
- */
 export async function updateCustomer(id, customer) {
-  const connection = await connect();
-  const { name, email, phone } = customer;
-  const [result] = await connection.query(
-    "UPDATE customers SET name = ?, email = ?, phone = ? WHERE id = ?",
-    [name, email, phone, id]
-  );
-  await connection.end();
+  const payload = toDbPayload(customer, MAP);
+  const sets = Object.keys(payload).map((c) => `${c} = ?`).join(", ");
+  const vals = Object.values(payload);
+  const sql = `UPDATE ${TABLE} SET ${sets} WHERE ${MAP.id} = ?`;
+  const result = await query(sql, [...vals, id]);
   return result.affectedRows;
 }
 
-/**
- * Xóa khách hàng theo ID
- * @param {number} id - ID khách hàng
- */
 export async function deleteCustomer(id) {
-  const connection = await connect();
-  const [result] = await connection.query("DELETE FROM customers WHERE id = ?", [id]);
-  await connection.end();
+  const result = await query(`DELETE FROM ${TABLE} WHERE ${MAP.id} = ?`, [id]);
   return result.affectedRows;
 }

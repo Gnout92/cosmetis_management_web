@@ -1,3 +1,4 @@
+// src/pages/index.js
 import { useEffect, useState } from "react";
 import styles from '../styles/Home.module.css';
 import { useAuth } from "../context/AuthContext";
@@ -19,6 +20,11 @@ import {
   MdSecurity,
   MdCall
 } from 'react-icons/md';
+
+const handleAccountClick = () => {
+  router.push("/account");
+};
+
 
 export default function HomePage() {
   // const [authUser, setAuthUser] = useState(null);

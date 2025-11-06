@@ -1,68 +1,97 @@
-// pages/_app.js
-import '../styles/globals.css';
+// src/pages/_app.js
+import "../styles/globals.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import Head from 'next/head';
-import React from 'react';
-import { AuthProvider, useAuth } from '../context/AuthContext';
 
-function LoadingSpinner() {
+import React, { useEffect, useState } from "react";
+import Head from "next/head";
+import { useRouter } from "next/router";
+
+import MainLayout from "../layouts/MainLayout";
+import { AuthProvider, useAuth } from "../context/AuthContext";
+
+function LoadingOverlay() {
   return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-      backgroundColor: 'rgba(255,255,255,0.9)', display: 'flex',
-      alignItems: 'center', justifyContent: 'center', flexDirection: 'column'
-    }}>
-      <div style={{
-        width: '60px', height: '60px', border: '5px solid #ccc',
-        borderTop: '5px solid #3b82f6', borderRadius: '50%',
-        animation: 'spin 1s linear infinite'
-      }} />
-      <p>Đang tải...</p>
-      <style jsx>{`
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        backgroundColor: "rgba(255,255,255,0.9)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "column",
+        zIndex: 9999,
+      }}
+    >
+      <div
+        style={{
+          width: 60,
+          height: 60,
+          border: "5px solid #ccc",
+          borderTop: "5px solid #3b82f6",
+          borderRadius: "50%",
+          animation: "spin 1s linear infinite",
+        }}
+      />
+      <p style={{ marginTop: 12 }}>Đang tải...</p>
+
+      <style jsx global>{`
         @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
         }
       `}</style>
     </div>
   );
 }
 
+// Phần AppContent chạy BÊN TRONG AuthProvider, nên có thể gọi useAuth()
 function AppContent({ Component, pageProps }) {
   const router = useRouter();
-  const { isAuthenticated, authUser, logout, loading } = useAuth();
+  const { loading } = useAuth(); // giờ chắc chắn có
   const [isRouting, setIsRouting] = useState(false);
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 0335645dc3fce2063f89103c4bf6c1c3d096139a
   useEffect(() => {
     const handleStart = () => setIsRouting(true);
-    const handleComplete = () => setIsRouting(false);
+    const handleDone = () => setIsRouting(false);
+
     router.events.on("routeChangeStart", handleStart);
-    router.events.on("routeChangeComplete", handleComplete);
-    router.events.on("routeChangeError", handleComplete);
+    router.events.on("routeChangeComplete", handleDone);
+    router.events.on("routeChangeError", handleDone);
+
     return () => {
       router.events.off("routeChangeStart", handleStart);
-      router.events.off("routeChangeComplete", handleComplete);
-      router.events.off("routeChangeError", handleComplete);
+      router.events.off("routeChangeComplete", handleDone);
+      router.events.off("routeChangeError", handleDone);
     };
-  }, [router]);
+  }, [router.events]);
 
-  if (loading || isRouting) return <LoadingSpinner />;
+  const showBusy = loading || isRouting;
+  if (showBusy) return <LoadingOverlay />;
 
-  return (
-    <Component {...pageProps} user={authUser} onLogout={logout} />
-  );
+  // hỗ trợ per-page layout, fallback MainLayout
+  const getLayout = Component.getLayout || ((page) => <MainLayout>{page}</MainLayout>);
+
+  return getLayout(<Component {...pageProps} />);
 }
 
-export default function MyApp(props) {
+export default function MyApp({ Component, pageProps }) {
   return (
     <AuthProvider>
       <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>KaKa Cosmetics</title>
       </Head>
-      <AppContent {...props} />
+
+      <AppContent Component={Component} pageProps={pageProps} />
     </AuthProvider>
   );
 }

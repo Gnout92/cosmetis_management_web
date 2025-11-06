@@ -1,65 +1,42 @@
-// src/services/productService.js
-import { connect } from "@/lib/db";
+//src/services/productService:
+import { query } from "@/lib/database/db";
+import { TABLES, COLUMNS, selectList, toDbPayload } from "@/lib/database/schema";
 
-/**
- * Lấy tất cả sản phẩm
- */
+const MAP = COLUMNS.products;
+const TABLE = TABLES.PRODUCTS;
+
 export async function getAllProducts() {
-  const connection = await connect();
-  const [rows] = await connection.query("SELECT * FROM products");
-  await connection.end();
-  return rows;
+  return query(`SELECT ${selectList(MAP)} FROM ${TABLE}`);
 }
 
-/**
- * Lấy sản phẩm theo ID
- * @param {number} id - ID sản phẩm
- */
 export async function getProductById(id) {
-  const connection = await connect();
-  const [rows] = await connection.query("SELECT * FROM products WHERE id = ?", [id]);
-  await connection.end();
-  return rows[0];
+  const [row] = await query(`SELECT ${selectList(MAP)} FROM ${TABLE} WHERE ${MAP.id} = ?`, [id]);
+  return row || null;
 }
 
-/**
- * Thêm sản phẩm mới
- * @param {object} product - thông tin sản phẩm
- */
 export async function addProduct(product) {
-  const connection = await connect();
-  const { name, price, image, inStock, discount } = product;
-  const [result] = await connection.query(
-    "INSERT INTO products (name, price, image, inStock, discount) VALUES (?, ?, ?, ?, ?)",
-    [name, price, image, inStock ? 1 : 0, discount || null]
-  );
-  await connection.end();
-  return result.insertId;
+  const payload = toDbPayload(product, MAP);
+  const cols = Object.keys(payload);
+  const vals = Object.values(payload);
+  const sql = `INSERT INTO ${TABLE} (${cols.join(", ")}) VALUES (${cols.map(() => "?").join(", ")})`;
+  const result = await query(sql, vals);
+  
+  return { id: result.insertId };
+
+
 }
 
-/**
- * Cập nhật sản phẩm
- * @param {number} id - ID sản phẩm
- * @param {object} product - dữ liệu cập nhật
- */
 export async function updateProduct(id, product) {
-  const connection = await connect();
-  const { name, price, image, inStock, discount } = product;
-  const [result] = await connection.query(
-    "UPDATE products SET name = ?, price = ?, image = ?, inStock = ?, discount = ? WHERE id = ?",
-    [name, price, image, inStock ? 1 : 0, discount || null, id]
+  const payload = toDbPayload(product, MAP);
+  const sets = Object.keys(payload).map((c) => `${c} = ?`).join(", ");
+  const result = await query(
+    `UPDATE ${TABLE} SET ${sets} WHERE ${MAP.id} = ?`,
+    [...Object.values(payload), id]
   );
-  await connection.end();
   return result.affectedRows;
 }
 
-/**
- * Xóa sản phẩm theo ID
- * @param {number} id - ID sản phẩm
- */
 export async function deleteProduct(id) {
-  const connection = await connect();
-  const [result] = await connection.query("DELETE FROM products WHERE id = ?", [id]);
-  await connection.end();
+  const result = await query(`DELETE FROM ${TABLE} WHERE ${MAP.id} = ?`, [id]);
   return result.affectedRows;
 }

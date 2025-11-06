@@ -1,65 +1,38 @@
-// src/services/employeeService.js
-import { connect } from "@/lib/db";
+//src/services/employeeService: 
+import { query } from "@/lib/database/db";
+import { TABLES, COLUMNS, selectList, toDbPayload } from "@/lib/database/schema";
 
-/**
- * Lấy danh sách tất cả nhân viên
- */
+const MAP = COLUMNS.employees;
+const TABLE = TABLES.EMPLOYEES;
+
 export async function getAllEmployees() {
-  const connection = await connect();
-  const [rows] = await connection.query("SELECT * FROM employees");
-  await connection.end();
-  return rows;
+  return query(`SELECT ${selectList(MAP)} FROM ${TABLE}`);
 }
 
-/**
- * Lấy thông tin nhân viên theo ID
- * @param {number} id - ID của nhân viên
- */
 export async function getEmployeeById(id) {
-  const connection = await connect();
-  const [rows] = await connection.query("SELECT * FROM employees WHERE id = ?", [id]);
-  await connection.end();
-  return rows[0];
+  const [row] = await query(`SELECT ${selectList(MAP)} FROM ${TABLE} WHERE ${MAP.id} = ?`, [id]);
+  return row || null;
 }
 
-/**
- * Thêm nhân viên mới
- * @param {object} employee - thông tin nhân viên
- */
 export async function addEmployee(employee) {
-  const connection = await connect();
-  const { name, email, phone, position } = employee;
-  const [result] = await connection.query(
-    "INSERT INTO employees (name, email, phone, position) VALUES (?, ?, ?, ?)",
-    [name, email, phone, position]
-  );
-  await connection.end();
+  // { name, email, phone, position, password? }
+  const payload = toDbPayload(employee, MAP);
+  const cols = Object.keys(payload);
+  const vals = Object.values(payload);
+  const sql = `INSERT INTO ${TABLE} (${cols.join(", ")}) VALUES (${cols.map(() => "?").join(", ")})`;
+  const result = await query(sql, vals);
   return result.insertId;
 }
 
-/**
- * Cập nhật thông tin nhân viên
- * @param {number} id - ID nhân viên
- * @param {object} employee - dữ liệu cập nhật
- */
 export async function updateEmployee(id, employee) {
-  const connection = await connect();
-  const { name, email, phone, position } = employee;
-  const [result] = await connection.query(
-    "UPDATE employees SET name = ?, email = ?, phone = ?, position = ? WHERE id = ?",
-    [name, email, phone, position, id]
-  );
-  await connection.end();
+  const payload = toDbPayload(employee, MAP);
+  const sets = Object.keys(payload).map((c) => `${c} = ?`).join(", ");
+  const sql = `UPDATE ${TABLE} SET ${sets} WHERE ${MAP.id} = ?`;
+  const result = await query(sql, [...Object.values(payload), id]);
   return result.affectedRows;
 }
 
-/**
- * Xóa nhân viên theo ID
- * @param {number} id - ID nhân viên
- */
 export async function deleteEmployee(id) {
-  const connection = await connect();
-  const [result] = await connection.query("DELETE FROM employees WHERE id = ?", [id]);
-  await connection.end();
+  const result = await query(`DELETE FROM ${TABLE} WHERE ${MAP.id} = ?`, [id]);
   return result.affectedRows;
 }

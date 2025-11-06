@@ -1,0 +1,22 @@
+
+
+
+   ---------------------------------------------------------------------------------------------------------------// src/lib/database/schemas.js
+- có đoạn định nghĩa tên các bảng/collection
+- Khi truy vấn db, dùng TABLE.USERS, TABLE.ORDERS,..thay vì viết trực tiếp tên bảng
+- Nếu sau này muốn đổi tên bảng, chỉ cần sửa ở TABLE 
+
+//shemas.js: là mô hình miền (domain model) tổng quát kiểu “User/Product/Order/Notification” với field tiếng Anh. Nó không gắn cứng vào DB nào; dùng để mô tả cấu trúc dữ liệu mong muốn trong ứng dụng (
+    có thể dùng làm tài liệu, type, validator…).
+
+//shema.js: là bản đồ ánh xạ (adapter) tới DB tiếng Việt
+Nó chứa:
+    TABLES: tên bảng thật trong MySQL (KhachHang, NhanVien, …)
+
+    COLUMNS: map app field → cột DB (vd name → HoVaTen)
+
+    helper selectList / toDbPayload / toAppRow để service viết SQL ngắn và không phải đổi form cũ.
+
+//sale-services: 
+- bảng  giả định sale
+    Dịch từ bảng giả định sale(TA) - 1 dòng = 1 giao dịch sang schema thật_ HoaDon (header) + ChiTietHoaDon (items)
