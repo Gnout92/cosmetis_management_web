@@ -1,20 +1,24 @@
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import styles from '../styles/Home.module.css';
 import { useAuth } from "../context/AuthContext";
 import Link from "next/link";
-
+import Image from "next/image";
 import { useRouter } from "next/router";
 import { 
-  HiHome, 
-  HiInformationCircle, 
-  HiCube, 
-  HiShoppingBag, 
-  HiShoppingCart, 
-  HiShieldCheck, 
-  HiChatAlt2, 
-  HiUser 
-} from 'react-icons/hi';
+  MdHome,
+  MdInfo,
+  MdCategory,
+  MdStore,
+  MdShoppingCart,
+  MdVerified,
+  MdSupport,
+  MdAccountCircle,
+  MdSearch,
+  MdExpandMore,
+  MdLocalShipping,
+  MdSecurity,
+  MdCall
+} from 'react-icons/md';
 
 export default function HomePage() {
   // const [authUser, setAuthUser] = useState(null);
@@ -24,6 +28,8 @@ export default function HomePage() {
   const [wishlistItems, setWishlistItems] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [countdown, setCountdown] = useState({ hours: '23', minutes: '59', seconds: '59' });
   const router = useRouter();
 
@@ -82,11 +88,15 @@ export default function HomePage() {
       });
     }, 1000);
 
+    // Auto-slide banner carousel
+    const bannerInterval = setInterval(nextBanner, 5000); // Chuyển banner mỗi 5 giây
+
     // Cleanup
     return () => {
       window.removeEventListener('scroll', handleScroll);
       observer.disconnect();
       clearInterval(timer);
+      clearInterval(bannerInterval);
     };
   }, []);
   
@@ -98,7 +108,7 @@ export default function HomePage() {
 
   // Enhanced search functionality
   const handleSearch = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (searchQuery.trim()) {
       // Smooth scroll to top before navigation
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -106,6 +116,19 @@ export default function HomePage() {
         router.push(`/tim-kiem?q=${encodeURIComponent(searchQuery.trim())}`);
       }, 300);
     }
+  };
+
+  // Banner carousel functionality
+  const nextBanner = () => {
+    setCurrentBannerIndex((prev) => (prev + 1) % 3);
+  };
+
+  const prevBanner = () => {
+    setCurrentBannerIndex((prev) => (prev - 1 + 3) % 3);
+  };
+
+  const goToBanner = (index) => {
+    setCurrentBannerIndex(index);
   };
 
   // Newsletter subscription handler
@@ -552,35 +575,82 @@ const moreNewsEvents= [
 
   return (
     <div className={styles.container}>
+      {/* Banner nhỏ phía trên thanh chức năng */}
+      <div className={styles.smallBanner}>
+        <div className={styles.smallBannerContent}>
+          <span className={styles.bannerText}>🎉 Ưu đãi đặc biệt: Giảm 50% cho đơn hàng đầu tiên!</span>
+          <Link href="/khuyen-mai" className={styles.bannerButton}>
+            Xem ngay
+          </Link>
+        </div>
+      </div>
+      
       {/* Beautiful Navigation - Căn giữa và làm đẹp */}
       <nav className={`${styles.navigation} ${isScrolled ? styles.scrolled : ''}`}>
       <div className={styles.navContainer}>
         <Link href="/" className={`${styles.navLink} pro-nav-item`}>
-          <span className="nav-icon"><HiHome /></span>
+          <span className="nav-icon"><MdHome /></span>
           <span className="nav-text">Trang chính</span>
         </Link>
         <Link href="/gioithieu" className={`${styles.navLink} pro-nav-item`}>
-          <span className="nav-icon"><HiInformationCircle /></span>
+          <span className="nav-icon"><MdInfo /></span>
           <span className="nav-text">Giới thiệu</span>
         </Link>
-        <Link href="/danhmucSP" className={`${styles.navLink} pro-nav-item`}>
-          <span className="nav-icon"><HiCube /></span>
-          <span className="nav-text">Danh mục sản phẩm</span>
-        </Link>
+        <div className={styles.navDropdown}>
+          <button 
+            className={`${styles.navLink} ${styles.dropdownToggle}`}
+            onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+          >
+            <span className="nav-icon"><MdCategory /></span>
+            <span className="nav-text">Danh mục sản phẩm</span>
+            <MdExpandMore className={`${styles.dropdownIcon} ${isCategoryOpen ? styles.rotate : ''}`} />
+          </button>
+          {isCategoryOpen && (
+            <div className={styles.dropdownMenu}>
+              <Link href="/category/skincare" className={styles.dropdownItem}>Chăm sóc da</Link>
+              <Link href="/category/makeup" className={styles.dropdownItem}>Trang điểm</Link>
+              <Link href="/category/haircare" className={styles.dropdownItem}>Chăm sóc tóc</Link>
+              <Link href="/category/bodycare" className={styles.dropdownItem}>Chăm sóc cơ thể</Link>
+              <Link href="/category/fragrance" className={styles.dropdownItem}>Nước hoa</Link>
+            </div>
+          )}
+        </div>
+        
+        {/* Khung tìm kiếm sản phẩm */}
+        <div className={styles.searchBox}>
+          <div className={styles.searchInputContainer}>
+            <MdSearch className={styles.searchIcon} />
+            <input
+              type="text"
+              placeholder="Tìm kiếm sản phẩm..."
+              className={styles.searchInput}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+            />
+            <button 
+              className={styles.searchButton}
+              onClick={handleSearch}
+            >
+              Tìm
+            </button>
+          </div>
+        </div>
+        
         <Link href="/cuahang" className={`${styles.navLink} pro-nav-item`}>
-          <span className="nav-icon"><HiShoppingBag /></span>
+          <span className="nav-icon"><MdStore /></span>
           <span className="nav-text">Cửa hàng</span>
         </Link>
         <Link href="/giohang" className={`${styles.navLink} pro-nav-item`}>
-          <span className="nav-icon"><HiShoppingCart /></span>
+          <span className="nav-icon"><MdShoppingCart /></span>
           <span className="nav-text">Giỏ hàng</span>
         </Link>
         <Link href="/baohanh" className={`${styles.navLink} pro-nav-item`}>
-          <span className="nav-icon"><HiShieldCheck /></span>
+          <span className="nav-icon"><MdVerified /></span>
           <span className="nav-text">Bảo hành</span>
         </Link>
         <Link href="/hotroKH" className={`${styles.navLink} pro-nav-item`}>
-          <span className="nav-icon"><HiChatAlt2 /></span>
+          <span className="nav-icon"><MdSupport /></span>
           <span className="nav-text">Hỗ trợ KH</span>
         </Link>
 
@@ -606,7 +676,7 @@ const moreNewsEvents= [
             </div>
           ) : (
             <Link href="/login" className={`${styles.navLink} pro-nav-item`}>
-              <span className="nav-icon"><HiUser /></span>
+              <span className="nav-icon"><MdAccountCircle /></span>
               <span className="nav-text">Tài khoản</span>
             </Link>
           )}
@@ -614,17 +684,64 @@ const moreNewsEvents= [
       </div>
     </nav>
 
-      {/* Simple Banner Section - Đã bỏ layout phức tạp */}
-      <div className={styles.bannerSection}>
-        <Image
-          src="/images/banners/banner1.jpg"
-          alt="Main Beauty Banner"
-          width={2000}
-          height={900}
-          className={styles.bannerImage}
-          priority
-        />
+      {/* Carousel Banner Section - 3 banner tự động chuyển */}
+      <div className={styles.bannerCarousel}>
+        <div className={styles.bannerSlides}>
+          {/* Banner 1 */}
+          <div className={`${styles.bannerSlide} ${currentBannerIndex === 0 ? styles.active : ''}`}>
+            <div className={styles.bannerImage1}></div>
+            <div className={styles.bannerOverlay}>
+              <h2 className={styles.bannerTitle}>Sản phẩm làm đẹp hàng đầu</h2>
+              <p className={styles.bannerSubtitle}>Khám phá bộ sưu tập mới nhất với ưu đãi đặc biệt</p>
+              <Link href="/san-pham-moi" className={styles.bannerCta}>
+                Khám phá ngay
+              </Link>
+            </div>
+          </div>
+          
+          {/* Banner 2 */}
+          <div className={`${styles.bannerSlide} ${currentBannerIndex === 1 ? styles.active : ''}`}>
+            <div className={styles.bannerImage2}></div>
+            <div className={styles.bannerOverlay}>
+              <h2 className={styles.bannerTitle}>Chăm sóc da chuyên nghiệp</h2>
+              <p className={styles.bannerSubtitle}>Giải pháp hoàn hảo cho làn da khỏe mạnh và rạng rỡ</p>
+              <Link href="/cham-soc-da" className={styles.bannerCta}>
+                Tìm hiểu thêm
+              </Link>
+            </div>
+          </div>
+          
+          {/* Banner 3 */}
+          <div className={`${styles.bannerSlide} ${currentBannerIndex === 2 ? styles.active : ''}`}>
+            <div className={styles.bannerImage3}></div>
+            <div className={styles.bannerOverlay}>
+              <h2 className={styles.bannerTitle}>Ưu đãi đặc biệt tháng này</h2>
+              <p className={styles.bannerSubtitle}>Giảm đến 70% cho các sản phẩm bán chạy nhất</p>
+              <Link href="/khuyen-mai" className={styles.bannerCta}>
+                Mua ngay
+              </Link>
+            </div>
+          </div>
+        </div>
         
+        {/* Carousel Controls */}
+        <button className={styles.bannerPrev} onClick={prevBanner}>
+          ‹
+        </button>
+        <button className={styles.bannerNext} onClick={nextBanner}>
+          ›
+        </button>
+        
+        {/* Carousel Indicators */}
+        <div className={styles.bannerIndicators}>
+          {[0, 1, 2].map((index) => (
+            <button
+              key={index}
+              className={`${styles.indicator} ${currentBannerIndex === index ? styles.active : ''}`}
+              onClick={() => goToBanner(index)}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Mã khuyến mại Section */}
