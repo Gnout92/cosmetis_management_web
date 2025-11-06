@@ -55,17 +55,9 @@ function AppContent({ Component, pageProps }) {
   const { loading } = useAuth(); // giờ chắc chắn có
   const [isRouting, setIsRouting] = useState(false);
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 0335645dc3fce2063f89103c4bf6c1c3d096139a
   useEffect(() => {
     const handleStart = () => setIsRouting(true);
     const handleDone = () => setIsRouting(false);
-
-    router.events.on("routeChangeStart", handleStart);
-    router.events.on("routeChangeComplete", handleDone);
-    router.events.on("routeChangeError", handleDone);
 
     return () => {
       router.events.off("routeChangeStart", handleStart);
