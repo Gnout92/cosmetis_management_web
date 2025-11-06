@@ -1,4 +1,7 @@
-// src/lib/database/schemas.js
+
+
+
+   ---------------------------------------------------------------------------------------------------------------// src/lib/database/schemas.js
 - có đoạn định nghĩa tên các bảng/collection
 - Khi truy vấn db, dùng TABLE.USERS, TABLE.ORDERS,..thay vì viết trực tiếp tên bảng
 - Nếu sau này muốn đổi tên bảng, chỉ cần sửa ở TABLE 
@@ -17,5 +20,3 @@ Nó chứa:
 //sale-services: 
 - bảng  giả định sale
     Dịch từ bảng giả định sale(TA) - 1 dòng = 1 giao dịch sang schema thật_ HoaDon (header) + ChiTietHoaDon (items)
-
-   
