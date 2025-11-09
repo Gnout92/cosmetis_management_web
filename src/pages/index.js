@@ -15,7 +15,7 @@ import {
   MdSupport,
   MdAccountCircle,
   MdSearch,
-  MdExpandMore,
+  
   MdLocalShipping,
   MdSecurity,
   MdCall
@@ -34,7 +34,7 @@ export default function HomePage() {
   const [wishlistItems, setWishlistItems] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  // const [isCategoryOpen, setIsCategoryOpen] = useState(false); // Không cần thiết nữa - dropdown đã bị bỏ
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [countdown, setCountdown] = useState({ hours: '23', minutes: '59', seconds: '59' });
   const router = useRouter();
@@ -581,51 +581,113 @@ const moreNewsEvents= [
 
   return (
     <div className={styles.container}>
-      {/* Banner nhỏ phía trên thanh chức năng */}
-      <div className={styles.smallBanner}>
-        <div className={styles.smallBannerContent}>
-          <span className={styles.bannerText}>🎉 Ưu đãi đặc biệt: Giảm 50% cho đơn hàng đầu tiên!</span>
-          <Link href="/khuyen-mai" className={styles.bannerButton}>
-            Xem ngay
-          </Link>
+      {/* Banner nhỏ phía trên thanh chức năng - Nội dung phong phú */}
+      <div 
+        className={styles.newFlashSaleBanner} 
+        onClick={() => window.location.href = '/khuyen-mai'} 
+        style={{ cursor: 'pointer' }}
+      >
+        {/* Phần trái - Badge 100% CHÍNH HÃNG */}
+        <div className={styles.bannerLeftSection}>
+          <div className={styles.brandBadge}>
+            <span className={styles.brandText}>100%</span>
+            <span className={styles.authenticText}>CHÍNH HÃNG</span>
+          </div>
+        </div>
+        
+        {/* Phần giữa - Nội dung chính */}
+        <div className={styles.bannerCenterSection}>
+          <div className={styles.mainFlashSale}>
+            <span className={styles.fireIcon}></span>
+            <span className={styles.textMain}>FLASH SALE 0Đ – GIỜ VÀNG 0H–12H</span>
+            <span className={styles.fireIcon}></span>
+          </div>
+          <div className={styles.subPromoText}>
+            <span className={styles.explosionIcon}></span>
+            <span className={styles.textSub}>SIÊU SALE 7.11 – DEAL HOT TRONG NGÀY</span>
+            <span className={styles.explosionIcon}></span>
+          </div>
+        </div>
+        
+        {/* Phần phải - Sự kiện & Voucher */}
+        <div className={styles.bannerRightSection}>
+          <div className={styles.eventSection}>
+            <div className={styles.eventBadge}>
+              {/* <span className={styles.calendarIcon}></span> */}
+              <span>DUY NHẤT HÔM NAY - 7.11</span>
+            </div>
+            <div className={styles.voucherMini}>
+              {/* <span className={styles.ticketIcon}></span> */}
+              <span>THÊM MÃ GIẢM ĐẾN 30K</span>
+            </div>
+          </div>
         </div>
       </div>
       
       {/* Beautiful Navigation - Căn giữa và làm đẹp */}
       <nav className={`${styles.navigation} ${isScrolled ? styles.scrolled : ''}`}>
       <div className={styles.navContainer}>
+        {/* Logo KAKA SHOP riêng biệt */}
+        <div className={styles.logoSection}>
+          <div className={styles.logoContainer}>
+            <span className={styles.logoTextBackground}>
+              <span className={styles.logoText}>KAKA SHOP</span>
+            </span>
+          </div>
+        </div>
+        
         <Link href="/" className={`${styles.navLink} pro-nav-item`}>
-          <span className="nav-icon"><MdHome /></span>
+          <span className="nav-icon" style={{
+            color: '#FFFFFF',
+            background: '#FFFFFF',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '3rem',
+            height: '3rem',
+            fontSize: '2rem'
+          }}><MdHome /></span>
           <span className="nav-text">Trang chính</span>
         </Link>
         <Link href="/gioithieu" className={`${styles.navLink} pro-nav-item`}>
-          <span className="nav-icon"><MdInfo /></span>
+          <span className="nav-icon" style={{
+            color: '#FFFFFF',
+            background: '#FFFFFF',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '3rem',
+            height: '3rem',
+            fontSize: '2rem'
+          }}><MdInfo /></span>
           <span className="nav-text">Giới thiệu</span>
         </Link>
-        <div className={styles.navDropdown}>
-          <button 
-            className={`${styles.navLink} ${styles.dropdownToggle}`}
-            onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-          >
-            <span className="nav-icon"><MdCategory /></span>
-            <span className="nav-text">Danh mục sản phẩm</span>
-            <MdExpandMore className={`${styles.dropdownIcon} ${isCategoryOpen ? styles.rotate : ''}`} />
-          </button>
-          {isCategoryOpen && (
-            <div className={styles.dropdownMenu}>
-              <Link href="/category/skincare" className={styles.dropdownItem}>Chăm sóc da</Link>
-              <Link href="/category/makeup" className={styles.dropdownItem}>Trang điểm</Link>
-              <Link href="/category/haircare" className={styles.dropdownItem}>Chăm sóc tóc</Link>
-              <Link href="/category/bodycare" className={styles.dropdownItem}>Chăm sóc cơ thể</Link>
-              <Link href="/category/fragrance" className={styles.dropdownItem}>Nước hoa</Link>
-            </div>
-          )}
-        </div>
+        <Link href="/danhmucSP" className={`${styles.navLink} pro-nav-item`}>
+          <span className="nav-icon" style={{
+            color: '#FFFFFF',
+            background: '#FFFFFF',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '3rem',
+            height: '3rem',
+            fontSize: '2rem'
+          }}><MdCategory /></span>
+          <span className="nav-text">Danh mục sản phẩm</span>
+        </Link>
         
         {/* Khung tìm kiếm sản phẩm */}
         <div className={styles.searchBox}>
           <div className={styles.searchInputContainer}>
-            <MdSearch className={styles.searchIcon} />
+            <MdSearch 
+              style={{
+                color: '#FFFFFF'
+              }}
+              className={styles.searchIcon} 
+            />
             <input
               type="text"
               placeholder="Tìm kiếm sản phẩm..."
@@ -644,19 +706,59 @@ const moreNewsEvents= [
         </div>
         
         <Link href="/cuahang" className={`${styles.navLink} pro-nav-item`}>
-          <span className="nav-icon"><MdStore /></span>
+          <span className="nav-icon" style={{
+            color: '#FFFFFF',
+            background: '#FFFFFF',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '3rem',
+            height: '3rem',
+            fontSize: '2rem'
+          }}><MdStore /></span>
           <span className="nav-text">Cửa hàng</span>
         </Link>
         <Link href="/giohang" className={`${styles.navLink} pro-nav-item`}>
-          <span className="nav-icon"><MdShoppingCart /></span>
+          <span className="nav-icon" style={{
+            color: '#FFFFFF',
+            background: '#FFFFFF',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '3rem',
+            height: '3rem',
+            fontSize: '2rem'
+          }}><MdShoppingCart /></span>
           <span className="nav-text">Giỏ hàng</span>
         </Link>
         <Link href="/baohanh" className={`${styles.navLink} pro-nav-item`}>
-          <span className="nav-icon"><MdVerified /></span>
+          <span className="nav-icon" style={{
+            color: '#FFFFFF',
+            background: '#FFFFFF',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '3rem',
+            height: '3rem',
+            fontSize: '2rem'
+          }}><MdVerified /></span>
           <span className="nav-text">Bảo hành</span>
         </Link>
         <Link href="/hotroKH" className={`${styles.navLink} pro-nav-item`}>
-          <span className="nav-icon"><MdSupport /></span>
+          <span className="nav-icon" style={{
+            color: '#FFFFFF',
+            background: '#FFFFFF',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '3rem',
+            height: '3rem',
+            fontSize: '2rem'
+          }}><MdSupport /></span>
           <span className="nav-text">Hỗ trợ KH</span>
         </Link>
 
@@ -682,7 +784,17 @@ const moreNewsEvents= [
             </div>
           ) : (
             <Link href="/login" className={`${styles.navLink} pro-nav-item`}>
-              <span className="nav-icon"><MdAccountCircle /></span>
+              <span className="nav-icon" style={{
+                color: '#FFFFFF',
+                background: '#FFFFFF',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '3rem',
+                height: '3rem',
+                fontSize: '2rem'
+              }}><MdAccountCircle /></span>
               <span className="nav-text">Tài khoản</span>
             </Link>
           )}
@@ -695,38 +807,39 @@ const moreNewsEvents= [
         <div className={styles.bannerSlides}>
           {/* Banner 1 */}
           <div className={`${styles.bannerSlide} ${currentBannerIndex === 0 ? styles.active : ''}`}>
-            <div className={styles.bannerImage1}></div>
-            <div className={styles.bannerOverlay}>
-              <h2 className={styles.bannerTitle}>Sản phẩm làm đẹp hàng đầu</h2>
-              <p className={styles.bannerSubtitle}>Khám phá bộ sưu tập mới nhất với ưu đãi đặc biệt</p>
-              <Link href="/san-pham-moi" className={styles.bannerCta}>
-                Khám phá ngay
-              </Link>
-            </div>
+            <Image 
+              src="/images/banners/banner1.jpg" 
+              alt="Banner 1" 
+              fill 
+              className={styles.bannerImage1} 
+              style={{objectFit: 'cover'}} 
+              priority 
+            />
+           
           </div>
           
           {/* Banner 2 */}
           <div className={`${styles.bannerSlide} ${currentBannerIndex === 1 ? styles.active : ''}`}>
-            <div className={styles.bannerImage2}></div>
-            <div className={styles.bannerOverlay}>
-              <h2 className={styles.bannerTitle}>Chăm sóc da chuyên nghiệp</h2>
-              <p className={styles.bannerSubtitle}>Giải pháp hoàn hảo cho làn da khỏe mạnh và rạng rỡ</p>
-              <Link href="/cham-soc-da" className={styles.bannerCta}>
-                Tìm hiểu thêm
-              </Link>
-            </div>
+            <Image 
+              src="/images/banners/banner2.jpg" 
+              alt="Banner 2" 
+              fill 
+              className={styles.bannerImage2} 
+              style={{objectFit: 'cover'}} 
+            />
+            
           </div>
           
           {/* Banner 3 */}
           <div className={`${styles.bannerSlide} ${currentBannerIndex === 2 ? styles.active : ''}`}>
-            <div className={styles.bannerImage3}></div>
-            <div className={styles.bannerOverlay}>
-              <h2 className={styles.bannerTitle}>Ưu đãi đặc biệt tháng này</h2>
-              <p className={styles.bannerSubtitle}>Giảm đến 70% cho các sản phẩm bán chạy nhất</p>
-              <Link href="/khuyen-mai" className={styles.bannerCta}>
-                Mua ngay
-              </Link>
-            </div>
+            <Image 
+              src="/images/banners/banner3.jpg" 
+              alt="Banner 3" 
+              fill 
+              className={styles.bannerImage3} 
+              style={{objectFit: 'cover'}} 
+            />
+            
           </div>
         </div>
         

@@ -1,15 +1,8 @@
-// src/pages/index.js
-import { useEffect, useMemo, useState, useCallback } from "react";
-import Image from "next/image";
-import styles from "../styles/Home.module.css";
-import { useAuth } from "../context/AuthContext";
-import Link from "next/link";
-import { useRouter } from "next/router";
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import styles from '../styles/danhmucSP.module.css';
 
-<<<<<<< HEAD
-// Synchronized product data from the SQL database
-// Synchronized product data from the SQL database
-// Synchronized product data from the SQL database
 const products = [
   // 48 products exactly matching the SQL INSERT statements with proper category mapping
   { id: 1, name: 'Son môi đỏ Ruby', description: 'Son đỏ Ruby lâu trôi', categoryId: 1, categoryName: 'Son môi', price: 200000, originalPrice: 250000, stock: 50, image: "/images/banners/son.jpg", rating: 4.5, reviews: 120 },
@@ -61,364 +54,514 @@ const products = [
   { id: 47, name: 'Mặt nạ than hoạt tính', description: 'Làm sạch sâu', categoryId: 4, categoryName: 'Mặt nạ', price: 80000, originalPrice: 105000, stock: 60, image: "/images/banners/54.jpg", rating: 4.0, reviews: 187 },
   { id: 48, name: 'Nước hoa Lancome La Vie Est Belle', description: 'Hương nữ tính', categoryId: 3, categoryName: 'Dầu gội', price: 1200000, originalPrice: 1500000, stock: 20, image: "/images/banners/55.jpg", rating: 4.9, reviews: 278 }
 ];
-=======
-// fetcher đơn giản; có thể chuyển sang SWR sau
-async function fetchJson(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
-}
->>>>>>> 0335645dc3fce2063f89103c4bf6c1c3d096139a
 
-// fallback image nếu chưa có ảnh trong DB
-const FALLBACK_IMG = "/images/banners/placeholder.jpg";
+// Category mapping exactly matching the database
+const categories = {
+  1: 'Sữa rửa mặt',
+  2: 'Kem chống nắng', 
+  3: 'Dầu gội',
+  4: 'Mặt nạ',
+  5: 'Sữa tắm',
+  6: 'Kem dưỡng ẩm',
+  7: 'Xịt khoáng',
+  8: 'Toner'
+};
 
-// helpers nhỏ
-const fmt = (v) =>
-  typeof v === "number"
-    ? new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(v)
-    : v;
-
-export default function HomePage() {
-  const { authUser, isAuthenticated, logout } = useAuth();
-  const [cartItems, setCartItems] = useState(0);
-  const [wishlistItems, setWishlistItems] = useState(0);
-  const [searchQuery, setSearchQuery] = useState("");
+export default function DanhMucSP() {
+  const [filteredProducts, setFilteredProducts] = useState(products);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [priceFilter, setPriceFilter] = useState('');
+  const [stockFilter, setStockFilter] = useState('');
+  const [sortBy, setSortBy] = useState('name-asc');
+  const [currentView, setCurrentView] = useState('grid');
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState("");
-  const [products, setProducts] = useState([]); // lấy từ API
-  const router = useRouter();
 
-  // load products từ API thật
+
   useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        setLoading(true);
-        setErr("");
-        // lấy 15 sp nổi bật đầu tiên (tuỳ DB của bạn)
-        const data = await fetchJson(`/api/products?page=1&pageSize=15`);
-        if (!mounted) return;
-        setProducts(Array.isArray(data?.data) ? data.data : []);
-      } catch (e) {
-        if (!mounted) return;
-        setErr("Không tải được danh sách sản phẩm. Vui lòng thử lại.");
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    })();
-
-    // giả lập cart/wishlist (tạm)
-    setCartItems(Math.floor(Math.random() * 5));
-    setWishlistItems(Math.floor(Math.random() * 8));
-
-    return () => {
-      mounted = false;
-    };
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
   }, []);
 
-  const handleSearch = useCallback(
-    (e) => {
-      e.preventDefault();
-      if (searchQuery.trim()) {
-        // NOTE: nếu trang của bạn là /timkiem.js thì đổi thành '/timkiem'
-        router.push(`/timkiem?q=${encodeURIComponent(searchQuery.trim())}`);
+  // Apply filters whenever filter criteria change
+  useEffect(() => {
+    let filtered = [...products];
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(product => 
+        product.name.toLowerCase().includes(query) ||
+        product.description.toLowerCase().includes(query) ||
+        product.categoryName.toLowerCase().includes(query)
+      );
+    }
+
+    // Category filter
+    if (selectedCategory) {
+      filtered = filtered.filter(product => 
+        product.categoryId.toString() === selectedCategory
+      );
+    }
+
+    // Price filter
+    if (priceFilter) {
+      const [min, max] = priceFilter.split('-').map(Number);
+      filtered = filtered.filter(product => 
+        product.price >= min && product.price <= max
+      );
+    }
+
+    // Stock filter
+    if (stockFilter) {
+      switch (stockFilter) {
+        case 'in-stock':
+          filtered = filtered.filter(product => product.stock > 10);
+          break;
+        case 'low-stock':
+          filtered = filtered.filter(product => product.stock > 0 && product.stock <= 10);
+          break;
+        case 'out-of-stock':
+          filtered = filtered.filter(product => product.stock === 0);
+          break;
       }
-    },
-    [router, searchQuery]
-  );
+    }
 
-  const handleSearchKeyDown = (e) => {
-    if (e.key === "Enter") handleSearch(e);
+    // Sort
+    switch (sortBy) {
+      case 'name-asc':
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case 'name-desc':
+        filtered.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case 'price-asc':
+        filtered.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-desc':
+        filtered.sort((a, b) => b.price - a.price);
+        break;
+      case 'stock-desc':
+        filtered.sort((a, b) => b.stock - a.stock);
+        break;
+      default:
+        break;
+    }
+
+    setFilteredProducts(filtered);
+  }, [searchQuery, selectedCategory, priceFilter, stockFilter, sortBy]);
+
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(price);
   };
 
-  // tránh dùng document.querySelector, animate dựa trên state
-  const [pulseIds, setPulseIds] = useState(new Set());
-  const pulseClass = (id) => (pulseIds.has(id) ? styles.pulse : "");
-  const addToCart = (productId) => {
-    setCartItems((prev) => prev + 1);
-    setPulseIds((s) => new Set([...s, productId]));
-    setTimeout(() => {
-      setPulseIds((s) => {
-        const n = new Set(s);
-        n.delete(productId);
-        return n;
-      });
-    }, 250);
+  const getDiscountPercent = (original, current) => {
+    if (!original || original <= current) return 0;
+    return Math.round(((original - current) / original) * 100);
   };
 
-  const addToWishlist = (productId) => {
-    setWishlistItems((prev) => prev + 1);
+  const getStockStatus = (stock) => {
+    if (stock === 0) {
+      return <span className={styles.outOfStock}>❌ Hết hàng</span>;
+    }
+    if (stock < 10) {
+      return <span className={styles.lowStock}>⚠️ Còn {stock} sản phẩm</span>;
+    }
+    return <span className={styles.inStock}>🚛 2-4 ngày | <i className={`fas fa-map-marker-alt ${styles.locationIcon}`}></i> TP.Hồ Chí Minh</span>;
   };
 
-  const copyPromoCode = (code) => {
-    navigator.clipboard
-      .writeText(code)
-      .then(() => alert(`Đã copy mã ${code} vào clipboard!`))
-      .catch((err) => console.error("Lỗi khi copy: ", err));
+  const renderStars = (rating) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    
+    for (let i = 0; i < 5; i++) {
+      if (i < fullStars) {
+        stars.push(<span key={i} className={styles.star}>⭐</span>);
+      } else {
+        stars.push(<span key={i} className={styles.starEmpty}>☆</span>);
+      }
+    }
+    
+    return stars;
   };
 
-  const handleAccountClick = () => {
-    router.push("/account"); // hoặc mở dropdown; tuỳ bạn
+  const getVipLabel = (productId) => {
+    // Tạo các label khác nhau dựa trên ID sản phẩm
+    const labels = [
+      '❤ Rs Vip Dịch',
+      '💎 Premium Quality', 
+      '🔥 Hot Deal',
+      '⚡ Fast Ship',
+      '🎁 Gift Box',
+      '💝 Limited Edition'
+    ];
+    return labels[productId % labels.length];
   };
 
-  // tách 6 sản phẩm đầu cho “flash sale” minh hoạ
-  const saleProducts = useMemo(() => products.slice(0, 6), [products]);
-  const featuredProducts = useMemo(() => products.slice(0, 15), [products]);
+  const openProductModal = (product) => {
+    setSelectedProduct(product);
+    setShowModal(true);
+    document.body.style.overflow = 'hidden';
+  };
 
-  // mock các section khác (giữ nguyên của bạn)
-  const featuredBrands = [
-    { id: 1, name: "L'Oréal Men Expert", logo: "/images/banners/f.jpg", description: "Thương hiệu số 1 thế giới về chăm sóc da nam", products: 25 },
-    { id: 2, name: "Nivea Men", logo: "/images/banners/e.jpg", description: "Chăm sóc da toàn diện cho phái mạnh", products: 18 },
-    { id: 3, name: "Vichy Homme", logo: "/images/banners/w.jpg", description: "Giải pháp da nhạy cảm chuyên nghiệp", products: 15 },
-    { id: 4, name: "Kiehl's", logo: "/images/banners/v.jpg", description: "Sản phẩm thiên nhiên cao cấp từ New York", products: 22 },
-    { id: 5, name: "Clinique For Men", logo: "/images/banners/n.jpg", description: "Chăm sóc da không gây dị ứng", products: 12 },
-    { id: 6, name: "The Body Shop", logo: "/images/banners/x.jpg", description: "Sản phẩm organic thân thiện môi trường", products: 30 },
-  ];
+  const closeProductModal = () => {
+    setShowModal(false);
+    setSelectedProduct(null);
+    document.body.style.overflow = 'auto';
+  };
 
-  const newsEvents = [
-    { id: 1, title: "Xu hướng chăm sóc da mùa hè 2025", description: "Khám phá những bí quyết chăm sóc da mới nhất cho mùa hè năm nay", videoThumbnail: "/images/banners/1.jpg", duration: "5:30", views: "12K", likes: "1.2K", uploadDate: "2 ngày trước", videoUrl: "https://www.youtube.com/watch?v=EBc1QZ1mW4g" },
-    { id: 2, title: "Review sản phẩm mỹ phẩm hot nhất", description: "Đánh giá chi tiết những sản phẩm được yêu thích nhất hiện tại", videoThumbnail: "/images/banners/2.jpg", duration: "8:15", views: "25K", likes: "2.1K", uploadDate: "1 tuần trước", videoUrl: "https://www.youtube.com/watch?v=bPZrJ9tX2nI" },
-    { id: 3, title: "Makeup tutorial cho da nhạy cảm", description: "Hướng dẫn trang điểm an toàn và hiệu quả cho làn da nhạy cảm", videoThumbnail: "/images/banners/3.jpg", duration: "12:45", views: "35K", likes: "3.5K", uploadDate: "3 ngày trước", videoUrl: "https://www.youtube.com/watch?v=Gg1QUsSPBhc" },
-    { id: 4, title: "Skincare routine 10 bước", description: "Quy trình chăm sóc da 10 bước từ các chuyên gia hàng đầu", videoThumbnail: "/images/banners/4.jpg", duration: "15:20", views: "48K", likes: "4.8K", uploadDate: "5 ngày trước", videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
-  ];
+  const resetFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('');
+    setPriceFilter('');
+    setStockFilter('');
+    setSortBy('name-asc');
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Đang tải sản phẩm...</h1>
+        </div>
+        <div className={styles.loadingProducts}>
+          {[...Array(12)].map((_, index) => (
+            <div key={index} className={styles.loadingCard}>
+              <div className={styles.loadingImage}></div>
+              <div className={styles.loadingContent}>
+                <div className={`${styles.loadingLine} ${styles.short}`}></div>
+                <div className={`${styles.loadingLine} ${styles.medium}`}></div>
+                <div className={styles.loadingLine}></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
-      {/* NAV */}
-      <nav className={styles.navigation}>
-        <div className={styles.navContainer}>
-          <Link href="/" className={styles.navLink}>🏠 Trang chính</Link>
-          <Link href="/gioithieu" className={styles.navLink}>ℹ️ Giới thiệu</Link>
-          <Link href="/danhmucSP" className={styles.navLink}>📦 Danh mục sản phẩm</Link>
-          <Link href="/cuahang" className={styles.navLink}>🏪 Cửa hàng</Link>
-          <Link href="/giohang" className={styles.navLink}>🛒 Giỏ hàng ({cartItems})</Link>
-          <Link href="/baohanh" className={styles.navLink}>🛡️ Bảo hành</Link>
-          <Link href="/hotroKH" className={styles.navLink}>💬 Hỗ trợ</Link>
+      {/* Header */}
+      <div className={styles.header}>
+        <div className={styles.headerTop}>
+          <h1 className={styles.title}> 🛍️ Danh Mục Sản Phẩm</h1>
+          <Link href="/" className={styles.backLink}>
+            <i className="fas fa-arrow-left"></i>
+            Trang chủ
+          </Link>
+        </div>
+        
+        <div className={styles.stats}>
+          
+        </div>
+      </div>
 
-          <div className={styles.userSection}>
-            {isAuthenticated ? (
-              <div className={styles.userMenu}>
-                <div className={styles.userInfo} onClick={handleAccountClick}>
+      <div className={styles.content}>
+        {/* Filters - Horizontal Layout */}
+        <div className={styles.filtersHorizontal}>
+          <div className={styles.filterGroup}>
+            <h3 className={styles.filterTitle}>
+              <i className="fas fa-search"></i>
+              Tìm kiếm
+            </h3>
+            <div className={styles.searchBox}>
+              <input
+                type="text"
+                placeholder="Tìm kiếm sản phẩm..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={styles.searchInput}
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className={styles.clearSearch}
+                >
+                  <i className="fas fa-times"></i>
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className={styles.filterGroup}>
+            <h3 className={styles.filterTitle}>
+              <i className="fas fa-list"></i>
+              Danh mục
+            </h3>
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className={styles.filterSelect}
+            >
+              <option value="">Tất cả danh mục</option>
+              {Object.entries(categories).map(([id, name]) => (
+                <option key={id} value={id}>{name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className={styles.filterGroup}>
+            <h3 className={styles.filterTitle}>
+              <i className="fas fa-money-bill"></i>
+              Giá
+            </h3>
+            <select
+              value={priceFilter}
+              onChange={(e) => setPriceFilter(e.target.value)}
+              className={styles.filterSelect}
+            >
+              <option value="">Tất cả mức giá</option>
+              <option value="0-100000">Dưới 100,000đ</option>
+              <option value="100000-500000">100,000đ - 500,000đ</option>
+              <option value="500000-1000000">500,000đ - 1,000,000đ</option>
+              <option value="1000000-999999999">Trên 1,000,000đ</option>
+            </select>
+          </div>
+
+          <div className={styles.filterGroup}>
+            <h3 className={styles.filterTitle}>
+              <i className="fas fa-boxes"></i>
+              Tồn kho
+            </h3>
+            <select
+              value={stockFilter}
+              onChange={(e) => setStockFilter(e.target.value)}
+              className={styles.filterSelect}
+            >
+              <option value="">Tất cả</option>
+              <option value="in-stock">Còn hàng (&gt;10)</option>
+
+              <option value="low-stock">Sắp hết (1-10)</option>
+              <option value="out-of-stock">Hết hàng</option>
+            </select>
+          </div>
+
+          <div className={styles.filterGroup}>
+            <button
+              onClick={resetFilters}
+              className={styles.resetButton}
+            >
+              <i className="fas fa-undo"></i>
+              Đặt lại bộ lọc
+            </button>
+          </div>
+        </div>
+
+        {/* Products */}
+        <div className={styles.main}>
+          <div className={styles.toolbar}>
+            <div className={styles.resultsInfo}>
+              {/* <span>Hiển thị {filteredProducts.length} sản phẩm</span> */}
+            </div>
+
+            <div className={styles.toolbarRight}>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className={styles.sortSelect}
+              >
+                <option value="name-asc">Tên A-Z</option>
+                <option value="name-desc">Tên Z-A</option>
+                <option value="price-asc">Giá thấp - cao</option>
+                <option value="price-desc">Giá cao - thấp</option>
+                <option value="stock-desc">Tồn kho nhiều</option>
+              </select>
+
+              <div className={styles.viewToggle}>
+                <button
+                  onClick={() => setCurrentView('grid')}
+                  className={`${styles.viewBtn} ${currentView === 'grid' ? styles.active : ''}`}
+                >
+                  <i className="fas fa-th"></i>
+                </button>
+                <button
+                  onClick={() => setCurrentView('list')}
+                  className={`${styles.viewBtn} ${currentView === 'list' ? styles.active : ''}`}
+                >
+                  <i className="fas fa-list"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {filteredProducts.length === 0 ? (
+            <div className={styles.noResults}>
+              <i className="fas fa-search"></i>
+              <h3>Không tìm thấy sản phẩm</h3>
+              <p>Hãy thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
+            </div>
+          ) : (
+            <div className={`${styles.productsGrid} ${currentView === 'list' ? styles.listView : ''}`}>
+              {filteredProducts.map((product) => {
+                const discount = getDiscountPercent(product.originalPrice, product.price);
+
+                return (
+                  <div
+                    key={product.id}
+                    className={`${styles.productCard} ${currentView === 'list' ? styles.listView : ''}`}
+                    onClick={() => openProductModal(product)}
+                  >
+                    <div className={styles.productImageContainer}>
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className={styles.productImage}
+                      />
+                      {discount > 0 && (
+                        <div className={`${styles.productBadge} ${styles.sale}`}>
+                          -{discount}%
+                        </div>
+                      )}
+                      {product.stock === 0 && (
+                        <div className={`${styles.productBadge} ${styles.outOfStock}`}>
+                          Hết hàng
+                        </div>
+                      )}
+                    </div>
+
+                    <div className={styles.productContent}>
+                      <div className={styles.productCategory}>{product.categoryName}</div>
+                      <h3 className={styles.productName}>{product.name}</h3>
+                      
+                      <div className={styles.productRating}>
+                        <div className={styles.ratingStars}>
+                          {renderStars(product.rating)}
+                          <span className={styles.ratingValue}>{product.rating}</span>
+                        </div>
+                      </div>
+
+                      <div className={styles.productVipLabel}>
+                        ({getVipLabel(product.id)})
+                      </div>
+
+                      <p className={styles.productDescription}>{product.description}</p>
+
+                      <div className={styles.productPricing}>
+                        <span className={styles.currentPrice}>{formatPrice(product.price)}</span>
+                        {discount > 0 && (
+                          <span className={styles.discountPercent}>-{discount}%</span>
+                        )}
+                        {product.originalPrice && product.originalPrice > product.price && (
+                          <span className={styles.soldCount}>đã bán 5k+</span>
+                        )}
+                      </div>
+
+                      <div className={styles.productFooter}>
+                        <div className={styles.stockInfo}>
+                          {getStockStatus(product.stock)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Product Modal */}
+      {showModal && selectedProduct && (
+        <div className={styles.modal} onClick={closeProductModal}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>Chi tiết sản phẩm</h2>
+              <button onClick={closeProductModal} className={styles.closeBtn}>
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+
+            <div className={styles.modalBody}>
+              <div className={styles.productDetails}>
+                <div className={styles.productImageModal}>
                   <img
-                    src={authUser?.picture || "/default-avatar.png"}
-                    alt={authUser?.name || "User"}
-                    className={styles.userAvatar}
+                    src={selectedProduct.image}
+                    alt={selectedProduct.name}
                   />
-                  <span className={styles.userName}>{authUser?.name}</span>
                 </div>
-                <button onClick={logout} className={styles.logoutButton} title="Đăng xuất">🚪</button>
-              </div>
-            ) : (
-              <Link href="/login" className={styles.navLink}>👤 Tài khoản</Link>
-            )}
-          </div>
-        </div>
-      </nav>
 
-      {/* BANNER */}
-      <div className={styles.bannerSection}>
-        <Image
-          src="/images/banners/banner1.jpg"
-          alt="Main Beauty Banner"
-          width={2000}
-          height={900}
-          className={styles.bannerImage}
-          priority
-        />
-        {/* Form tìm kiếm */}
-        <form className={styles.searchBar} onSubmit={handleSearch}>
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={handleSearchKeyDown}
-            placeholder="Tìm sản phẩm..."
-          />
-          <button type="submit">🔎 Tìm</button>
-        </form>
-      </div>
+                <div className={styles.productInfoModal}>
+                  <div className={styles.productCategoryModal}>
+                    {selectedProduct.categoryName}
+                  </div>
+                  <h1 className={styles.productTitleModal}>
+                    {selectedProduct.name}
+                  </h1>
+                  <p className={styles.productDescriptionModal}>
+                    {selectedProduct.description}
+                  </p>
 
-      {/* PROMO */}
-      <div className={styles.promoSection}>
-        <div className={styles.sectionContainer}>
-          <h2 className={styles.promoTitle}>🎟️ MÃ KHUYẾN MÃI HOT</h2>
-          <p className={styles.promoSubtitle}>Sử dụng ngay để nhận ưu đãi tốt nhất!</p>
-          <div className={styles.promoGrid}>
-            {[
-              { code: "WELCOME50", desc: "Giảm 50% cho đơn hàng đầu tiên", cond: "Đơn hàng từ 500.000đ", icon: "💎" },
-              { code: "FREESHIP99", desc: "Miễn phí vận chuyển toàn quốc", cond: "Không giới hạn đơn hàng", icon: "🔥" },
-              { code: "VIP30", desc: "Giảm 30% cho thành viên VIP", cond: "Đơn hàng từ 1.000.000đ", icon: "⭐" },
-              { code: "COMBO25", desc: "Giảm 25% khi mua combo 3 món", cond: "Áp dụng cho combo sản phẩm", icon: "🎁" },
-            ].map((p) => (
-              <div className={styles.promoCard} key={p.code}>
-                <div className={styles.promoIcon}>{p.icon}</div>
-                <div className={styles.promoInfo}>
-                  <h3 className={styles.promoCode}>{p.code}</h3>
-                  <p className={styles.promoDesc}>{p.desc}</p>
-                  <p className={styles.promoCondition}>{p.cond}</p>
-                </div>
-                <button className={styles.copyBtn} onClick={() => copyPromoCode(p.code)}>📋 Copy</button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+                  <div className={styles.productPricingModal}>
+                    <span className={styles.currentPriceModal}>
+                      {formatPrice(selectedProduct.price)}
+                    </span>
+                    {getDiscountPercent(selectedProduct.originalPrice, selectedProduct.price) > 0 && (
+                      <span className={styles.discountPercent}>-{getDiscountPercent(selectedProduct.originalPrice, selectedProduct.price)}%</span>
+                    )}
+                    {selectedProduct.originalPrice && selectedProduct.originalPrice > selectedProduct.price && (
+                      <span className={styles.originalPriceModal}>
+                        đã bán 5k+
+                      </span>
+                    )}
+                  </div>
 
-      {/* FLASH SALE */}
-      <div className={styles.saleSection}>
-        <div className={styles.sectionContainer}>
-          <h2 className={styles.sectionTitle}>⚡ FLASH SALE - SĂN SALE NGAY!</h2>
-          <p className={styles.sectionSubtitle}>⏰ Thời gian có hạn - Giảm đến 50% cho các sản phẩm chọn lọc</p>
+                  <div className={styles.stockInfoModal}>
+                    <i className="fas fa-box"></i>
+                    <span>Tồn kho: {selectedProduct.stock} sản phẩm</span>
+                  </div>
 
-          {loading && <div className={styles.gridSkeleton}>Đang tải sản phẩm…</div>}
-          {err && !loading && <div className={styles.error}>{err}</div>}
-
-          <div className={styles.saleGrid}>
-            {!loading &&
-              !err &&
-              saleProducts.map((p) => (
-                <div key={p.id} className={styles.saleCard}>
-                  <div className={styles.saleBadge}>-{p.discount ?? "SALE"}</div>
-                  <div className={styles.productImageWrapper}>
-                    <Image
-                      src={p.image || FALLBACK_IMG}
-                      alt={p.name}
-                      width={280}
-                      height={280}
-                      className={styles.productImage}
-                    />
-                    <div className={styles.productActions}>
-                      <button className={styles.wishlistBtn} onClick={() => addToWishlist(p.id)}>❤️</button>
-                      <Link className={styles.quickViewBtn} href={`/product/${p.id}`}>👁️</Link>
+                  <div className={styles.ratingInfo}>
+                    <div className={styles.stars}>
+                      {[...Array(5)].map((_, index) => (
+                        <i
+                          key={index}
+                          className={`fas fa-star ${index < Math.floor(selectedProduct.rating) ? styles.active : ''}`}
+                        ></i>
+                      ))}
+                      <span className={styles.ratingText}>
+                        {selectedProduct.rating} ({selectedProduct.reviews} đánh giá)
+                      </span>
                     </div>
                   </div>
-                  <div className={styles.productInfo}>
-                    <h3 className={styles.productName}>{p.name}</h3>
-                    <div className={styles.productPricing}>
-                      <span className={styles.currentPrice}>{fmt(p.price)}</span>
-                      {p.originalPrice ? (
-                        <span className={styles.originalPrice}>{fmt(p.originalPrice)}</span>
-                      ) : null}
-                    </div>
-                    <div className={styles.saleTimer}>⏰ Kết thúc trong: <strong>02:45:30</strong></div>
-                    <button
-                      className={`${styles.addToCartBtn} ${pulseClass(p.id)}`}
-                      onClick={() => addToCart(p.id)}
-                    >
-                      <span>🛒</span><span>MUA NGAY</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-          </div>
-        </div>
-      </div>
-
-      {/* FEATURED PRODUCTS */}
-      <div className={styles.productsSection}>
-        <div className={styles.sectionContainer}>
-          <h2 className={styles.sectionTitle}>🌟 SẢN PHẨM NỔI BẬT</h2>
-          <p className={styles.sectionSubtitle}>Khám phá những sản phẩm được yêu thích nhất</p>
-
-          {loading && <div className={styles.gridSkeleton}>Đang tải sản phẩm…</div>}
-          {err && !loading && <div className={styles.error}>{err}</div>}
-
-          <div className={styles.productsGrid}>
-            {!loading &&
-              !err &&
-              featuredProducts.map((p) => (
-                <div key={p.id} className={styles.productCard}>
-                  <div className={styles.discountBadge}>-{p.discount ?? "HOT"}</div>
-                  <div className={styles.productImageWrapper}>
-                    <Image
-                      src={p.image || FALLBACK_IMG}
-                      alt={p.name}
-                      width={250}
-                      height={250}
-                      className={styles.productImage}
-                    />
-                    <div className={styles.productActions}>
-                      <button className={styles.wishlistBtn} onClick={() => addToWishlist(p.id)}>❤️</button>
-                      <Link className={styles.quickViewBtn} href={`/product/${p.id}`}>👁️</Link>
-                    </div>
-                  </div>
-                  <div className={styles.productInfo}>
-                    <h3 className={styles.productName}>{p.name}</h3>
-                    <div className={styles.productPricing}>
-                      <span className={styles.currentPrice}>{fmt(p.price)}</span>
-                      {p.originalPrice ? (
-                        <span className={styles.originalPrice}>{fmt(p.originalPrice)}</span>
-                      ) : null}
-                    </div>
-                    <button
-                      className={`${styles.addToCartBtn} ${pulseClass(p.id)}`}
-                      onClick={() => addToCart(p.id)}
-                    >
-                      <span>🛒</span><span>THÊM VÀO GIỎ</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-          </div>
-        </div>
-      </div>
-
-      {/* BRANDS */}
-      <div className={styles.brandsSection}>
-        <div className={styles.sectionContainer}>
-          <h2 className={styles.sectionTitle}>🏆 THƯƠNG HIỆU NỔI TIẾNG</h2>
-          <p className={styles.sectionSubtitle}>Những thương hiệu uy tín hàng đầu thế giới về chăm sóc da nam</p>
-          <div className={styles.brandsGrid}>
-            {featuredBrands.map((b) => (
-              <div key={b.id} className={styles.brandCard}>
-                <div className={styles.brandImageWrapper}>
-                  <Image src={b.logo} alt={b.name} width={120} height={120} className={styles.brandLogo} />
-                </div>
-                <div className={styles.brandInfo}>
-                  <h3 className={styles.brandName}>{b.name}</h3>
-                  <p className={styles.brandDescription}>{b.description}</p>
-                  <div className={styles.brandStats}><span className={styles.productCount}>{b.products} sản phẩm</span></div>
                 </div>
               </div>
-            ))}
+            </div>
+
+            <div className={styles.modalActions}>
+              <button
+                className={`${styles.modalActionBtn} ${styles.addToCartModalBtn}`}
+                disabled={selectedProduct.stock === 0}
+                onClick={() => {
+                  alert(`Đã thêm "${selectedProduct.name}" vào giỏ hàng!`);
+                  closeProductModal();
+                }}
+              >
+                <i className="fas fa-map-marker-alt"></i>
+                Thêm vào giỏ hàng
+              </button>
+              <button
+                className={`${styles.modalActionBtn} ${styles.buyNowBtn}`}
+                disabled={selectedProduct.stock === 0}
+                onClick={() => {
+                  alert(`Dặt Hàng Thành Công !"${selectedProduct.name}"!`);
+                  closeProductModal();
+                }}
+              >
+                <i className="fas fa-credit-card"></i>
+                Mua ngay
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* NEWS */}
-      <div className={styles.newsSection}>
-        <div className={styles.sectionContainer}>
-          <h2 className={styles.sectionTitle}>📰 TIN TỨC & SỰ KIỆN</h2>
-          <p className={styles.sectionSubtitle}>Cập nhật những thông tin mới nhất về làm đẹp và chăm sóc da</p>
-          <div className={styles.newsGrid}>
-            {newsEvents.map((n) => (
-              <div key={n.id} className={styles.newsCard}>
-                <a href={n.videoUrl} target="_blank" rel="noopener noreferrer">
-                  <div className={styles.videoContainer}>
-                    <Image src={n.videoThumbnail} alt={n.title} width={320} height={180} className={styles.videoThumbnail} />
-                    <div className={styles.playButton}><span>▶️</span></div>
-                    <div className={styles.videoDuration}>{n.duration}</div>
-                  </div>
-                </a>
-                <div className={styles.newsInfo}>
-                  <h3 className={styles.newsTitle}>{n.title}</h3>
-                  <p className={styles.newsDescription}>{n.description}</p>
-                  <div className={styles.newsStats}>
-                    <span className={styles.newsViews}>👁️ {n.views} lượt xem</span>
-                    <span className={styles.newsDate}>📅 {n.uploadDate}</span>
-                  </div>
-                  <a href={n.videoUrl} target="_blank" rel="noopener noreferrer">
-                    <button className={styles.watchBtn}><span>🎥</span><span>XEM NGAY</span></button>
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* NEWSLETTER & FOOTER giữ nguyên của bạn */}
-      {/* ... (các block còn lại không đổi) ... */}
+      )}
     </div>
   );
 }
