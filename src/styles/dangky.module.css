@@ -1,4 +1,4 @@
-.loginContainer {
+.registerContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -9,27 +9,7 @@
   font-family: 'Arial', sans-serif;
 }
 
-.logoSection {
-  text-align: center;
-  margin-bottom: 40px;
-}
-
-.title {
-  font-size: 32px;
-  color: #ffffff;
-  margin: 0 0 10px 0;
-  font-weight: bold;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.subtitle {
-  font-size: 18px;
-  color: #f0f0f0;
-  margin: 0;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.loginBox {
+.registerBox {
   background: white;
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
@@ -38,20 +18,22 @@
   max-width: 450px;
 }
 
-/* Khu vực đăng nhập nội bộ */
-.internalLoginSection {
-  margin-bottom: 30px;
-}
-
-.sectionTitle {
-  font-size: 20px;
+.title {
+  font-size: 28px;
   color: #333;
-  margin: 0 0 20px 0;
-  font-weight: 600;
+  margin: 0 0 10px 0;
+  font-weight: bold;
   text-align: center;
 }
 
-.loginForm {
+.subtitle {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 30px 0;
+  text-align: center;
+}
+
+.registerForm {
   display: flex;
   flex-direction: column;
 }
@@ -89,7 +71,18 @@
   cursor: not-allowed;
 }
 
-.loginButton {
+.error {
+  color: #dc3545;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  font-size: 14px;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.registerButton {
   width: 100%;
   padding: 14px;
   font-size: 16px;
@@ -103,93 +96,28 @@
   margin-top: 10px;
 }
 
-.loginButton:hover:not(:disabled) {
+.registerButton:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
-.loginButton:active:not(:disabled) {
+.registerButton:active:not(:disabled) {
   transform: translateY(0);
 }
 
-.loginButton:disabled {
+.registerButton:disabled {
   background: #ccc;
   cursor: not-allowed;
 }
 
-.forgotPassword {
-  text-align: right;
-  margin-top: 12px;
-}
-
-/* Phân cách */
-.divider {
-  position: relative;
-  text-align: center;
-  margin: 30px 0;
-}
-
-.divider::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: #ddd;
-}
-
-.dividerText {
-  position: relative;
-  background: white;
-  padding: 0 15px;
-  color: #999;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* Khu vực Google Login */
-.googleLoginSection {
-  margin-bottom: 20px;
-}
-
-.googleButtonWrapper {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-/* Thông báo */
-.loading,
-.error {
-  text-align: center;
-  margin-top: 15px;
-  font-size: 14px;
-  padding: 10px;
-  border-radius: 6px;
-}
-
-.loading {
-  color: #22c55e;
-  background-color: #f0fdf4;
-  border: 1px solid #bbf7d0;
-}
-
-.error {
-  color: #dc3545;
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-}
-
-/* Link đăng ký */
-.registerLink {
+.loginLink {
   text-align: center;
   margin-top: 25px;
   padding-top: 20px;
   border-top: 1px solid #eee;
 }
 
-.registerLink p {
+.loginLink p {
   margin: 0;
   font-size: 14px;
   color: #666;
@@ -207,7 +135,6 @@
   text-decoration: underline;
 }
 
-/* Nút quay lại */
 .backLink {
   margin-top: 30px;
   text-align: center;
@@ -228,19 +155,15 @@
 
 /* Responsive */
 @media (max-width: 600px) {
-  .loginBox {
+  .registerBox {
     padding: 30px 20px;
   }
 
   .title {
-    font-size: 26px;
+    font-size: 24px;
   }
 
   .subtitle {
-    font-size: 16px;
-  }
-
-  .sectionTitle {
-    font-size: 18px;
+    font-size: 13px;
   }
 }

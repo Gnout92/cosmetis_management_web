@@ -5,54 +5,54 @@ import styles from '../styles/danhmucSP.module.css';
 
 const products = [
   // 48 products exactly matching the SQL INSERT statements with proper category mapping
-  { id: 1, name: 'Son môi đỏ Ruby', description: 'Son đỏ Ruby lâu trôi', categoryId: 1, categoryName: 'Son môi', price: 200000, originalPrice: 250000, stock: 50, image: "/images/banners/son.jpg", rating: 4.5, reviews: 120 },
-  { id: 2, name: 'mặt nạ dưỡng ẩm ', description: 'mặt nạ chống lão hóa ', categoryId: 1, categoryName: 'mặt nạ', price: 180000, originalPrice: 220000, stock: 40, image: "/images/banners/matna.jpg", rating: 4.3, reviews: 89 },
-  { id: 3, name: 'Son môi cam Sunset', description: 'Son cam tươi sáng', categoryId: 1, categoryName: 'Son môi', price: 190000, originalPrice: 230000, stock: 35, image: "/images/banners/son2.jpg", rating: 4.4, reviews: 76 },
-  { id: 4, name: 'Kem dưỡng ẩm ban ngày', description: 'Dưỡng ẩm và chống nắng', categoryId: 2, categoryName: 'Kem chống nắng', price: 150000, originalPrice: 180000, stock: 30, image: "/images/banners/chongmat.jpg", rating: 4.6, reviews: 145 },
-  { id: 5, name: 'Kem dưỡng ẩm ban đêm', description: 'Dưỡng ẩm sâu cho da', categoryId: 2, categoryName: 'Kem chống nắng', price: 160000, originalPrice: 200000, stock: 25, image: "/images/banners/kemduong1.jpg", rating: 4.7, reviews: 198 },
-  { id: 6, name: 'Serum vitamin C', description: 'Serum sáng da và mờ thâm', categoryId: 2, categoryName: 'Kem chống nắng', price: 220000, originalPrice: 260000, stock: 20, image: "/images/banners/vtmc.jpg", rating: 4.8, reviews: 234 },
-  { id: 7, name: 'Sữa rửa mặt làm sạch sâu', description: 'Loại bỏ bụi bẩn và bã nhờn', categoryId: 1, categoryName: 'Sữa rửa mặt', price: 120000, originalPrice: 150000, stock: 0, image: "/images/banners/simple.jpg", rating: 4.2, reviews: 167 },
-  { id: 8, name: 'Sữa rửa mặt dịu nhẹ', description: 'Phù hợp da nhạy cảm', categoryId: 1, categoryName: 'Sữa rửa mặt', price: 110000, originalPrice: 140000, stock: 8, image: "/images/banners/diunhe.jpg", rating: 4.4, reviews: 123 },
-  { id: 9, name: 'Toner cân bằng da', description: 'Cân bằng độ pH cho da', categoryId: 8, categoryName: 'Toner', price: 90000, originalPrice: 120000, stock: 60, image: "/images/banners/tonner1.jpg", rating: 4.3, reviews: 89 },
-  { id: 10, name: 'Xịt khoáng dưỡng ẩm', description: 'Giữ ẩm tức thì cho da', categoryId: 7, categoryName: 'Xịt khoáng', price: 95000, originalPrice: 130000, stock: 40, image: "/images/banners/xitkhoang1.jpg", rating: 4.1, reviews: 156 },
-  { id: 11, name: 'Mặt nạ giấy dưỡng da', description: 'Dưỡng ẩm và làm sáng da', categoryId: 4, categoryName: 'Mặt nạ', price: 70000, originalPrice: 100000, stock: 3, image: "/images/banners/matne2.jpg", rating: 4.0, reviews: 234 },
-  { id: 12, name: 'Mặt nạ đất sét', description: 'Làm sạch lỗ chân lông', categoryId: 4, categoryName: 'Mặt nạ', price: 75000, originalPrice: 105000, stock: 60, image: "/images/banners/dátet1.jpg", rating: 4.2, reviews: 187 },
-  { id: 13, name: 'Nước hoa Chanel No.5', description: 'Hương thơm nữ tính', categoryId: 3, categoryName: 'Dầu gội', price: 1200000, originalPrice: 1500000, stock: 20, image: "/images/banners/chanel1.jpg", rating: 4.9, reviews: 345 },
-  { id: 14, name: 'Nước hoa Dior Sauvage', description: 'Hương thơm nam tính', categoryId: 3, categoryName: 'Dầu gội', price: 1300000, originalPrice: 1600000, stock: 5, image: "/images/banners/dior1.jpg", rating: 4.8, reviews: 278 },
-  { id: 15, name: 'Kem chống nắng SPF50+', description: 'Bảo vệ da khỏi tia UV', categoryId: 2, categoryName: 'Kem chống nắng', price: 180000, originalPrice: 220000, stock: 50, image: "/images/banners/21.jpg", rating: 4.5, reviews: 198 },
-  { id: 16, name: 'Kem chống nắng SPF30', description: 'Bảo vệ da hàng ngày', categoryId: 2, categoryName: 'Kem chống nắng', price: 150000, originalPrice: 190000, stock: 45, image: "/images/banners/22.jpg", rating: 4.3, reviews: 167 },
-  { id: 17, name: 'Dầu gội dưỡng tóc mềm', description: 'Dưỡng tóc suôn mượt', categoryId: 3, categoryName: 'Dầu gội', price: 120000, originalPrice: 150000, stock: 40, image: "/images/banners/23.jpg", rating: 4.4, reviews: 134 },
-  { id: 18, name: 'Dầu gội trị gàu', description: 'Ngăn ngừa gàu hiệu quả', categoryId: 3, categoryName: 'Dầu gội', price: 130000, originalPrice: 160000, stock: 2, image: "/images/banners/24.jpg", rating: 4.2, reviews: 89 },
-  { id: 19, name: 'Dầu xả dưỡng tóc', description: 'Giữ tóc mềm mượt', categoryId: 3, categoryName: 'Dầu gội', price: 100000, originalPrice: 130000, stock: 40, image: "/images/banners/25.jpg", rating: 4.3, reviews: 156 },
-  { id: 20, name: 'Son dưỡng có màu', description: 'Dưỡng và tạo màu nhẹ', categoryId: 1, categoryName: 'Son môi', price: 90000, originalPrice: 120000, stock: 55, image: "/images/banners/26.jpg", rating: 4.1, reviews: 234 },
-  { id: 21, name: 'Son bóng dưỡng ẩm', description: 'Tạo độ bóng và mềm môi', categoryId: 1, categoryName: 'Son môi', price: 85000, originalPrice: 110000, stock: 50, image: "/images/banners/27.jpg", rating: 4.0, reviews: 187 },
-  { id: 22, name: 'Kem dưỡng mắt chống nhăn', description: 'Giảm quầng thâm mắt', categoryId: 6, categoryName: 'Kem dưỡng ẩm', price: 200000, originalPrice: 250000, stock: 30, image: "/images/banners/28.jpg", rating: 4.6, reviews: 198 },
-  { id: 23, name: 'Serum chống lão hóa', description: 'Giữ da trẻ trung', categoryId: 6, categoryName: 'Kem dưỡng ẩm', price: 250000, originalPrice: 300000, stock: 25, image: "/images/banners/29.jpg", rating: 4.7, reviews: 234 },
-  { id: 24, name: 'Sữa rửa mặt tạo bọt', description: 'Loại bỏ bụi bẩn hiệu quả', categoryId: 1, categoryName: 'Sữa rửa mặt', price: 100000, originalPrice: 130000, stock: 6, image: "/images/banners/30.jpg", rating: 4.2, reviews: 167 },
-  { id: 25, name: 'Sữa rửa mặt không tạo bọt', description: 'Dịu nhẹ cho da nhạy cảm', categoryId: 1, categoryName: 'Sữa rửa mặt', price: 105000, originalPrice: 135000, stock: 45, image: "/images/banners/31.jpg", rating: 4.3, reviews: 123 },
-  { id: 26, name: 'Toner làm sáng da', description: 'Làm sáng và đều màu da', categoryId: 8, categoryName: 'Toner', price: 95000, originalPrice: 125000, stock: 60, image: "/images/banners/32.jpg", rating: 4.4, reviews: 89 },
-  { id: 27, name: 'Xịt khoáng khoáng chất', description: 'Dưỡng ẩm và làm dịu da', categoryId: 7, categoryName: 'Xịt khoáng', price: 98000, originalPrice: 128000, stock: 9, image: "/images/banners/33.jpg", rating: 4.2, reviews: 156 },
-  { id: 28, name: 'Mặt nạ ngủ', description: 'Dưỡng ẩm sâu qua đêm', categoryId: 4, categoryName: 'Mặt nạ', price: 80000, originalPrice: 110000, stock: 65, image: "/images/banners/35.jpg", rating: 4.1, reviews: 234 },
-  { id: 29, name: 'Mặt nạ giấy cấp ẩm', description: 'Cấp nước tức thì', categoryId: 4, categoryName: 'Mặt nạ', price: 75000, originalPrice: 105000, stock: 60, image: "/images/banners/36.jpg", rating: 4.0, reviews: 187 },
-  { id: 30, name: 'Nước hoa Versace Eros', description: 'Hương nam mạnh mẽ', categoryId: 3, categoryName: 'Dầu gội', price: 1250000, originalPrice: 1550000, stock: 20, image: "/images/banners/37.jpg", rating: 4.8, reviews: 278 },
-  { id: 31, name: 'Nước hoa Gucci Bloom', description: 'Hương nữ tính nhẹ nhàng', categoryId: 3, categoryName: 'Dầu gội', price: 1150000, originalPrice: 1450000, stock: 18, image: "/images/banners/38.jpg", rating: 4.9, reviews: 345 },
-  { id: 32, name: 'Kem chống nắng dạng gel', description: 'Dạng gel thấm nhanh', categoryId: 2, categoryName: 'Kem chống nắng', price: 170000, originalPrice: 210000, stock: 50, image: "/images/banners/39.jpg", rating: 4.4, reviews: 198 },
-  { id: 33, name: 'Kem chống nắng dạng sữa', description: 'Dạng sữa dễ thoa', categoryId: 2, categoryName: 'Kem chống nắng', price: 160000, originalPrice: 200000, stock: 45, image: "/images/banners/40.jpg", rating: 4.3, reviews: 167 },
-  { id: 34, name: 'Dầu gội thảo mộc', description: 'Ngăn rụng tóc', categoryId: 3, categoryName: 'Dầu gội', price: 140000, originalPrice: 170000, stock: 35, image: "/images/banners/41.jpg", rating: 4.5, reviews: 134 },
-  { id: 35, name: 'Dầu gội nam', description: 'Giữ tóc khỏe mạnh', categoryId: 3, categoryName: 'Dầu gội', price: 130000, originalPrice: 160000, stock: 1, image: "/images/banners/42.jpg", rating: 4.1, reviews: 89 },
-  { id: 36, name: 'Dầu xả phục hồi tóc', description: 'Hồi phục tóc hư tổn', categoryId: 3, categoryName: 'Dầu gội', price: 120000, originalPrice: 150000, stock: 40, image: "/images/banners/43.jpg", rating: 4.2, reviews: 156 },
-  { id: 37, name: 'Son môi nude', description: 'Tông nude tự nhiên', categoryId: 1, categoryName: 'Son môi', price: 180000, originalPrice: 220000, stock: 50, image: "/images/banners/44.jpg", rating: 4.3, reviews: 234 },
-  { id: 38, name: 'Son môi đỏ cherry', description: 'Đỏ cherry tươi sáng', categoryId: 1, categoryName: 'Son môi', price: 190000, originalPrice: 230000, stock: 40, image: "/images/banners/45.jpg", rating: 4.4, reviews: 187 },
-  { id: 39, name: 'Kem dưỡng tay', description: 'Dưỡng ẩm và mềm da tay', categoryId: 6, categoryName: 'Kem dưỡng ẩm', price: 100000, originalPrice: 130000, stock: 50, image: "/images/banners/46.jpg", rating: 4.1, reviews: 198 },
-  { id: 40, name: 'Kem dưỡng chân', description: 'Dưỡng ẩm và mềm da chân', categoryId: 6, categoryName: 'Kem dưỡng ẩm', price: 90000, originalPrice: 120000, stock: 45, image: "/images/banners/47.jpg", rating: 4.0, reviews: 234 },
-  { id: 41, name: 'Serum trị mụn', description: 'Giảm mụn và thâm', categoryId: 6, categoryName: 'Kem dưỡng ẩm', price: 230000, originalPrice: 270000, stock: 7, image: "/images/banners/48.jpg", rating: 4.6, reviews: 234 },
-  { id: 42, name: 'Sữa rửa mặt than hoạt tính', description: 'Loại bỏ bụi bẩn và dầu thừa', categoryId: 1, categoryName: 'Sữa rửa mặt', price: 110000, originalPrice: 140000, stock: 50, image: "/images/banners/49.jpg", rating: 4.3, reviews: 167 },
-  { id: 43, name: 'Sữa rửa mặt trà xanh', description: 'Làm dịu da nhạy cảm', categoryId: 1, categoryName: 'Sữa rửa mặt', price: 105000, originalPrice: 135000, stock: 50, image: "/images/banners/50.jpg", rating: 4.2, reviews: 123 },
-  { id: 44, name: 'Toner dịu nhẹ', description: 'Dịu nhẹ cho da nhạy cảm', categoryId: 8, categoryName: 'Toner', price: 90000, originalPrice: 120000, stock: 60, image: "/images/banners/51.jpg", rating: 4.3, reviews: 89 },
-  { id: 45, name: 'Xịt khoáng se khít lỗ chân lông', description: 'Se khít lỗ chân lông', categoryId: 7, categoryName: 'Xịt khoáng', price: 95000, originalPrice: 125000, stock: 50, image: "/images/banners/52.jpg", rating: 4.1, reviews: 156 },
-  { id: 46, name: 'Mặt nạ ngủ dưỡng trắng', description: 'Dưỡng trắng da qua đêm', categoryId: 4, categoryName: 'Mặt nạ', price: 85000, originalPrice: 110000, stock: 65, image: "/images/banners/53.jpg", rating: 4.2, reviews: 234 },
-  { id: 47, name: 'Mặt nạ than hoạt tính', description: 'Làm sạch sâu', categoryId: 4, categoryName: 'Mặt nạ', price: 80000, originalPrice: 105000, stock: 60, image: "/images/banners/54.jpg", rating: 4.0, reviews: 187 },
-  { id: 48, name: 'Nước hoa Lancome La Vie Est Belle', description: 'Hương nữ tính', categoryId: 3, categoryName: 'Dầu gội', price: 1200000, originalPrice: 1500000, stock: 20, image: "/images/banners/55.jpg", rating: 4.9, reviews: 278 }
+  { id: 1, name: 'Son môi đỏ Ruby', description: 'Son đỏ Ruby lâu trôi', categoryId: 1, categoryName: 'Son môi', price: 200000, originalPrice: 250000, stock: 50, image: "/images/banners/son.jpg", rating: 4.5, reviews: 120, variant: 'Màu đỏ Ruby - 3.5g', category: 'Son môi' },
+  { id: 2, name: 'mặt nạ dưỡng ẩm ', description: 'mặt nạ chống lão hóa ', categoryId: 1, categoryName: 'mặt nạ', price: 180000, originalPrice: 220000, stock: 40, image: "/images/banners/matna.jpg", rating: 4.3, reviews: 89, variant: 'Dạng giấy - 1 miếng', category: 'Mặt nạ' },
+  { id: 3, name: 'Son môi cam Sunset', description: 'Son cam tươi sáng', categoryId: 1, categoryName: 'Son môi', price: 190000, originalPrice: 230000, stock: 35, image: "/images/banners/son2.jpg", rating: 4.4, reviews: 76, variant: 'Màu cam Sunset - 3.5g', category: 'Son môi' },
+  { id: 4, name: 'Kem dưỡng ẩm ban ngày', description: 'Dưỡng ẩm và chống nắng', categoryId: 2, categoryName: 'Kem chống nắng', price: 150000, originalPrice: 180000, stock: 30, image: "/images/banners/chongmat.jpg", rating: 4.6, reviews: 145, variant: '50ml - Dạng kem', category: 'Kem chống nắng' },
+  { id: 5, name: 'Kem dưỡng ẩm ban đêm', description: 'Dưỡng ẩm sâu cho da', categoryId: 2, categoryName: 'Kem chống nắng', price: 160000, originalPrice: 200000, stock: 25, image: "/images/banners/kemduong1.jpg", rating: 4.7, reviews: 198, variant: '50ml - Dạng kem đêm', category: 'Kem dưỡng ẩm' },
+  { id: 6, name: 'Serum vitamin C', description: 'Serum sáng da và mờ thâm', categoryId: 2, categoryName: 'Kem chống nắng', price: 220000, originalPrice: 260000, stock: 20, image: "/images/banners/vtmc.jpg", rating: 4.8, reviews: 234, variant: '30ml - Serum dưỡng da', category: 'Serum' },
+  { id: 7, name: 'Sữa rửa mặt làm sạch sâu', description: 'Loại bỏ bụi bẩn và bã nhờn', categoryId: 1, categoryName: 'Sữa rửa mặt', price: 120000, originalPrice: 150000, stock: 0, image: "/images/banners/simple.jpg", rating: 4.2, reviews: 167, variant: '100ml - Dạng gel', category: 'Sữa rửa mặt' },
+  { id: 8, name: 'Sữa rửa mặt dịu nhẹ', description: 'Phù hợp da nhạy cảm', categoryId: 1, categoryName: 'Sữa rửa mặt', price: 110000, originalPrice: 140000, stock: 8, image: "/images/banners/diunhe.jpg", rating: 4.4, reviews: 123, variant: '100ml - Dạng sữa', category: 'Sữa rửa mặt' },
+  { id: 9, name: 'Toner cân bằng da', description: 'Cân bằng độ pH cho da', categoryId: 8, categoryName: 'Toner', price: 90000, originalPrice: 120000, stock: 60, image: "/images/banners/tonner1.jpg", rating: 4.3, reviews: 89, variant: '150ml - Dạng nước', category: 'Toner' },
+  { id: 10, name: 'Xịt khoáng dưỡng ẩm', description: 'Giữ ẩm tức thì cho da', categoryId: 7, categoryName: 'Xịt khoáng', price: 95000, originalPrice: 130000, stock: 40, image: "/images/banners/xitkhoang1.jpg", rating: 4.1, reviews: 156, variant: '100ml - Dạng xịt', category: 'Xịt khoáng' },
+  { id: 11, name: 'Mặt nạ giấy dưỡng da', description: 'Dưỡng ẩm và làm sáng da', categoryId: 4, categoryName: 'Mặt nạ', price: 70000, originalPrice: 100000, stock: 3, image: "/images/banners/matne2.jpg", rating: 4.0, reviews: 234, variant: 'Dạng giấy - 1 miếng', category: 'Mặt nạ' },
+  { id: 12, name: 'Mặt nạ đất sét', description: 'Làm sạch lỗ chân lông', categoryId: 4, categoryName: 'Mặt nạ', price: 75000, originalPrice: 105000, stock: 60, image: "/images/banners/dátet1.jpg", rating: 4.2, reviews: 187, variant: '50ml - Dạng đất sét', category: 'Mặt nạ' },
+  { id: 13, name: 'Nước hoa Chanel No.5', description: 'Hương thơm nữ tính', categoryId: 3, categoryName: 'Dầu gội', price: 1200000, originalPrice: 1500000, stock: 20, image: "/images/banners/chanel1.jpg", rating: 4.9, reviews: 345, variant: '50ml - Eau de Parfum', category: 'Nước hoa' },
+  { id: 14, name: 'Nước hoa Dior Sauvage', description: 'Hương thơm nam tính', categoryId: 3, categoryName: 'Dầu gội', price: 1300000, originalPrice: 1600000, stock: 5, image: "/images/banners/dior1.jpg", rating: 4.8, reviews: 278, variant: '60ml - Eau de Toilette', category: 'Nước hoa' },
+  { id: 15, name: 'Kem chống nắng SPF50+', description: 'Bảo vệ da khỏi tia UV', categoryId: 2, categoryName: 'Kem chống nắng', price: 180000, originalPrice: 220000, stock: 50, image: "/images/banners/21.jpg", rating: 4.5, reviews: 198, variant: '50ml - SPF50+', category: 'Kem chống nắng' },
+  { id: 16, name: 'Kem chống nắng SPF30', description: 'Bảo vệ da hàng ngày', categoryId: 2, categoryName: 'Kem chống nắng', price: 150000, originalPrice: 190000, stock: 45, image: "/images/banners/22.jpg", rating: 4.3, reviews: 167, variant: '50ml - SPF30', category: 'Kem chống nắng' },
+  { id: 17, name: 'Dầu gội dưỡng tóc mềm', description: 'Dưỡng tóc suôn mượt', categoryId: 3, categoryName: 'Dầu gội', price: 120000, originalPrice: 150000, stock: 40, image: "/images/banners/23.jpg", rating: 4.4, reviews: 134, variant: '300ml - Dạng dầu gội', category: 'Dầu gội' },
+  { id: 18, name: 'Dầu gội trị gàu', description: 'Ngăn ngừa gàu hiệu quả', categoryId: 3, categoryName: 'Dầu gội', price: 130000, originalPrice: 160000, stock: 2, image: "/images/banners/24.jpg", rating: 4.2, reviews: 89, variant: '300ml - Trị gàu', category: 'Dầu gội' },
+  { id: 19, name: 'Dầu xả dưỡng tóc', description: 'Giữ tóc mềm mượt', categoryId: 3, categoryName: 'Dầu gội', price: 100000, originalPrice: 130000, stock: 40, image: "/images/banners/25.jpg", rating: 4.3, reviews: 156, variant: '300ml - Dạng dầu xả', category: 'Dầu gội' },
+  { id: 20, name: 'Son dưỡng có màu', description: 'Dưỡng và tạo màu nhẹ', categoryId: 1, categoryName: 'Son môi', price: 90000, originalPrice: 120000, stock: 55, image: "/images/banners/26.jpg", rating: 4.1, reviews: 234, variant: 'Màu hồng nhẹ - 3.5g', category: 'Son môi' },
+  { id: 21, name: 'Son bóng dưỡng ẩm', description: 'Tạo độ bóng và mềm môi', categoryId: 1, categoryName: 'Son môi', price: 85000, originalPrice: 110000, stock: 50, image: "/images/banners/27.jpg", rating: 4.0, reviews: 187, variant: 'Dạng son bóng - 3.5g', category: 'Son môi' },
+  { id: 22, name: 'Kem dưỡng mắt chống nhăn', description: 'Giảm quầng thâm mắt', categoryId: 6, categoryName: 'Kem dưỡng ẩm', price: 200000, originalPrice: 250000, stock: 30, image: "/images/banners/28.jpg", rating: 4.6, reviews: 198, variant: '15ml - Kem dưỡng mắt', category: 'Kem dưỡng ẩm' },
+  { id: 23, name: 'Serum chống lão hóa', description: 'Giữ da trẻ trung', categoryId: 6, categoryName: 'Kem dưỡng ẩm', price: 250000, originalPrice: 300000, stock: 25, image: "/images/banners/29.jpg", rating: 4.7, reviews: 234, variant: '30ml - Serum chống lão hóa', category: 'Serum' },
+  { id: 24, name: 'Sữa rửa mặt tạo bọt', description: 'Loại bỏ bụi bẩn hiệu quả', categoryId: 1, categoryName: 'Sữa rửa mặt', price: 100000, originalPrice: 130000, stock: 6, image: "/images/banners/30.jpg", rating: 4.2, reviews: 167, variant: '100ml - Dạng bọt', category: 'Sữa rửa mặt' },
+  { id: 25, name: 'Sữa rửa mặt không tạo bọt', description: 'Dịu nhẹ cho da nhạy cảm', categoryId: 1, categoryName: 'Sữa rửa mặt', price: 105000, originalPrice: 135000, stock: 45, image: "/images/banners/31.jpg", rating: 4.3, reviews: 123, variant: '100ml - Không bọt', category: 'Sữa rửa mặt' },
+  { id: 26, name: 'Toner làm sáng da', description: 'Làm sáng và đều màu da', categoryId: 8, categoryName: 'Toner', price: 95000, originalPrice: 125000, stock: 60, image: "/images/banners/32.jpg", rating: 4.4, reviews: 89, variant: '150ml - Dạng nước', category: 'Toner' },
+  { id: 27, name: 'Xịt khoáng khoáng chất', description: 'Dưỡng ẩm và làm dịu da', categoryId: 7, categoryName: 'Xịt khoáng', price: 98000, originalPrice: 128000, stock: 9, image: "/images/banners/33.jpg", rating: 4.2, reviews: 156, variant: '100ml - Dạng xịt', category: 'Xịt khoáng' },
+  { id: 28, name: 'Mặt nạ ngủ', description: 'Dưỡng ẩm sâu qua đêm', categoryId: 4, categoryName: 'Mặt nạ', price: 80000, originalPrice: 110000, stock: 65, image: "/images/banners/35.jpg", rating: 4.1, reviews: 234, variant: '50ml - Mặt nạ ngủ', category: 'Mặt nạ' },
+  { id: 29, name: 'Mặt nạ giấy cấp ẩm', description: 'Cấp nước tức thì', categoryId: 4, categoryName: 'Mặt nạ', price: 75000, originalPrice: 105000, stock: 60, image: "/images/banners/36.jpg", rating: 4.0, reviews: 187, variant: 'Dạng giấy - 1 miếng', category: 'Mặt nạ' },
+  { id: 30, name: 'Nước hoa Versace Eros', description: 'Hương nam mạnh mẽ', categoryId: 3, categoryName: 'Dầu gội', price: 1250000, originalPrice: 1550000, stock: 20, image: "/images/banners/37.jpg", rating: 4.8, reviews: 278, variant: '50ml - Eau de Toilette', category: 'Nước hoa' },
+  { id: 31, name: 'Nước hoa Gucci Bloom', description: 'Hương nữ tính nhẹ nhàng', categoryId: 3, categoryName: 'Dầu gội', price: 1150000, originalPrice: 1450000, stock: 18, image: "/images/banners/38.jpg", rating: 4.9, reviews: 345, variant: '50ml - Eau de Parfum', category: 'Nước hoa' },
+  { id: 32, name: 'Kem chống nắng dạng gel', description: 'Dạng gel thấm nhanh', categoryId: 2, categoryName: 'Kem chống nắng', price: 170000, originalPrice: 210000, stock: 50, image: "/images/banners/39.jpg", rating: 4.4, reviews: 198, variant: '50ml - Dạng gel', category: 'Kem chống nắng' },
+  { id: 33, name: 'Kem chống nắng dạng sữa', description: 'Dạng sữa dễ thoa', categoryId: 2, categoryName: 'Kem chống nắng', price: 160000, originalPrice: 200000, stock: 45, image: "/images/banners/40.jpg", rating: 4.3, reviews: 167, variant: '50ml - Dạng sữa', category: 'Kem chống nắng' },
+  { id: 34, name: 'Dầu gội thảo mộc', description: 'Ngăn rụng tóc', categoryId: 3, categoryName: 'Dầu gội', price: 140000, originalPrice: 170000, stock: 35, image: "/images/banners/41.jpg", rating: 4.5, reviews: 134, variant: '300ml - Thảo mộc', category: 'Dầu gội' },
+  { id: 35, name: 'Dầu gội nam', description: 'Giữ tóc khỏe mạnh', categoryId: 3, categoryName: 'Dầu gội', price: 130000, originalPrice: 160000, stock: 1, image: "/images/banners/42.jpg", rating: 4.1, reviews: 89, variant: '300ml - Dành cho nam', category: 'Dầu gội' },
+  { id: 36, name: 'Dầu xả phục hồi tóc', description: 'Hồi phục tóc hư tổn', categoryId: 3, categoryName: 'Dầu gội', price: 120000, originalPrice: 150000, stock: 40, image: "/images/banners/43.jpg", rating: 4.2, reviews: 156, variant: '300ml - Phục hồi', category: 'Dầu gội' },
+  { id: 37, name: 'Son môi nude', description: 'Tông nude tự nhiên', categoryId: 1, categoryName: 'Son môi', price: 180000, originalPrice: 220000, stock: 50, image: "/images/banners/44.jpg", rating: 4.3, reviews: 234, variant: 'Màu nude - 3.5g', category: 'Son môi' },
+  { id: 38, name: 'Son môi đỏ cherry', description: 'Đỏ cherry tươi sáng', categoryId: 1, categoryName: 'Son môi', price: 190000, originalPrice: 230000, stock: 40, image: "/images/banners/45.jpg", rating: 4.4, reviews: 187, variant: 'Màu đỏ cherry - 3.5g', category: 'Son môi' },
+  { id: 39, name: 'Kem dưỡng tay', description: 'Dưỡng ẩm và mềm da tay', categoryId: 6, categoryName: 'Kem dưỡng ẩm', price: 100000, originalPrice: 130000, stock: 50, image: "/images/banners/46.jpg", rating: 4.1, reviews: 198, variant: '50ml - Kem dưỡng tay', category: 'Kem dưỡng ẩm' },
+  { id: 40, name: 'Kem dưỡng chân', description: 'Dưỡng ẩm và mềm da chân', categoryId: 6, categoryName: 'Kem dưỡng ẩm', price: 90000, originalPrice: 120000, stock: 45, image: "/images/banners/47.jpg", rating: 4.0, reviews: 234, variant: '50ml - Kem dưỡng chân', category: 'Kem dưỡng ẩm' },
+  { id: 41, name: 'Serum trị mụn', description: 'Giảm mụn và thâm', categoryId: 6, categoryName: 'Kem dưỡng ẩm', price: 230000, originalPrice: 270000, stock: 7, image: "/images/banners/48.jpg", rating: 4.6, reviews: 234, variant: '30ml - Serum trị mụn', category: 'Serum' },
+  { id: 42, name: 'Sữa rửa mặt than hoạt tính', description: 'Loại bỏ bụi bẩn và dầu thừa', categoryId: 1, categoryName: 'Sữa rửa mặt', price: 110000, originalPrice: 140000, stock: 50, image: "/images/banners/49.jpg", rating: 4.3, reviews: 167, variant: '100ml - Than hoạt tính', category: 'Sữa rửa mặt' },
+  { id: 43, name: 'Sữa rửa mặt trà xanh', description: 'Làm dịu da nhạy cảm', categoryId: 1, categoryName: 'Sữa rửa mặt', price: 105000, originalPrice: 135000, stock: 50, image: "/images/banners/50.jpg", rating: 4.2, reviews: 123, variant: '100ml - Trà xanh', category: 'Sữa rửa mặt' },
+  { id: 44, name: 'Toner dịu nhẹ', description: 'Dịu nhẹ cho da nhạy cảm', categoryId: 8, categoryName: 'Toner', price: 90000, originalPrice: 120000, stock: 60, image: "/images/banners/51.jpg", rating: 4.3, reviews: 89, variant: '150ml - Dịu nhẹ', category: 'Toner' },
+  { id: 45, name: 'Xịt khoáng se khít lỗ chân lông', description: 'Se khít lỗ chân lông', categoryId: 7, categoryName: 'Xịt khoáng', price: 95000, originalPrice: 125000, stock: 50, image: "/images/banners/52.jpg", rating: 4.1, reviews: 156, variant: '100ml - Se khít lỗ chân lông', category: 'Xịt khoáng' },
+  { id: 46, name: 'Mặt nạ ngủ dưỡng trắng', description: 'Dưỡng trắng da qua đêm', categoryId: 4, categoryName: 'Mặt nạ', price: 85000, originalPrice: 110000, stock: 65, image: "/images/banners/53.jpg", rating: 4.2, reviews: 234, variant: '50ml - Dưỡng trắng', category: 'Mặt nạ' },
+  { id: 47, name: 'Mặt nạ than hoạt tính', description: 'Làm sạch sâu', categoryId: 4, categoryName: 'Mặt nạ', price: 80000, originalPrice: 105000, stock: 60, image: "/images/banners/54.jpg", rating: 4.0, reviews: 187, variant: '50ml - Than hoạt tính', category: 'Mặt nạ' },
+  { id: 48, name: 'Nước hoa Lancome La Vie Est Belle', description: 'Hương nữ tính', categoryId: 3, categoryName: 'Dầu gội', price: 1200000, originalPrice: 1500000, stock: 20, image: "/images/banners/55.jpg", rating: 4.9, reviews: 278, variant: '50ml - Eau de Parfum', category: 'Nước hoa' }
 ];
 
 // Category mapping exactly matching the database
@@ -78,14 +78,28 @@ export default function DanhMucSP() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [cartCount, setCartCount] = useState(0);
 
-
+  // Load cart count on mount
   useEffect(() => {
+    updateCartCount();
     const timer = setTimeout(() => {
       setLoading(false);
     }, 1000);
     return () => clearTimeout(timer);
   }, []);
+
+  // Update cart count from localStorage
+  const updateCartCount = () => {
+    const savedCart = localStorage.getItem('cosmetic_cart');
+    if (savedCart) {
+      const cartData = JSON.parse(savedCart);
+      const totalItems = cartData.reduce((sum, item) => sum + item.quantity, 0);
+      setCartCount(totalItems);
+    } else {
+      setCartCount(0);
+    }
+  };
 
   // Apply filters whenever filter criteria change
   useEffect(() => {
@@ -154,6 +168,56 @@ export default function DanhMucSP() {
 
     setFilteredProducts(filtered);
   }, [searchQuery, selectedCategory, priceFilter, stockFilter, sortBy]);
+
+  // Add to cart function
+  const addToCart = (product, event) => {
+    event.stopPropagation();
+    
+    if (product.stock === 0) {
+      showNotification('Sản phẩm đã hết hàng!', 'error');
+      return;
+    }
+
+    const savedCart = localStorage.getItem('cosmetic_cart');
+    let cartItems = savedCart ? JSON.parse(savedCart) : [];
+    
+    const existingItemIndex = cartItems.findIndex(item => item.id === product.id);
+    
+    if (existingItemIndex > -1) {
+      cartItems[existingItemIndex].quantity += 1;
+      showNotification(`Đã cập nhật số lượng "${product.name}" trong giỏ hàng!`);
+    } else {
+      cartItems.push({
+        id: product.id,
+        name: product.name,
+        image: product.image,
+        price: product.price,
+        originalPrice: product.originalPrice,
+        category: product.category || product.categoryName,
+        variant: product.variant || 'Mặc định',
+        inStock: product.stock > 0,
+        quantity: 1
+      });
+      showNotification(`✅ Đã thêm "${product.name}" vào giỏ hàng!`);
+    }
+    
+    localStorage.setItem('cosmetic_cart', JSON.stringify(cartItems));
+    updateCartCount();
+  };
+
+  // Show notification
+  const showNotification = (message, type = 'success') => {
+    const notification = document.createElement('div');
+    notification.className = `${styles.notification} ${type === 'error' ? styles.notificationError : ''}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      if (document.body.contains(notification)) {
+        document.body.removeChild(notification);
+      }
+    }, 3000);
+  };
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -252,11 +316,20 @@ export default function DanhMucSP() {
       {/* Header */}
       <div className={styles.header}>
         <div className={styles.headerTop}>
-          <h1 className={styles.title}> 🛍️ Danh Mục Sản Phẩm</h1>
-          <Link href="/" className={styles.backLink}>
-            <i className="fas fa-arrow-left"></i>
-            Trang chủ
-          </Link>
+          <h1 className={styles.title}>🛍️ Danh Mục Sản Phẩm</h1>
+          <div className={styles.headerActions}>
+            <Link href="/" className={styles.backLink}>
+              <i className="fas fa-arrow-left"></i>
+              Trang chủ
+            </Link>
+            <Link href="/giohang" className={styles.cartLink}>
+              <i className="fas fa-shopping-cart"></i>
+              <span>Giỏ hàng</span>
+              {cartCount > 0 && (
+                <span className={styles.cartBadge}>{cartCount}</span>
+              )}
+            </Link>
+          </div>
         </div>
         
         <div className={styles.stats}>
@@ -458,6 +531,14 @@ export default function DanhMucSP() {
                         <div className={styles.stockInfo}>
                           {getStockStatus(product.stock)}
                         </div>
+                        <button
+                          className={styles.addToCartBtn}
+                          disabled={product.stock === 0}
+                          onClick={(e) => addToCart(product, e)}
+                        >
+                          <i className="fas fa-shopping-cart"></i>
+                          Thêm
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -539,20 +620,21 @@ export default function DanhMucSP() {
               <button
                 className={`${styles.modalActionBtn} ${styles.addToCartModalBtn}`}
                 disabled={selectedProduct.stock === 0}
-                onClick={() => {
-                  alert(`Đã thêm "${selectedProduct.name}" vào giỏ hàng!`);
+                onClick={(e) => {
+                  addToCart(selectedProduct, e);
                   closeProductModal();
                 }}
               >
-                <i className="fas fa-map-marker-alt"></i>
+                <i className="fas fa-shopping-cart"></i>
                 Thêm vào giỏ hàng
               </button>
               <button
                 className={`${styles.modalActionBtn} ${styles.buyNowBtn}`}
                 disabled={selectedProduct.stock === 0}
-                onClick={() => {
-                  alert(`Dặt Hàng Thành Công !"${selectedProduct.name}"!`);
+                onClick={(e) => {
+                  addToCart(selectedProduct, e);
                   closeProductModal();
+                  window.location.href = '/giohang';
                 }}
               >
                 <i className="fas fa-credit-card"></i>

@@ -1808,27 +1808,3 @@
 .fadeIn {
   animation: fadeIn 0.6s ease-out;
 }
-
-/* Smooth Scrolling */
-/* html {
-  scroll-behavior: smooth;
-} */
-
-/* Custom Scrollbar */
-/* ::-webkit-scrollbar {
-  width: 8px;
-} */
-
-/* ::-webkit-scrollbar-track {
-  background: rgba(255, 107, 157, 0.1);
-  border-radius: 4px;
-} */
-
-/* ::-webkit-scrollbar-thumb {
-  background: linear-gradient(45deg, #ff6b9d, #ffa500);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(45deg, #e55a87, #ff8c42);
-} */

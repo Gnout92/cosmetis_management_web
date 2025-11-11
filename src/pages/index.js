@@ -1,5 +1,6 @@
 // src/pages/index.js
 import { useEffect, useState } from "react";
+import React from 'react';
 import styles from '../styles/Home.module.css';
 import { useAuth } from "../context/AuthContext";
 import Link from "next/link";
@@ -650,20 +651,7 @@ const moreNewsEvents= [
           }}><MdHome /></span>
           <span className="nav-text">Trang chính</span>
         </Link>
-        <Link href="/gioithieu" className={`${styles.navLink} pro-nav-item`}>
-          <span className="nav-icon" style={{
-            color: '#FFFFFF',
-            background: '#FFFFFF',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '3rem',
-            height: '3rem',
-            fontSize: '2rem'
-          }}><MdInfo /></span>
-          <span className="nav-text">Giới thiệu</span>
-        </Link>
+   
         <Link href="/danhmucSP" className={`${styles.navLink} pro-nav-item`}>
           <span className="nav-icon" style={{
             color: '#FFFFFF',
@@ -717,7 +705,7 @@ const moreNewsEvents= [
             height: '3rem',
             fontSize: '2rem'
           }}><MdStore /></span>
-          <span className="nav-text">Cửa hàng</span>
+          <span className="nav-text"> Hệ Thống Cửa hàng</span>
         </Link>
         <Link href="/giohang" className={`${styles.navLink} pro-nav-item`}>
           <span className="nav-icon" style={{
@@ -733,20 +721,7 @@ const moreNewsEvents= [
           }}><MdShoppingCart /></span>
           <span className="nav-text">Giỏ hàng</span>
         </Link>
-        <Link href="/baohanh" className={`${styles.navLink} pro-nav-item`}>
-          <span className="nav-icon" style={{
-            color: '#FFFFFF',
-            background: '#FFFFFF',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '3rem',
-            height: '3rem',
-            fontSize: '2rem'
-          }}><MdVerified /></span>
-          <span className="nav-text">Bảo hành</span>
-        </Link>
+        
         <Link href="/hotroKH" className={`${styles.navLink} pro-nav-item`}>
           <span className="nav-icon" style={{
             color: '#FFFFFF',
@@ -759,7 +734,7 @@ const moreNewsEvents= [
             height: '3rem',
             fontSize: '2rem'
           }}><MdSupport /></span>
-          <span className="nav-text">Hỗ trợ KH</span>
+          <span className="nav-text">Hỗ Trợ Khách Hàng</span>
         </Link>
 
         {/* 🔑 Phần tài khoản */}

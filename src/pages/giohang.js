@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import styles from '../styles/giohang.module.css';
 
 const GioHang = () => {
@@ -10,50 +11,6 @@ const GioHang = () => {
   const [shippingMethod, setShippingMethod] = useState('standard');
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
-
-  // Sample product data
-  const sampleProducts = [
-    {
-      id: 1,
-      name: 'Serum Dưỡng Da Vitamin C',
-      image: '/images/serum-vitamin-c.jpg',
-      price: 450000,
-      originalPrice: 550000,
-      category: 'Serum',
-      variant: '30ml - Dành cho da dầu',
-      inStock: true
-    },
-    {
-      id: 2,
-      name: 'Kem Dưỡng Ẩm Hyaluronic Acid',
-      image: '/images/cream-hyaluronic.jpg',
-      price: 380000,
-      originalPrice: null,
-      category: 'Kem dưỡng',
-      variant: '50ml - Dành cho da khô',
-      inStock: true
-    },
-    {
-      id: 3,
-      name: 'Son Môi Organic Rose',
-      image: '/images/lipstick-rose.jpg',
-      price: 250000,
-      originalPrice: 300000,
-      category: 'Son môi',
-      variant: 'Màu hồng nude - 3.5g',
-      inStock: true
-    },
-    {
-      id: 4,
-      name: 'Kem Chống Nắng SPF 50+',
-      image: '/images/sunscreen.jpg',
-      price: 320000,
-      originalPrice: null,
-      category: 'Chống nắng',
-      variant: '50ml - Không màu',
-      inStock: true
-    }
-  ];
 
   // Available coupons
   const availableCoupons = {
@@ -128,27 +85,13 @@ const GioHang = () => {
       ...coupon
     });
     setCouponCode('');
-    showNotification(`✅ Mã "${couponCode.toUpperCase()}" đã được áp dụng!`);
+    showNotification(`✅ Áp dụng mã "${couponCode.toUpperCase()}" thành công!`);
   };
 
   // Remove coupon
   const removeCoupon = () => {
     setAppliedCoupon(null);
     showNotification('Đã hủy mã giảm giá');
-  };
-
-  // Add suggested product to cart
-  const addSuggestedToCart = (product) => {
-    const existingItem = cartItems.find(item => item.id === product.id);
-    
-    if (existingItem) {
-      updateQuantity(product.id, existingItem.quantity + 1);
-    } else {
-      const newCart = [...cartItems, { ...product, quantity: 1 }];
-      setCartItems(newCart);
-      saveCartToStorage(newCart);
-      showNotification('Đã thêm sản phẩm vào giỏ hàng');
-    }
   };
 
   // Calculate functions
@@ -203,11 +146,20 @@ const GioHang = () => {
     }, 3000);
   };
 
-  // Get suggested products
-  const getSuggestedProducts = () => {
-    return sampleProducts.filter(product => 
-      !cartItems.some(item => item.id === product.id)
-    ).slice(0, 4);
+  // Checkout handler
+  const handleCheckout = () => {
+    if (cartItems.length === 0) {
+      showNotification('Giỏ hàng trống, vui lòng thêm sản phẩm!', 'error');
+      return;
+    }
+
+    // Show success notification
+    showNotification('🎉 Đặt hàng thành công! Cảm ơn bạn đã mua hàng.');
+    
+    // Clear cart after 2 seconds
+    setTimeout(() => {
+      clearCart();
+    }, 2000);
   };
 
   if (loading) {
@@ -276,9 +228,9 @@ const GioHang = () => {
             <div className={styles.emptyIcon}>🛍️</div>
             <h2>Giỏ hàng của bạn đang trống</h2>
             <p>Hãy tiếp tục mua sắm và khám phá những sản phẩm tuyệt vời!</p>
-            <button className={styles.exploreBtn}>
+            <Link href="/danhmucSP" className={styles.exploreBtn}>
               ✨ Tiếp tục mua sắm
-            </button>
+            </Link>
           </div>
         ) : (
           // Cart content
@@ -353,7 +305,7 @@ const GioHang = () => {
                 {appliedCoupon ? (
                   <div className={styles.appliedCoupon}>
                     <span className={styles.couponInfo}>
-                      ✅ Mã "{appliedCoupon.code}" đã được áp dụng! {appliedCoupon.description}
+                      ✅ Mã "{appliedCoupon.code}" - {appliedCoupon.description}
                     </span>
                     <button className={styles.removeCouponBtn} onClick={removeCoupon}>
                       Hủy
@@ -363,7 +315,7 @@ const GioHang = () => {
                   <div className={styles.couponInput}>
                     <input 
                       type="text" 
-                      placeholder="Nhập mã giảm giá..."
+                      placeholder="Nhập mã giảm giá (VD: SALE10)..."
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                       className={styles.couponField}
@@ -377,6 +329,9 @@ const GioHang = () => {
                     </button>
                   </div>
                 )}
+                <div className={styles.availableCoupons}>
+                  <p><strong>Mã khả dụng:</strong> SALE10, NEWCUSTOMER, FREESHIP</p>
+                </div>
               </div>
             </div>
 
@@ -481,40 +436,14 @@ const GioHang = () => {
                   </label>
                 </div>
                 
-                <button className={styles.checkoutBtn}>
-                  🔥 Tiến hành đặt hàng
+                <button className={styles.checkoutBtn} onClick={handleCheckout}>
+                  🔥 Tiến hành thanh toán
                 </button>
+                
+                <Link href="/danhmucSP" className={styles.continueShopping}>
+                  ← Tiếp tục mua sắm
+                </Link>
               </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Suggested Products */}
-        {getSuggestedProducts().length > 0 && (
-          <div className={styles.suggestedSection}>
-            <h2 className={styles.suggestedTitle}>
-              👤 Khách hàng thường mua thêm
-            </h2>
-            <div className={styles.suggestedGrid}>
-              {getSuggestedProducts().map((product) => (
-                <div key={product.id} className={styles.suggestedItem}>
-                  <img src={product.image} alt={product.name} />
-                  <h4>{product.name}</h4>
-                  <p className={styles.suggestedVariant}>{product.variant}</p>
-                  <div className={styles.suggestedPrice}>
-                    <span className={styles.price}>{formatPrice(product.price)}</span>
-                    {product.originalPrice && (
-                      <span className={styles.originalPrice}>{formatPrice(product.originalPrice)}</span>
-                    )}
-                  </div>
-                  <button 
-                    className={styles.addSuggestedBtn}
-                    onClick={() => addSuggestedToCart(product)}
-                  >
-                    🛒 Thêm vào giỏ
-                  </button>
-                </div>
-              ))}
             </div>
           </div>
         )}
