@@ -1,17 +1,14 @@
+// src/lib/auth/googleVerify.js
 import { OAuth2Client } from "google-auth-library";
 
 const client = new OAuth2Client(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID);
 
 /**
- * verifyGoogleToken
- * @param {string} idToken - credential từ GoogleLogin (credentialResponse.credential)
- * @returns { email, name, picture, sub } nếu hợp lệ
- * throws Error nếu token không hợp lệ
+ * Xác thực id_token (credential từ FE / GoogleLogin)
+ * và trả thông tin profile cơ bản.
  */
 export async function verifyGoogleToken(idToken) {
-  if (!idToken) {
-    throw new Error("Missing Google ID token");
-  }
+  if (!idToken) throw new Error("Missing id_token");
 
   const ticket = await client.verifyIdToken({
     idToken,
@@ -19,12 +16,13 @@ export async function verifyGoogleToken(idToken) {
   });
 
   const payload = ticket.getPayload();
-  // payload có rất nhiều field, ta lấy cái mình cần
+  // payload thường có: sub, email, name, picture, given_name, family_name...
+
   return {
+    googleId: payload.sub,
     email: payload.email,
     name: payload.name,
     picture: payload.picture,
-    sub: payload.sub, // Google user id
-    email_verified: payload.email_verified,
+    emailVerified: payload.email_verified,
   };
 }

@@ -1,77 +1,93 @@
-import { verifyGoogleToken } from "@/lib/auth/googleVerify";
-import { findCustomerByEmail, createCustomerFromGoogle } from "@/lib/auth/userRepo";
-import { signAppToken } from "@/lib/auth/jwt";
+import { verifyGoogleToken } from "../../../lib/auth/googleVerify";
+import { signAppToken } from "../../../lib/auth/jwt";
+import { getPool } from "../../../lib/database/db";
 
 /**
- * POST /api/auth/google
- * body: { token: <google_id_token> }
+ * Body FE gửi: { token: "<google id_token>" }
  * Trả về:
- * { token: <jwt>, user: { id, name, email, phone, picture }, isNewUser: bool }
+ * {
+ *   token: "<jwt của shop>",
+ *   user: { id, name, email, avatar },
+ *   isNewUser: boolean
+ * }
  */
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({ message: "Method Not Allowed" });
   }
 
   try {
-    // 1. Parse body
-    const { token } = req.body || {};
-    if (!token) {
-      return res.status(400).json({ error: "Missing Google token" });
+    const { token: googleIdToken } = req.body || {};
+    if (!googleIdToken) {
+      return res.status(400).json({ message: "Missing Google token" });
     }
 
-    // 2. Verify token với Google
-    const googleUser = await verifyGoogleToken(token);
-    if (!googleUser.email_verified) {
-      return res.status(401).json({ error: "Email Google chưa xác thực" });
+    // 1. Xác thực token Google
+    const googleProfile = await verifyGoogleToken(googleIdToken);
+
+    if (!googleProfile.email || !googleProfile.emailVerified) {
+      return res
+        .status(401)
+        .json({ message: "Google account has no verified email" });
     }
 
-    // googleUser = { email, name, picture, sub, email_verified }
+    const pool = getPool();
 
-    // 3. Tìm user trong DB
-    let dbUser = await findCustomerByEmail(googleUser.email);
+    // 2. Kiểm tra user trong bảng khachhang
+    const [rows] = await pool.query(
+      "SELECT MaKH, HoVaTen, Email FROM khachhang WHERE Email = ? LIMIT 1",
+      [googleProfile.email]
+    );
+
+    let userId;
     let isNewUser = false;
 
-    if (!dbUser) {
-      // 3b. Nếu chưa có -> tạo mới
-      dbUser = await createCustomerFromGoogle({
-        name: googleUser.name,
-        email: googleUser.email,
-      });
+    if (rows.length === 0) {
+      // 2a. Nếu chưa tồn tại -> tạo mới
+      const [insertResult] = await pool.query(
+        `INSERT INTO khachhang (HoVaTen, DienThoai, Email, MatKhau, NgayTao, NgayCapNhat)
+         VALUES (?, ?, ?, NULL, NOW(), NOW())`,
+        [
+          googleProfile.name || "Khách hàng",
+          null, // DienThoai chưa có
+          googleProfile.email,
+        ]
+      );
+      userId = insertResult.insertId;
       isNewUser = true;
+    } else {
+      // 2b. Nếu đã có, dùng lại
+      userId = rows[0].MaKH;
     }
 
-    // dbUser = { MaKH, HoVaTen, DienThoai, Email, ... }
-
-    if (!dbUser) {
-      // fallback defensive
-      return res.status(500).json({ error: "Không thể tạo/tải user" });
-    }
-
-    // 4. Tạo JWT app của bạn (FE sẽ lưu localStorage)
-    // payload gọn: chỉ đưa info cần để nhận diện
-    const appJwt = signAppToken({
-      userId: dbUser.MaKH,
-      email: dbUser.Email,
-      name: dbUser.HoVaTen,
-    });
-
-    // 5. Chuẩn hoá user trả về FE
-    const userResponse = {
-      id: dbUser.MaKH,
-      name: dbUser.HoVaTen,
-      email: dbUser.Email,
-      phone: dbUser.DienThoai || null,
-      picture: googleUser.picture || null,
+    // 3. Build object user FE sẽ lưu
+    const userObj = {
+      id: userId,
+      name: googleProfile.name,
+      email: googleProfile.email,
+      avatar: googleProfile.picture || "/default-avatar.png",
+      provider: "google",
     };
 
+    // 4. Ký JWT nội bộ để FE dùng cho các request cần auth sau này
+    const appToken = signAppToken({
+      id: userObj.id,
+      email: userObj.email,
+      provider: "google",
+      role: "customer", // sau này có thể gắn quyền Admin/NhanVien nếu cần
+    });
+
+    // 5. Trả kết quả
     return res.status(200).json({
-      token: appJwt,
-      user: userResponse,
+      token: appToken,
+      user: userObj,
       isNewUser,
     });
   } catch (err) {
-    console.error("auth/google error:", err);
-    return res.status(500).json({ error: err.message || "Auth failed" });
+    console.error("Auth error:", err);
+    return res.status(500).json({
+      message: "Không thể đăng nhập bằng Google",
+      detail: err.message,
+    });
   }
 }
