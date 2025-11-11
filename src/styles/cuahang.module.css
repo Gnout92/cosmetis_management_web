@@ -132,6 +132,8 @@
 .heroStats {
   display: flex;
   gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: flex-start;
 }
 
 .statItem {
@@ -452,6 +454,63 @@
 .featureItem svg {
   color: var(--primary-green-light);
   flex-shrink: 0;
+}
+
+/* Additional Features Styles */
+.additionalFeatures {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-light);
+}
+
+.additionalText {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+/* Category Features */
+.categoryFeatures {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 2px solid var(--bg-secondary);
+}
+
+/* Channel Benefits */
+.channelBenefits {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+}
+
+.benefitsText {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.benefitsText svg {
+  color: var(--accent-lime);
+  font-weight: bold;
+}
+
+/* Enhanced responsive design */
+@media (max-width: 768px) {
+  .heroStats {
+    justify-content: center;
+    gap: 1rem;
+  }
+  
+  .statItem {
+    flex: 1;
+    min-width: 140px;
+  }
 }
 
 .branchActions {

@@ -1,25 +1,24 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import styles from './cuahang.module.css';
-import * as LucideIcons from 'react-icons/lu';
+import styles from '../styles/cuahang.module.css';
+import { 
+  Store, 
+  MapPin, 
+  MessageCircle, 
+  Phone, 
+  Mail, 
+  Building, 
+  Clock, 
+  Users, 
+  Star, 
+  X, 
+  CheckCircle, 
+  Gift, 
+  Zap, 
+  Target 
+} from 'lucide-react';
 
-// Debug icon imports
-console.log('Icons:', {
-  Store: LucideIcons.Store,
-  MapPin: LucideIcons.MapPin,
-  MessageCircle: LucideIcons.MessageCircle,
-  Phone: LucideIcons.Phone,
-  Mail: LucideIcons.Mail,
-  Building: LucideIcons.Building,
-  Clock: LucideIcons.Clock,
-  Users: LucideIcons.Users,
-  Star: LucideIcons.Star,
-  X: LucideIcons.X,
-  CheckSquare: LucideIcons.CheckSquare,
-  Gift: LucideIcons.Gift,
-  Zap: LucideIcons.Zap,
-  Target: LucideIcons.Target
-});
+// Icons đã được import từ lucide-react
 
 const CuaHang = () => {
   const [selectedBranch, setSelectedBranch] = useState(null);
@@ -43,7 +42,7 @@ const CuaHang = () => {
       region: "Miền Nam",
       mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3928.8414722047205!2d105.78011!3d10.029998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31a0895a51d60719%3A0x9d76b0035f6d53d0!2zTmd1eeG7hW4gVHLDo2ksIE5pbmggS2nhu4F1LCBD4bqnbiBUaMah!5e0!3m2!1svi!2s!4v1709000000000!5m2!1svi!2s",
       image: "/images/store-cantho.jpg",
-      staffCount: "8 nhân viên tư vấn chuyên nghiệp",
+      staffCount: "8 chuyên viên tư vấn chuyên nghiệp",
       services: ["Trang điểm tự nhiên", "Test da miễn phí", "Tặng mẫu thử", "Tư vấn skincare"],
       features: ["Spa mini 2 giường", "Phòng tư vấn riêng", "Khu vực makeup cá nhân"]
     },
@@ -125,25 +124,25 @@ const CuaHang = () => {
       id: 1,
       title: "Kệ trưng bày mỹ phẩm cao cấp",
       image: "/images/banners/banner1.jpg",
-      description: "Không gian trưng bày hiện đại với đầy đủ các sản phẩm mỹ phẩm chất lượng cao"
+      description: "Không gian trưng bày hiện đại với đầy đủ các sản phẩm mỹ phẩm chất lượng cao từ các thương hiệu uy tín trên thế giới"
     },
     {
       id: 2,
       title: "Khu tư vấn làm đẹp chuyên nghiệp",
       image: "/images/banners/banner2.jpg",
-      description: "Khu vực tư vấn riêng tư với đội ngũ chuyên viên giàu kinh nghiệm"
+      description: "Khu vực tư vấn riêng tư với đội ngũ chuyên viên giàu kinh nghiệm, được đào tạo bài bản về skincare và makeup"
     },
     {
       id: 3,
       title: "Nhân viên chăm sóc khách hàng",
       image: "/images/banners/banner3.jpg",
-      description: "Đội ngũ nhân viên tận tâm, chuyên nghiệp phục vụ khách hàng 24/7"
+      description: "Đội ngũ nhân viên tận tâm, chuyên nghiệp phục vụ khách hàng 24/7 với thái độ nhiệt tình, tư vấn chính xác"
     },
     {
       id: 4,
       title: "Không gian mua sắm thoải mái",
       image: "/images/banners/banner1.jpg",
-      description: "Thiết kế nội thất sang trọng, tạo cảm giác thư giãn khi mua sắm"
+      description: "Thiết kế nội thất sang trọng, tạo cảm giác thư giãn khi mua sắm với ghế ngồi, nước uống miễn phí và wifi free"
     }
   ];
 
@@ -154,32 +153,40 @@ const CuaHang = () => {
       name: "Chăm Sóc Da",
       products: ["Serum & Essence", "Kem dưỡng ẩm", "Sữa rửa mặt", "Tẩy trang", "Mặt nạ"],
       testAvailable: true,
-      description: "Test da miễn phí, tư vấn skin care cá nhân"
+      description: "Test da miễn phí, tư vấn skin care cá nhân",
+      features: ["Gợi ý sản phẩm phù hợp với từng loại da (da khô, da dầu, da hỗn hợp, da nhạy cảm)"],
+      tags: ["Test trực tiếp", "Tư vấn miễn phí"]
     },
     {
       id: 2,
       name: "Trang Điểm",
       products: ["Son môi", "Phấn mắt", "Mascara", "Phấn nước", "Phấn má"],
       testAvailable: true,
-      description: "Thử màu trực tiếp, tư vấn màu sắc phù hợp"
+      description: "Thử màu trực tiếp, tư vấn màu sắc phù hợp",
+      features: ["Combo trang điểm", "Makeup dự tiệc", "Trang điểm cô dâu"],
+      tags: ["Test màu", "Tư vấn phong cách"]
     },
     {
       id: 3,
       name: "Chăm Sóc Cơ Thể",
       products: ["Sữa dưỡng thể", "Tẩy tế bào chết", "Dầu massage", "Kem chống nắng"],
       testAvailable: false,
-      description: "Gợi ý sản phẩm phù hợp với từng loại da"
+      description: "Gợi ý sản phẩm phù hợp với từng loại da",
+      features: ["Dưỡng da", "Làm sạch", "Bảo vệ"],
+      tags: ["Chăm sóc toàn thân"]
     },
     {
       id: 4,
       name: "Dịch Vụ Làm Đẹp",
       products: ["Trang điểm cô dâu", "Makeup event", "Tư vấn skincare", "Workshop"],
       testAvailable: true,
-      description: "Đặt lịch online, tư vấn trực tiếp miễn phí"
+      description: "Đặt lịch online, tư vấn trực tiếp miễn phí",
+      features: ["Dịch vụ tại nhà", "Makeup party"],
+      tags: ["Đặt lịch online", "Dịch vụ cao cấp"]
     }
   ];
 
-  // Quy trình trải nghiệm khách hàng
+  // Quy trình trải nghiệm khách hàng (5 bước hoàn chỉnh)
   const customerJourney = [
     {
       step: 1,
@@ -200,21 +207,23 @@ const CuaHang = () => {
       title: "Thanh toán",
       description: "Nhiều phương thức thanh toán tiện lợi",
       duration: "5 phút",
-      features: ["Cash/Card/MoMo", "Tích điểm VIP", "Áp dụng khuyến mãi"]
+      features: ["Cash/Card/MoMo/QR Pay", "Tích điểm VIP", "Áp dụng khuyến mãi"]
     },
     {
       step: 4,
       title: "Nhận hàng",
       description: "Đóng gói cẩn thận & giao tận nơi",
-      duration: "Tại cửa hàng",
-      features: ["Đóng gói chuyên nghiệp", "Tặng quà", "Hướng dẫn sử dụng"]
+      duration: "3-5 phút (tại cửa hàng) / 1-3 ngày (giao hàng)",
+      features: ["Đóng gói chuyên nghiệp", "Tặng quà", "Hướng dẫn sử dụng"],
+      additional: ["Tại cửa hàng: Đóng gói chuyên nghiệp, Tặng quà, Hướng dẫn sử dụng", "Giao hàng: Đóng gói cẩn thận, Giao tận nơi, Theo dõi đơn hàng"]
     },
     {
       step: 5,
       title: "Hậu mãi",
       description: "Follow-up & hỗ trợ 24/7",
-      duration: "Dài hạn",
-      features: ["Call sau 3 ngày", "Zalo hỗ trợ", "Chương trình VIP"]
+      duration: "Dài hạn (3 ngày, 1 tuần, 1 tháng)",
+      features: ["Call sau 3 ngày", "Zalo hỗ trợ", "Chương trình VIP"],
+      additional: ["Hướng dẫn sử dụng", "Tái mua", "Review sản phẩm"]
     }
   ];
 
@@ -225,52 +234,56 @@ const CuaHang = () => {
       minPurchase: "Chưa có mua hàng",
       benefits: ["Tích điểm 1%", "Sinh nhật tặng 50k", "Newsletter khuyến mãi"],
       color: "#CD7F32",
-      icon: <LucideIcons.Star className="text-2xl" />
+      icon: <Star className="text-2xl" />
     },
     {
       level: "Silver",
       minPurchase: "Từ 2,000,000đ",
       benefits: ["Tích điểm 2%", "Giảm 5% đơn hàng", "Free sample", "Ưu tiên tư vấn"],
       color: "#C0C0C0",
-      icon: <LucideIcons.Star className="text-2xl" />
+      icon: <Star className="text-2xl" />
     },
     {
       level: "Gold",
       minPurchase: "Từ 5,000,000đ",
       benefits: ["Tích điểm 3%", "Giảm 10% đơn hàng", "Makeup demo miễn phí", "Đặt lịch ưu tiên"],
       color: "#FFD700",
-      icon: <LucideIcons.Star className="text-2xl" />
+      icon: <Star className="text-2xl" />
     },
     {
       level: "Diamond",
       minPurchase: "Từ 10,000,000đ",
       benefits: ["Tích điểm 5%", "Giảm 15% đơn hàng", "Personal consultant", "Miễn phí giao hàng"],
       color: "#B9F2FF",
-      icon: <LucideIcons.Star className="text-2xl" />
+      icon: <Star className="text-2xl" />
     }
   ];
 
-  // Kênh bán hàng đa chiều
+  // Kênh bán hàng đa chiều (Omnichannel)
   const salesChannels = [
     {
       channel: "Tại cửa hàng",
       features: ["Trải nghiệm trực tiếp", "Tư vấn face-to-face", "Test sản phẩm", "Dịch vụ tại chỗ"],
-      contact: "Lấy số thứ tự hoặc đặt lịch online"
+      contact: "Lấy số thứ tự hoặc đặt lịch online qua app KaKa Beauty",
+      benefits: "Test trực tiếp, tư vấn chuyên sâu, dịch vụ tại chỗ"
     },
     {
       channel: "Mua sắm online",
-      features: ["Website: kakacosmetica.com", "App mobile KaKa Beauty", "Giao hàng nhanh 1h", "Đổi trả trong 30 ngày"],
-      contact: "Hotline: 1900-234-567"
+      features: ["Website: www.kakacosmetica.com", "App mobile KaKa Beauty", "Giao hàng nhanh 1h", "Đổi trả trong 30 ngày"],
+      contact: "Hotline: 1900-KAKA (1900-5252)",
+      benefits: "Mua sắm 24/7, giao hàng toàn quốc, deal online"
     },
     {
       channel: "Marketplace",
       features: ["Shopee, Lazada, Tiki", "Review 4.8+ sao", "Flash sale hàng tuần", "Voucher độc quyền"],
-      contact: "@kakacosmetica trên các platform"
+      contact: "@kakacosmetica trên các platform",
+      benefits: "Bán hàng qua nền tảng uy tín, review cao"
     },
     {
       channel: "Mạng xã hội",
       features: ["Facebook, Instagram, Zalo", "Live shopping hàng tuần", "Influencer collaboration", "Customer support 24/7"],
-      contact: "Tin nhắn trực tiếp hoặc hotline"
+      contact: "Tin nhắn trực tiếp hoặc hotline 1900-KAKA",
+      benefits: "Kết nối cộng đồng, tương tác trực tiếp"
     }
   ];
 
@@ -329,7 +342,7 @@ const CuaHang = () => {
       <div className={styles.headerSection}>
         <div className={styles.heroContent}>
           <h1 className={styles.mainTitle}>
-            <LucideIcons.Store className="inline-block mr-3 text-4xl" /> Hệ Thống Cửa Hàng KaKa Mỹ Phẩm
+            <Store className="inline-block mr-3 text-4xl" /> Hệ Thống Cửa Hàng KaKa Mỹ Phẩm
           </h1>
           <p className={styles.heroDescription}>
             Hệ thống cửa hàng mỹ phẩm KaKa hiện có mặt tại nhiều tỉnh thành trên toàn quốc, 
@@ -346,7 +359,11 @@ const CuaHang = () => {
             </div>
             <div className={styles.statItem}>
               <span className={styles.statNumber}>1000+</span>
-              <span className={styles.statLabel}>Sản phẩm</span>
+              <span className={styles.statLabel}>Sản phẩm chính hãng</span>
+            </div>
+            <div className={styles.statItem}>
+              <span className={styles.statNumber}>24/7</span>
+              <span className={styles.statLabel}>Hỗ trợ khách hàng</span>
             </div>
           </div>
         </div>
@@ -365,30 +382,30 @@ const CuaHang = () => {
       <div className={styles.quickActions}>
         <button 
           className={styles.actionBtn}
-          onClick={() => handleCallBranch('1900-234-567')}
+          onClick={() => handleCallBranch('1900-5252')}
         >
-          <LucideIcons.Phone className={styles.actionIcon} />
+          <Phone className={styles.actionIcon} />
           Gọi ngay
         </button>
         <button 
           className={styles.actionBtn}
           onClick={() => window.open('https://www.facebook.com/kakacosmetica', '_blank')}
         >
-          <LucideIcons.Phone className={styles.actionIcon} />
+          <Phone className={styles.actionIcon} />
           Fanpage
         </button>
         <button 
           className={styles.actionBtn}
           onClick={() => window.open('https://zalo.me/kakacosmetica', '_blank')}
         >
-          <LucideIcons.MessageCircle className={styles.actionIcon} />
+          <MessageCircle className={styles.actionIcon} />
           Zalo
         </button>
         <button 
           className={styles.actionBtn}
           onClick={() => setShowContactForm(true)}
         >
-          <LucideIcons.Mail className={styles.actionIcon} />
+          <Mail className={styles.actionIcon} />
           Liên hệ
         </button>
       </div>
@@ -396,7 +413,7 @@ const CuaHang = () => {
       {/* Branches Section */}
       <div className={styles.branchesSection}>
         <h2 className={styles.sectionTitle}>
-          <LucideIcons.LucideIcons.MapPin className="inline-block mr-3 text-2xl" /> Danh Sách Chi Nhánh
+          <MapPin className="inline-block mr-3 text-2xl" /> Danh Sách Chi Nhánh
         </h2>
         
         {Object.entries(branchesByRegion || {}).map(([region, regionBranches]) => (
@@ -412,37 +429,37 @@ const CuaHang = () => {
                   
                   <div className={styles.branchInfo}>
                     <div className={styles.infoItem}>
-                      <LucideIcons.MapPin className={styles.infoIcon} />
+                      <MapPin className={styles.infoIcon} />
                       <span className={styles.infoText}>{branch?.address || ''}</span>
                     </div>
                     
                     <div className={styles.infoItem}>
-                      <LucideIcons.Phone className={styles.infoIcon} />
+                      <Phone className={styles.infoIcon} />
                       <span className={styles.infoText}>{branch?.phone || ''}</span>
                     </div>
                     
                     <div className={styles.infoItem}>
-                      <LucideIcons.Clock className={styles.infoIcon} />
+                      <Clock className={styles.infoIcon} />
                       <span className={styles.infoText}>{branch?.hours || ''}</span>
                     </div>
                     
                     <div className={styles.infoItem}>
-                      <LucideIcons.Mail className={styles.infoIcon} />
+                      <Mail className={styles.infoIcon} />
                       <span className={styles.infoText}>{branch?.email || ''}</span>
                     </div>
                   </div>
                   
                   <div className={styles.branchStaffInfo}>
-                    <LucideIcons.Users className={styles.staffIcon} />
+                    <Users className={styles.staffIcon} />
                     <span className={styles.staffText}>{branch?.staffCount || ''}</span>
                   </div>
                   
                   <div className={styles.branchServices}>
-                    <h5 className={styles.servicesTitle}><LucideIcons.Star className="inline-block mr-2 text-lg" /> Dịch vụ nổi bật:</h5>
+                    <h5 className={styles.servicesTitle}><Star className="inline-block mr-2 text-lg" /> Dịch vụ nổi bật:</h5>
                     <div className={styles.servicesList}>
                       {(branch.services || []).map((service, index) => (
                         <div key={index} className={styles.serviceItem}>
-                          <LucideIcons.CheckSquare className="inline-block mr-2 text-sm" />
+                          <CheckCircle className="inline-block mr-2 text-sm" />
                           <span>{service || ''}</span>
                         </div>
                       ))}
@@ -450,11 +467,11 @@ const CuaHang = () => {
                   </div>
                   
                   <div className={styles.branchFeatures}>
-                    <h6 className={styles.featuresTitle}><LucideIcons.Building className="inline-block mr-2 text-lg" /> Tiện ích:</h6>
+                    <h6 className={styles.featuresTitle}><Building className="inline-block mr-2 text-lg" /> Tiện ích:</h6>
                     <ul className={styles.featuresList}>
                       {(branch.features || []).map((feature, index) => (
                         <li key={index} className={styles.featureItem}>
-                          <LucideIcons.Building className="inline-block mr-2 text-sm" />
+                          <Building className="inline-block mr-2 text-sm" />
                           {feature || ''}
                         </li>
                       ))}
@@ -466,19 +483,19 @@ const CuaHang = () => {
                       className={styles.mapBtn}
                       onClick={() => handleViewMap(branch || {})}
                     >
-                      <LucideIcons.MapPin className="inline-block mr-2" /> Xem bản đồ
+                      <MapPin className="inline-block mr-2" /> Xem bản đồ
                     </button>
                     <button 
                       className={styles.contactBtn}
                       onClick={() => handleCallBranch(branch?.phone || '')}
                     >
-                      <LucideIcons.MessageCircle className="inline-block mr-2" /> Liên hệ ngay
+                      <MessageCircle className="inline-block mr-2" /> Liên hệ ngay
                     </button>
                     <button 
                       className={styles.directionBtn}
                       onClick={() => handleGetDirections(branch?.address || '')}
                     >
-                      <LucideIcons.Target className="inline-block mr-2" /> Chỉ đường
+                      <Target className="inline-block mr-2" /> Chỉ đường
                     </button>
                   </div>
                 </div>
@@ -491,7 +508,7 @@ const CuaHang = () => {
       {/* Interactive Map Section */}
       <div className={styles.mapSection}>
         <h2 className={styles.sectionTitle}>
-          <LucideIcons.MapPin className="inline-block mr-3 text-2xl" /> Bản Đồ Tương Tác
+          <MapPin className="inline-block mr-3 text-2xl" /> Bản Đồ Tương Tác
         </h2>
         
         {selectedBranch ? (
@@ -502,7 +519,7 @@ const CuaHang = () => {
                 className={styles.closeMapBtn}
                 onClick={() => setSelectedBranch(null)}
               >
-                <LucideIcons.X className="w-6 h-6" />
+                <X className="w-6 h-6" />
               </button>
             </div>
             <iframe
@@ -518,9 +535,9 @@ const CuaHang = () => {
         ) : (
           <div className={styles.mapPlaceholder}>
             <div className={styles.placeholderContent}>
-              <LucideIcons.MapPin className={`${styles.placeholderIcon} text-6xl text-gray-400`} />
+              <MapPin className={`${styles.placeholderIcon} text-6xl text-gray-400`} />
               <h3>Chọn chi nhánh để xem bản đồ</h3>
-              <p>Nhấn vào nút "Xem bản đồ" ở bất kỳ chi nhánh nào để hiển thị vị trí chính xác</p>
+              <p>Nhấn vào nút "Xem bản đồ" ở bất kỳ chi nhánh nào để hiển thị vị trí chính xác trên Google Maps với hướng dẫn đường đi chi tiết.</p>
             </div>
           </div>
         )}
@@ -529,7 +546,7 @@ const CuaHang = () => {
       {/* Products & Services Section */}
       <div className={styles.productsSection}>
         <h2 className={styles.sectionTitle}>
-          <LucideIcons.Store className="inline-block mr-3 text-2xl" /> Danh Mục Sản Phẩm & Dịch Vụ
+          <Store className="inline-block mr-3 text-2xl" /> Danh Mục Sản Phẩm & Dịch Vụ
         </h2>
         <div className={styles.productsGrid}>
           {(productCategories || []).filter(category => category).map((category, index) => (
@@ -544,11 +561,24 @@ const CuaHang = () => {
               <div className={styles.productsList}>
                 {(category.products || []).map((product, index) => (
                   <div key={index} className={styles.productItem}>
-                    <LucideIcons.CheckSquare className={styles.productIcon} />
+                    <CheckCircle className={styles.productIcon} />
                     <span>{product || ''}</span>
                   </div>
                 ))}
               </div>
+              {(category.features || []).length > 0 && (
+                <div className={styles.categoryFeatures}>
+                  <h6 className={styles.featuresTitle}>Ưu đãi đặc biệt:</h6>
+                  <ul className={styles.featuresList}>
+                    {(category.features || []).map((feature, idx) => (
+                      <li key={idx} className={styles.featureItem}>
+                        <Star className="inline-block mr-2 text-sm" />
+                        {feature || ''}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -557,7 +587,7 @@ const CuaHang = () => {
       {/* Customer Journey Section */}
       <div className={styles.journeySection}>
         <h2 className={styles.sectionTitle}>
-          <LucideIcons.Zap className="inline-block mr-3 text-2xl" /> Quy Trình Trải Nghiệm Khách Hàng
+          <Zap className="inline-block mr-3 text-2xl" /> Quy Trình Trải Nghiệm Khách Hàng (5 Bước Hoàn Chỉnh)
         </h2>
         <div className={styles.journeyFlow}>
           {(customerJourney || []).filter(step => step).map((step, journeyIndex) => (
@@ -569,7 +599,7 @@ const CuaHang = () => {
                 <h3 className={styles.stepTitle}>{step?.title || ''}</h3>
                 <p className={styles.stepDescription}>{step?.description || ''}</p>
                 <div className={styles.stepDuration}>
-                  <LucideIcons.Clock className={styles.durationIcon} />
+                  <Clock className={styles.durationIcon} />
                   <span>{step?.duration || ''}</span>
                 </div>
                 <div className={styles.stepFeatures}>
@@ -577,6 +607,15 @@ const CuaHang = () => {
                     <span key={idx} className={styles.stepFeature}>{feature || ''}</span>
                   ))}
                 </div>
+                {(step.additional || []).length > 0 && (
+                  <div className={styles.additionalFeatures}>
+                    {(step.additional || []).map((additional, addIdx) => (
+                      <p key={addIdx} className={styles.additionalText}>
+                        {additional || ''}
+                      </p>
+                    ))}
+                  </div>
+                )}
               </div>
               {journeyIndex < customerJourney.length - 1 && (
                 <div className={styles.stepConnector}>
@@ -598,7 +637,7 @@ const CuaHang = () => {
             <div key={level.level} className={styles.loyaltyCard}>
               <div className={styles.loyaltyHeader}>
                 <div className={styles.levelIcon} style={{ color: level.color }}>
-                  {level.icon || <LucideIcons.Star className="text-2xl" />}
+                  {level.icon || <Star className="text-2xl" />}
                 </div>
                 <h3 className={styles.levelName} style={{ color: level.color }}>
                   {level?.level} Member
@@ -608,7 +647,7 @@ const CuaHang = () => {
               <div className={styles.benefitsList}>
                 {(level.benefits || []).map((benefit, idx) => (
                   <div key={idx} className={styles.benefitItem}>
-                    <LucideIcons.Gift className={styles.benefitIcon} />
+                    <Gift className={styles.benefitIcon} />
                     <span>{benefit || ''}</span>
                   </div>
                 ))}
@@ -621,7 +660,7 @@ const CuaHang = () => {
       {/* Omnichannel Section */}
       <div className={styles.omnichannelSection}>
         <h2 className={styles.sectionTitle}>
-          <LucideIcons.Zap className="inline-block mr-3 text-2xl" /> Kênh Bán Hàng Đa Chiều (Omnichannel)
+          <Zap className="inline-block mr-3 text-2xl" /> Kênh Bán Hàng Đa Chiều (Omnichannel)
         </h2>
         <div className={styles.channelsGrid}>
           {(salesChannels || []).filter(channel => channel).map((channel, index) => (
@@ -630,13 +669,18 @@ const CuaHang = () => {
               <div className={styles.channelFeatures}>
                 {(channel.features || []).map((feature, idx) => (
                   <div key={idx} className={styles.channelFeature}>
-                    <LucideIcons.Star className={styles.channelFeatureIcon} />
+                    <Star className={styles.channelFeatureIcon} />
                     <span>{feature || ''}</span>
                   </div>
                 ))}
               </div>
+              <div className={styles.channelBenefits}>
+                <p className={styles.benefitsText}>
+                  <Star className="inline-block mr-1" /> Ưu điểm: {channel?.benefits || ''}
+                </p>
+              </div>
               <div className={styles.channelContact}>
-                <span className={styles.contactLabel}><LucideIcons.Phone className="inline-block mr-1" /> Liên hệ:</span>
+                <span className={styles.contactLabel}><Phone className="inline-block mr-1" /> Liên hệ:</span>
                 <span className={styles.contactInfo}>{channel?.contact || ''}</span>
               </div>
             </div>
@@ -675,12 +719,12 @@ const CuaHang = () => {
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
-              <h3><LucideIcons.Mail className="inline-block mr-2 text-xl" /> Đăng Ký Nhận Thông Tin</h3>
+              <h3><Mail className="inline-block mr-2 text-xl" /> Đăng Ký Nhận Thông Tin</h3>
               <button 
                 className={styles.closeModalBtn}
                 onClick={() => setShowContactForm(false)}
               >
-                <LucideIcons.X className="w-6 h-6" />
+                <X className="w-6 h-6" />
               </button>
             </div>
             
@@ -756,15 +800,16 @@ const CuaHang = () => {
       <div className={styles.footerSection}>
         <div className={styles.footerContent}>
           <div className={styles.footerInfo}>
-            <h3><LucideIcons.Star className="inline-block mr-2 text-xl" /> KaKa Mỹ Phẩm</h3>
+            <h3><Star className="inline-block mr-2 text-xl" /> KaKa Mỹ Phẩm</h3>
             <p>Chuyên cung cấp mỹ phẩm chất lượng cao, uy tín hàng đầu Việt Nam</p>
           </div>
           
           <div className={styles.footerContact}>
             <h4>Liên hệ tổng đài</h4>
-            <p><Phone className="inline-block mr-2" /> Hotline: 1900-234-567</p>
-            <p><LucideIcons.Mail className="inline-block mr-2" /> Email: info@kakacosmetica.com</p>
-            <p><LucideIcons.Building className="inline-block mr-2" /> Website: www.kakacosmetica.com</p>
+            <p><Phone className="inline-block mr-2" /> Hotline: 1900-KAKA (1900-5252)</p>
+            <p><Mail className="inline-block mr-2" /> Email: info@kakacosmetica.com</p>
+            <p><Building className="inline-block mr-2" /> Website: www.kakacosmetica.com</p>
+            <p><Building className="inline-block mr-2" /> Trụ sở: Tầng 15, Tòa nhà KaKa Tower, 123 Nguyễn Văn Cừ, Quận 1, TP.HCM</p>
           </div>
           
           <div className={styles.footerSocial}>
@@ -774,10 +819,16 @@ const CuaHang = () => {
                 <Phone className="inline-block mr-2" /> Facebook
               </a>
               <a href="https://instagram.com/kakacosmetica" target="_blank" rel="noopener noreferrer">
-                <LucideIcons.Mail className="inline-block mr-2" /> Instagram
+                <Mail className="inline-block mr-2" /> Instagram
               </a>
               <a href="https://zalo.me/kakacosmetica" target="_blank" rel="noopener noreferrer">
-                <LucideIcons.MessageCircle className="inline-block mr-2" /> Zalo
+                <MessageCircle className="inline-block mr-2" /> Zalo
+              </a>
+              <a href="https://tiktok.com/@kaka.cosmetics" target="_blank" rel="noopener noreferrer">
+                <Star className="inline-block mr-2" /> TikTok
+              </a>
+              <a href="https://youtube.com/kakacosmetica" target="_blank" rel="noopener noreferrer">
+                <Mail className="inline-block mr-2" /> YouTube
               </a>
             </div>
           </div>

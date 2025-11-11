@@ -17,10 +17,10 @@
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.544.0",
     "mysql2": "^3.15.1",
-    "next": "latest",
+    "next": "^14.2.0",
     "react": "latest",
     "react-dom": "latest",
-    "react-icons": "^5.5.0"
+    "react-icons": "^5.2.1"
   },
   "devDependencies": {
     "@types/node": "24.10.0",
@@ -38,5 +38,6 @@
     "mencare"
   ],
   "author": "MiniMax Agent",
-  "license": "MIT"
+  "license": "MIT",
+  "main": "[id].js"
 }
