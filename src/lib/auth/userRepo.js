@@ -1,35 +1,3 @@
-// import { query } from "@/lib/database/db";
-
-// /**
-//  * Lấy khách hàng theo email
-//  */
-// export async function findCustomerByEmail(email) {
-//   const rows = await query(
-//     "SELECT MaKH, HoVaTen, DienThoai, Email, NgayTao, NgayCapNhat FROM khachhang WHERE Email = ? LIMIT 1",
-//     [email]
-//   );
-//   return rows[0] || null;
-// }
-
-// /**
-//  * Tạo khách hàng mới từ info Google
-//  */
-// export async function createCustomerFromGoogle({ name, email }) {
-//   const result = await query(
-//     `INSERT INTO khachhang (HoVaTen, Email, MatKhau, DienThoai)
-//      VALUES (?, ?, NULL, NULL)`,
-//     [name || "Khách hàng", email]
-//   );
-
-//   // Lấy lại record vừa tạo
-//   const newId = result.insertId;
-//   const rows = await query(
-//     "SELECT MaKH, HoVaTen, DienThoai, Email, NgayTao, NgayCapNhat FROM khachhang WHERE MaKH = ?",
-//     [newId]
-//   );
-//   return rows[0] || null;
-// }
-
 // src/lib/auth/userRepo.js
 import { query } from "@/lib/database/db";
 
@@ -39,29 +7,37 @@ import { query } from "@/lib/database/db";
  */
 
 export async function findCustomerByEmail(email) {
+  const lowerEmail = email.toLowerCase();
   const rows = await query(
-    `SELECT MaKH AS id, HoVaTen AS name, Email AS email
-     FROM khachhang
-     WHERE Email = ?
+    `SELECT id, ten_hien_thi AS name, email, mat_khau_hash AS passwordHash, vai_tro AS role
+     FROM nguoi_dung
+     WHERE email_thuong = ?  
      LIMIT 1`,
-    [email]
+    [lowerEmail]
   );
   return rows[0] || null;
 }
 
 export async function createCustomerFromGoogle(profile) {
-  // Có thể bổ sung thêm DienThoai/MatKhau tùy nghiệp vụ
   const name = profile.name || profile.email;
   const email = profile.email;
+  const avatar = profile.picture || null;
 
+  //Tạo người dùng mới
   const result = await query(
-    `INSERT INTO khachhang (HoVaTen, Email, DienThoai)
-     VALUES (?, ?, NULL)`,
-    [name, email]
+   'INSERT INTO nguoi_dung (email, ten_hien_thi, anh_dai_dien, vai_tro) VALUES (?, ?, ?, \'Customer\')',
+    [email, name, avatar]
   );
 
+  const userId = result.insertId;
+
+  // Connect with google account
+  await query(
+    'INSERT INTO lien_ket_dang_nhap (nguoi_dung_id,nha_cung_cap, ma_nguoi_dung_ncc, email_tai_ncc, anh_tai_ncc) VALUES (?, \'google\', ?, ?, ?)',
+    [userId, profile.sub, profile.email, profile.picture]
+  );
   return {
-    id: result.insertId,
+    id: userId,
     name,
     email,
   };

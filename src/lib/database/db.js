@@ -1,16 +1,19 @@
 // src/lib/database/db.js
 import mysql from "mysql2/promise";
 
-let pool; //Singleton pool cho cả app
+let pool;
 
 function getConfig() {
-  // Dùng biến môi trường thay vì hard-code credential
+  // Ưu tiên MYSQL_*, fallback DB_*
+  const host = process.env.MYSQL_HOST || process.env.DB_HOST || "127.0.0.1";
+  const user = process.env.MYSQL_USER || process.env.DB_USERNAME || "root";
+  // LƯU Ý: nếu Laragon không đặt password thì để chuỗi rỗng "", KHÔNG có khoảng trắng
+  const password = (process.env.MYSQL_PASSWORD ?? process.env.DB_PASSWORD ?? "");
+  const database = process.env.MYSQL_DB || process.env.DB_DATABASE || "myphamshop";
+  const port = Number(process.env.MYSQL_PORT || process.env.DB_PORT || 3306);
+
   return {
-    host: process.env.MYSQL_HOST || "localhost",
-    user: process.env.MYSQL_USER || "root",
-    password: process.env.MYSQL_PASSWORD || "",
-    database: process.env.MYSQL_DB || "myphamshop",
-    port: Number(process.env.MYSQL_PORT || 3306),
+    host, user, password, database, port,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
@@ -24,17 +27,15 @@ export function getPool() {
   return pool;
 }
 
-// Helper query ngắn gọn
 export async function query(sql, params = []) {
   const [rows] = await getPool().execute(sql, params);
   return rows;
 }
 
-//  API tương tự connect() cũ nhưng dùng pool.getConnection()
 export async function connect() {
   return getPool().getConnection();
 }
-//thêm helper transaction để rut gọn service
+
 export async function withTransaction(fn) {
   const pool = getPool();
   const conn = await pool.getConnection();
