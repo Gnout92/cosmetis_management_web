@@ -4,9 +4,25 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-image: url('https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=1920&h=1080&fit=crop&auto=format');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   padding: 20px;
   font-family: 'Arial', sans-serif;
+  position: relative;
+}
+
+.registerContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.2);
+  pointer-events: none;
 }
 
 .registerBox {
@@ -43,27 +59,39 @@
 }
 
 .label {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 14px;
   color: #555;
   margin-bottom: 8px;
   font-weight: 500;
 }
 
+.inputIcon {
+  color: #6b7280;
+}
+
 .input {
   width: 100%;
   padding: 12px 15px;
+  padding-left: 48px;
   font-size: 16px;
   border: 1px solid #ddd;
   border-radius: 8px;
   transition: border-color 0.3s, box-shadow 0.3s;
   box-sizing: border-box;
+  position: relative;
 }
 
 .input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+.input::placeholder {
+  color: #9ca3af;
 }
 
 .input:disabled {
@@ -88,7 +116,7 @@
   font-size: 16px;
   font-weight: 600;
   color: white;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1a543a 0%, #256649 100%);
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -98,7 +126,7 @@
 
 .registerButton:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
 }
 
 .registerButton:active:not(:disabled) {
@@ -124,14 +152,14 @@
 }
 
 .link {
-  color: #667eea;
+  color: #22c55e;
   text-decoration: none;
   font-weight: 600;
   transition: color 0.3s;
 }
 
 .link:hover {
-  color: #764ba2;
+  color: #16a34a;
   text-decoration: underline;
 }
 
@@ -155,6 +183,11 @@
 
 /* Responsive */
 @media (max-width: 600px) {
+  .registerContainer {
+    padding: 16px;
+    background-attachment: scroll;
+  }
+  
   .registerBox {
     padding: 30px 20px;
   }

@@ -10,129 +10,160 @@ import SecuritySettings from './account/SecuritySettings';
 import LoyaltyProgram from './account/LoyaltyProgram';
 import styles from '../styles/login.module.css';
 
-const AccountDashboard = ({ user, onLogout, showNotification }) => {
-  const [activeSection, setActiveSection] = useState('personal-info');
-  const { updateUser } = useContext(AuthContext);
-  
-  // Menu navigation
-  const menuItems = [
-    {
-      section: 'account',
-      title: 'Tài khoản',
-      items: [
-        { id: 'personal-info', label: 'Thông tin cá nhân', icon: '👤', badge: null },
-        { id: 'address', label: 'Địa chỉ giao hàng', icon: '📍', badge: user?.profile?.addresses?.length || 0 },
-        { id: 'security', label: 'Bảo mật', icon: '🔒', badge: null }
-      ]
-    },
-    {
-      section: 'shopping',
-      title: 'Mua sắm',
-      items: [
-        { id: 'orders', label: 'Đơn hàng', icon: '📦', badge: user?.orders?.filter(o => o.status === 'pending')?.length || 0 },
-        { id: 'wishlist', label: 'Yêu thích', icon: '❤️', badge: user?.wishlist?.length || 0 },
-        { id: 'payment', label: 'Thanh toán', icon: '💳', badge: user?.paymentMethods?.length || 0 }
-      ]
-    },
-    {
-      section: 'rewards',
-      title: 'Ưu đãi',
-      items: [
-        { id: 'loyalty', label: 'Điểm thưởng', icon: '⭐', badge: user?.loyaltyPoints || 0 },
-        { id: 'notifications', label: 'Thông báo', icon: '🔔', badge: 3 }
-      ]
-    }
-  ];
+export default function AccountDashboard() {
+  const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
+  const [userStats, setUserStats] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Render nội dung chính
-  const renderMainContent = () => {
-    switch (activeSection) {
-      case 'personal-info':
-        return <PersonalInfo user={user} updateUser={updateUser} showNotification={showNotification} />;
-      case 'address':
-        return <AddressManagement user={user} updateUser={updateUser} showNotification={showNotification} />;
-      case 'orders':
-        return <OrderHistory user={user} showNotification={showNotification} />;
-      case 'payment':
-        return <PaymentMethods user={user} updateUser={updateUser} showNotification={showNotification} />;
-      case 'wishlist':
-        return <Wishlist user={user} updateUser={updateUser} showNotification={showNotification} />;
-      case 'notifications':
-        return <Notifications user={user} updateUser={updateUser} showNotification={showNotification} />;
-      case 'security':
-        return <SecuritySettings user={user} showNotification={showNotification} />;
-      case 'loyalty':
-        return <LoyaltyProgram user={user} updateUser={updateUser} showNotification={showNotification} />;
-      default:
-        return <PersonalInfo user={user} updateUser={updateUser} showNotification={showNotification} />;
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+    fetchUserStats();
+  }, [isAuthenticated, router]);
+
+  const fetchUserStats = async () => {
+    try {
+      const res = await fetch("/api/account/dashboard", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUserStats(data);
+      }
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  if (!isAuthenticated) return null;
+
+  const menuItems = [
+    {
+      title: "Thông tin cá nhân",
+      description: "Họ tên, ảnh đại diện, email, số điện thoại",
+      icon: "👤",
+      link: "/account/profile",
+      color: "blue"
+    },
+    {
+      title: "Bảo mật & mật khẩu",
+      description: "Đổi mật khẩu, 2FA, quản lý phiên",
+      icon: "🔐",
+      link: "/account/security",
+      color: "red"
+    },
+    {
+      title: "Địa chỉ giao hàng",
+      description: "Quản lý địa chỉ, chọn địa chỉ mặc định",
+      icon: "📍",
+      link: "/account/addresses",
+      color: "green"
+    },
+    {
+      title: "Đơn hàng",
+      description: "Lịch sử đơn hàng, theo dõi vận chuyển",
+      icon: "📦",
+      link: "/account/orders",
+      color: "purple"
+    },
+    {
+      title: "Danh sách yêu thích",
+      description: "Sản phẩm đã lưu, chuyển vào giỏ hàng",
+      icon: "❤️",
+      link: "/account/wishlist",
+      color: "pink"
+    },
+    {
+      title: "Bảo hành",
+      description: "Mã bảo hành, trạng thái, yêu cầu mới",
+      icon: "🔧",
+      link: "/account/warranty",
+      color: "orange"
+    },
+    {
+      title: "Điểm tích lũy & Voucher",
+      description: "Điểm, cấp độ VIP, mã voucher",
+      icon: "🎁",
+      link: "/account/points",
+      color: "yellow"
+    },
+    {
+      title: "Thanh toán",
+      description: "Phương thức thanh toán, lịch sử",
+      icon: "💳",
+      link: "/account/payment",
+      color: "indigo"
+    },
+    {
+      title: "Thông báo & Hỗ trợ",
+      description: "Cài đặt thông báo, chat CSKH",
+      icon: "🔔",
+      link: "/account/notifications",
+      color: "teal"
+    }
+  ];
+
+  if (loading) {
+    return <div className={styles.loading}>Đang tải...</div>;
+  }
+
   return (
     <div className={styles.accountContainer}>
-      {/* Sidebar */}
-      <div className={styles.sidebar}>
-        {/* Header với thông tin user */}
-        <div className={styles.sidebarHeader}>
-          <div className={styles.userCard}>
-            <div className={styles.avatar}>
-              {user?.avatar ? (
-                <img src={user.avatar} alt="Avatar" />
-              ) : (
-                user?.name?.charAt(0)?.toUpperCase() || 'U'
-              )}
-            </div>
-            <h3 className={styles.userName}>{user?.name || 'Người dùng'}</h3>
-            <p className={styles.userEmail}>{user?.email}</p>
-            <div className={styles.pointsBadge}>
-              ⭐ {user?.loyaltyPoints || 0} điểm
-            </div>
+      <div className={styles.accountHeader}>
+        <div className={styles.userInfo}>
+          <img 
+            src={user?.avatar || "/default-avatar.png"} 
+            alt="Avatar" 
+            className={styles.userAvatar}
+            onError={(e) => {
+              e.target.src = "/default-avatar.png";
+            }}
+          />
+          <div>
+            <h1 className={styles.welcomeTitle}>
+              Chào mừng, {user?.HoVaTen || "Khách hàng"}!
+            </h1>
+            <p className={styles.userEmail}>{user?.Email}</p>
+            {userStats && (
+              <div className={styles.userStats}>
+                <span>💰 Điểm tích lũy: {userStats.totalPoints || 0}</span>
+                <span>📦 Đơn hàng: {userStats.totalOrders || 0}</span>
+                <span>🎯 Cấp độ: {userStats.vipLevel || "Thường"}</span>
+              </div>
+            )}
           </div>
-        </div>
-
-        {/* Navigation Menu */}
-        <nav className={styles.navMenu}>
-          {menuItems.map((section) => (
-            <div key={section.section} className={styles.navSection}>
-              <div className={styles.navSectionTitle}>{section.title}</div>
-              {section.items.map((item) => (
-                <a
-                  key={item.id}
-                  className={`${styles.navItem} ${activeSection === item.id ? styles.active : ''}`}
-                  onClick={() => setActiveSection(item.id)}
-                >
-                  <span className={styles.icon}>{item.icon}</span>
-                  <span className={styles.text}>{item.label}</span>
-                  {item.badge !== null && item.badge > 0 && (
-                    <span className={styles.badge}>{item.badge}</span>
-                  )}
-                </a>
-              ))}
-            </div>
-          ))}
-        </nav>
-
-        {/* Nút trở về trang chủ và đăng xuất */}
-        <div className={styles.backToHomeSidebar}>
-          <a href="/" className={styles.link}>
-            🏠 Trang chủ
-          </a>
-          <button 
-            onClick={onLogout} 
-            className={`${styles.link} ${styles['btn-danger']}`}
-            style={{ marginTop: '0.5rem', border: 'none', width: '100%' }}
-          >
-            🚪 Đăng xuất
-          </button>
         </div>
       </div>
 
-      {/* Nội dung chính */}
-      <main className={styles.mainContent}>
-        {renderMainContent()}
-      </main>
+      <div className={styles.menuGrid}>
+        {menuItems.map((item, index) => (
+          <Link key={index} href={item.link} className={`${styles.menuCard} ${styles[item.color]}`}>
+            <div className={styles.menuIcon}>{item.icon}</div>
+            <h3 className={styles.menuTitle}>{item.title}</h3>
+            <p className={styles.menuDescription}>{item.description}</p>
+          </Link>
+        ))}
+      </div>
+
+      <div className={styles.quickActions}>
+        <h2>Hành động nhanh</h2>
+        <div className={styles.actionButtons}>
+          <Link href="/cuahang" className={styles.actionButton}>
+            🛍️ Tiếp tục mua sắm
+          </Link>
+          <Link href="/giohang" className={styles.actionButton}>
+            🛒 Xem giỏ hàng
+          </Link>
+          <Link href="/timkiem" className={styles.actionButton}>
+            🔍 Tìm kiếm sản phẩm
+          </Link>
+        </div>
+      </div>
     </div>
   );
-};
-
-export default AccountDashboard;
+}

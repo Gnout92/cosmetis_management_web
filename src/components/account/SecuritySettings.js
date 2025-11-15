@@ -18,6 +18,9 @@ const SecuritySettings = ({ user, showNotification }) => {
     confirmPassword: ''
   });
 
+  // Kiểm tra xem user đăng nhập bằng Google hay Email/Password
+  const isGoogleLogin = user?.provider === 'google' || user?.loginMethod === 'google';
+
   useEffect(() => {
     // Giả lập tải dữ liệu bảo mật
     const loadSecurityData = async () => {
@@ -226,8 +229,13 @@ const SecuritySettings = ({ user, showNotification }) => {
               disabled
               style={{ background: '#f5f5f5' }}
             />
-            <small style={{ color: '#999', fontSize: '0.8rem', marginTop: '0.25rem', display: 'block' }}>
-              Đăng nhập bằng Google OAuth - không thể thay đổi
+            <small style={{ 
+              color: isGoogleLogin ? '#4caf50' : '#999', 
+              fontSize: '0.8rem', 
+              marginTop: '0.25rem', 
+              display: 'block' 
+            }}>
+              {isGoogleLogin ? 'Đăng nhập bằng Google OAuth - không thể thay đổi' : 'Email đăng nhập của tài khoản'}
             </small>
           </div>
 
@@ -235,28 +243,63 @@ const SecuritySettings = ({ user, showNotification }) => {
             <label className={styles.formLabel}>Phương thức đăng nhập</label>
             <input
               type="text"
-              value="Google OAuth 2.0"
+              value={isGoogleLogin ? "Google OAuth 2.0" : "Email & Mật khẩu"}
               className={styles.formInput}
               disabled
               style={{ background: '#f5f5f5' }}
             />
-            <small style={{ color: '#4caf50', fontSize: '0.8rem', marginTop: '0.25rem', display: 'block' }}>
-              ✓ Bảo mật cao với chuẩn OAuth 2.0
+            <small style={{ 
+              color: isGoogleLogin ? '#4caf50' : '#ff9800', 
+              fontSize: '0.8rem', 
+              marginTop: '0.25rem', 
+              display: 'block' 
+            }}>
+              {isGoogleLogin 
+                ? '✓ Bảo mật cao với chuẩn OAuth 2.0' 
+                : '⚠️ Sử dụng mật khẩu mạnh để bảo vệ tài khoản'
+              }
             </small>
           </div>
         </div>
 
         {!showChangePassword ? (
           <div style={{ marginTop: '1.5rem' }}>
-            <button
-              onClick={() => setShowChangePassword(true)}
-              className={`${styles.btn} ${styles['btn-primary']}`}
-            >
-              🔑 Đổi mật khẩu
-            </button>
-            <p style={{ color: '#999', fontSize: '0.85rem', marginTop: '0.5rem' }}>
-              Lời khuyên: Bằng việc sử dụng Google OAuth, mật khẩu của bạn được Google quản lý an toàn
-            </p>
+            {isGoogleLogin ? (
+              /* Google OAuth users - Hiển thị thông báo liên kết */
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-start space-x-3">
+                  <div className="text-green-600 text-xl">🔗</div>
+                  <div>
+                    <h3 className="text-green-800 font-semibold">Đã liên kết với Google</h3>
+                    <p className="text-green-700 text-sm mt-1">
+                      Tài khoản của bạn được bảo mật bởi Google OAuth 2.0. 
+                      Mật khẩu được Google quản lý an toàn.
+                    </p>
+                    <div className="mt-2 text-xs text-green-600">
+                      <span className="font-medium">Ưu điểm:</span> 
+                      <ul className="mt-1 space-y-0.5">
+                        <li>• Đăng nhập nhanh chóng</li>
+                        <li>• Bảo mật 2 lớp tự động</li>
+                        <li>• Không cần nhớ mật khẩu phức tạp</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Email/Password users - Hiển thị nút đổi mật khẩu */
+              <div>
+                <button
+                  onClick={() => setShowChangePassword(true)}
+                  className={`${styles.btn} ${styles['btn-primary']}`}
+                >
+                  🔑 Đổi mật khẩu
+                </button>
+                <p style={{ color: '#999', fontSize: '0.85rem', marginTop: '0.5rem' }}>
+                  Thay đổi mật khẩu để tăng cường bảo mật cho tài khoản
+                </p>
+              </div>
+            )}
           </div>
         ) : (
           <form onSubmit={handlePasswordChange} style={{ marginTop: '1.5rem' }}>

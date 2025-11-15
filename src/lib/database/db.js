@@ -1,45 +1,42 @@
 // src/lib/database/db.js
 import mysql from "mysql2/promise";
 
-let pool;
+let pool = null;
 
-function getConfig() {
-  // Ưu tiên MYSQL_*, fallback DB_*
-  const host = process.env.MYSQL_HOST || process.env.DB_HOST || "127.0.0.1";
-  const user = process.env.MYSQL_USER || process.env.DB_USERNAME || "root";
-  // LƯU Ý: nếu Laragon không đặt password thì để chuỗi rỗng "", KHÔNG có khoảng trắng
-  const password = (process.env.MYSQL_PASSWORD ?? process.env.DB_PASSWORD ?? "");
-  const database = process.env.MYSQL_DB || process.env.DB_DATABASE || "myphamshop";
-  const port = Number(process.env.MYSQL_PORT || process.env.DB_PORT || 3306);
-
-  return {
-    host, user, password, database, port,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
-  };
-}
-
-export function getPool() {
+function getPool() {
   if (!pool) {
-    pool = mysql.createPool(getConfig());
+    // Tạo connection pool với environment variables
+    pool = mysql.createPool({
+      host: process.env.DB_HOST || 'localhost',
+      user: process.env.DB_USER || 'root',
+      password: process.env.DB_PASSWORD || '',
+      database: process.env.DB_NAME || 'shop_my_pham',
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0,
+      acquireTimeout: 60000,
+      timeout: 60000,
+      reconnect: true,
+      charset: 'utf8mb4',
+    });
   }
   return pool;
 }
 
-export async function query(sql, params = []) {
-  const [rows] = await getPool().execute(sql, params);
-  return rows;
+// Function để test connection
+async function testConnection() {
+  try {
+    const pool = getPool();
+    const [rows] = await pool.execute('SELECT 1 as test');
+    console.log('✅ Database connection successful!');
+    return true;
+  } catch (error) {
+    console.error('❌ Database connection failed:', error.message);
+    return false;
+  }
 }
 
-export async function connect() {
-  return getPool().getConnection();
-}
-
-export async function withTransaction(fn) {
-  const pool = getPool();
-  const conn = await pool.getConnection();
-  try { await conn.beginTransaction(); const r = await fn(conn); await conn.commit(); return r; }
-  catch (e) { await conn.rollback(); throw e; }
-  finally { conn.release(); }
-}
+module.exports = {
+  getPool,
+  testConnection,
+};

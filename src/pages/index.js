@@ -110,7 +110,7 @@ export default function HomePage() {
   
    // Handle account click
   const handleAccountClick = () => {
-    router.push('/tai-khoan');
+    router.push('/taikhoan');
   };
 
   // Enhanced search functionality
