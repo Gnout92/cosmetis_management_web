@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import styles from '../../styles/login.module.css';
 
 const OrderHistory = ({ user, showNotification }) => {
+  const router = useRouter();
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState('all'); // all, pending, shipped, delivered, cancelled
   const [isLoading, setIsLoading] = useState(true);
@@ -140,199 +142,203 @@ const OrderHistory = ({ user, showNotification }) => {
   }
 
   return (
-    <div>
-      <div className={styles.contentHeader}>
-        <h1 className={styles.contentTitle}>Lịch sử đơn hàng</h1>
-        <p className={styles.contentSubtitle}>Theo dõi và quản lý các đơn hàng của bạn</p>
-      </div>
-
-      {/* Bộ lọc trạng thái */}
-      <div className={styles.contentSection}>
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
-          <button
-            onClick={() => setFilter('all')}
-            className={`${styles.btn} ${filter === 'all' ? styles['btn-primary'] : styles['btn-secondary']}`}
-            style={{ fontSize: '0.9rem', padding: '0.5rem 1rem' }}
-          >
-            Tất cả ({orders.length})
-          </button>
-          <button
-            onClick={() => setFilter('pending')}
-            className={`${styles.btn} ${filter === 'pending' ? styles['btn-primary'] : styles['btn-secondary']}`}
-            style={{ fontSize: '0.9rem', padding: '0.5rem 1rem' }}
-          >
-            ⏳ Đang xử lý ({orders.filter(o => o.status === 'pending').length})
-          </button>
-          <button
-            onClick={() => setFilter('shipped')}
-            className={`${styles.btn} ${filter === 'shipped' ? styles['btn-primary'] : styles['btn-secondary']}`}
-            style={{ fontSize: '0.9rem', padding: '0.5rem 1rem' }}
-          >
-            🚚 Đang giao ({orders.filter(o => o.status === 'shipped').length})
-          </button>
-          <button
-            onClick={() => setFilter('delivered')}
-            className={`${styles.btn} ${filter === 'delivered' ? styles['btn-primary'] : styles['btn-secondary']}`}
-            style={{ fontSize: '0.9rem', padding: '0.5rem 1rem' }}
-          >
-            ✓ Đã giao ({orders.filter(o => o.status === 'delivered').length})
-          </button>
-          <button
-            onClick={() => setFilter('cancelled')}
-            className={`${styles.btn} ${filter === 'cancelled' ? styles['btn-primary'] : styles['btn-secondary']}`}
-            style={{ fontSize: '0.9rem', padding: '0.5rem 1rem' }}
-          >
-            ✕ Đã hủy ({orders.filter(o => o.status === 'cancelled').length})
-          </button>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Lịch sử đơn hàng</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">Theo dõi và quản lý các đơn hàng của bạn</p>
         </div>
-      </div>
 
-      {/* Danh sách đơn hàng */}
-      {filteredOrders.length > 0 ? (
-        <div style={{ display: 'grid', gap: '1.5rem' }}>
-          {filteredOrders.map((order) => {
-            const statusInfo = getStatusInfo(order.status);
-            return (
-              <div key={order.id} className={styles.contentSection}>
-                {/* Header đơn hàng */}
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'flex-start',
-                  marginBottom: '1.5rem',
-                  paddingBottom: '1rem',
-                  borderBottom: '1px solid #e0e0e0'
-                }}>
-                  <div>
-                    <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: '600' }}>
-                      Đơn hàng #{order.id}
-                    </h3>
-                    <p style={{ margin: '0', color: '#666', fontSize: '0.9rem' }}>
-                      📅 Đặt hàng: {new Date(order.orderDate).toLocaleDateString('vi-VN')}
-                    </p>
-                    {order.tracking && (
-                      <p style={{ margin: '0.25rem 0 0 0', color: '#666', fontSize: '0.9rem' }}>
-                        📦 Mã vận đơn: {order.tracking}
-                      </p>
-                    )}
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{
-                      background: statusInfo.color,
-                      color: 'white',
-                      padding: '0.5rem 1rem',
-                      borderRadius: '25px',
-                      fontSize: '0.85rem',
-                      fontWeight: '600',
-                      marginBottom: '0.5rem'
-                    }}>
-                      {statusInfo.icon} {statusInfo.label}
-                    </div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: '600', color: '#ff6b9d' }}>
-                      {formatPrice(order.total)}
-                    </div>
-                  </div>
-                </div>
+        {/* Filter Tabs */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-6">
+          <div className="p-6">
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setFilter('all')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  filter === 'all' 
+                    ? 'bg-pink-600 text-white' 
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                Tất cả ({orders.length})
+              </button>
+              <button
+                onClick={() => setFilter('pending')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  filter === 'pending' 
+                    ? 'bg-pink-600 text-white' 
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                ⏳ Đang xử lý ({orders.filter(o => o.status === 'pending').length})
+              </button>
+              <button
+                onClick={() => setFilter('shipped')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  filter === 'shipped' 
+                    ? 'bg-pink-600 text-white' 
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                🚚 Đang giao ({orders.filter(o => o.status === 'shipped').length})
+              </button>
+              <button
+                onClick={() => setFilter('delivered')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  filter === 'delivered' 
+                    ? 'bg-pink-600 text-white' 
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                ✓ Đã giao ({orders.filter(o => o.status === 'delivered').length})
+              </button>
+              <button
+                onClick={() => setFilter('cancelled')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  filter === 'cancelled' 
+                    ? 'bg-pink-600 text-white' 
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                ✕ Đã hủy ({orders.filter(o => o.status === 'cancelled').length})
+              </button>
+            </div>
+          </div>
+        </div>
 
-                {/* Danh sách sản phẩm */}
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <h4 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: '600' }}>Sản phẩm ({order.items.length})</h4>
-                  {order.items.map((item) => (
-                    <div key={item.id} style={{
-                      display: 'flex',
-                      gap: '1rem',
-                      padding: '1rem',
-                      background: '#f9f9f9',
-                      borderRadius: '8px',
-                      marginBottom: '0.5rem'
-                    }}>
-                      <div style={{
-                        width: '60px',
-                        height: '60px',
-                        background: '#e0e0e0',
-                        borderRadius: '8px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '1.5rem'
-                      }}>
-                        💄
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <h5 style={{ margin: '0 0 0.25rem 0', fontSize: '0.95rem', fontWeight: '600' }}>
-                          {item.name}
-                        </h5>
-                        <p style={{ margin: '0', color: '#666', fontSize: '0.85rem' }}>
-                          Số lượng: {item.quantity} | {formatPrice(item.price)}
+        {/* Orders List */}
+        {filteredOrders.length > 0 ? (
+          <div className="space-y-6">
+            {filteredOrders.map((order) => {
+              const statusInfo = getStatusInfo(order.status);
+              return (
+                <div key={order.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                  {/* Order Header */}
+                  <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          Đơn hàng #{order.id}
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          📅 Đặt hàng: {new Date(order.orderDate).toLocaleDateString('vi-VN')}
                         </p>
+                        {order.tracking && (
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            📦 Mã vận đơn: {order.tracking}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <span 
+                            className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium text-white"
+                            style={{ backgroundColor: statusInfo.color }}
+                          >
+                            {statusInfo.icon} {statusInfo.label}
+                          </span>
+                          <p className="text-lg font-bold text-pink-600 dark:text-pink-400 mt-1">
+                            {formatPrice(order.total)}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
 
-                {/* Địa chỉ giao hàng */}
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', fontWeight: '600' }}>Địa chỉ giao hàng</h4>
-                  <div style={{ background: '#f9f9f9', padding: '1rem', borderRadius: '8px' }}>
-                    <p style={{ margin: '0', fontWeight: '500' }}>{order.shippingAddress.name}</p>
-                    <p style={{ margin: '0.25rem 0 0 0', color: '#666', fontSize: '0.9rem' }}>
-                      {order.shippingAddress.address}
-                    </p>
-                    <p style={{ margin: '0.25rem 0 0 0', color: '#666', fontSize: '0.9rem' }}>
-                      📞 {order.shippingAddress.phone}
-                    </p>
+                  <div className="p-6">
+                    {/* Products */}
+                    <div className="mb-6">
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                        Sản phẩm ({order.items.length})
+                      </h4>
+                      <div className="space-y-3">
+                        {order.items.map((item) => (
+                          <div key={item.id} className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div className="w-16 h-16 bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/20 dark:to-purple-900/20 rounded-lg flex items-center justify-center">
+                              <span className="text-2xl">💄</span>
+                            </div>
+                            <div className="flex-1">
+                              <h5 className="font-medium text-gray-900 dark:text-white">
+                                {item.name}
+                              </h5>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                Số lượng: {item.quantity} | {formatPrice(item.price)}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Shipping Address */}
+                    <div className="mb-6">
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                        Địa chỉ giao hàng
+                      </h4>
+                      <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <p className="font-medium text-gray-900 dark:text-white">{order.shippingAddress.name}</p>
+                        <p className="text-gray-600 dark:text-gray-400">{order.shippingAddress.address}</p>
+                        <p className="text-gray-600 dark:text-gray-400">📞 {order.shippingAddress.phone}</p>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex flex-wrap gap-3 justify-end">
+                      {order.status === 'delivered' && (
+                        <button
+                          onClick={() => handleReorder(order)}
+                          className="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg text-sm font-medium transition-colors"
+                        >
+                          🛒 Mua lại
+                        </button>
+                      )}
+                      
+                      {order.status === 'pending' && (
+                        <button
+                          onClick={() => handleCancelOrder(order.id)}
+                          className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
+                        >
+                          ✕ Hủy đơn
+                        </button>
+                      )}
+                      
+                      <button
+                        onClick={() => showNotification('Chi tiết đơn hàng sẽ được phát triển', 'warning')}
+                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        👁️ Xem chi tiết
+                      </button>
+                    </div>
                   </div>
                 </div>
-
-                {/* Hành động */}
-                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-                  {order.status === 'delivered' && (
-                    <button
-                      onClick={() => handleReorder(order)}
-                      className={`${styles.btn} ${styles['btn-primary']}`}
-                      style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}
-                    >
-                      🛒 Mua lại
-                    </button>
-                  )}
-                  
-                  {order.status === 'pending' && (
-                    <button
-                      onClick={() => handleCancelOrder(order.id)}
-                      className={`${styles.btn} ${styles['btn-danger']}`}
-                      style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}
-                    >
-                      ✕ Hủy đơn
-                    </button>
-                  )}
-                  
-                  <button
-                    onClick={() => showNotification('Chi tiết đơn hàng sẽ được phát triển', 'warning')}
-                    className={`${styles.btn} ${styles['btn-secondary']}`}
-                    style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}
-                  >
-                    👁️ Xem chi tiết
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className={styles.contentSection} style={{ textAlign: 'center', padding: '3rem 2rem' }}>
-          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>📦</div>
-          <h3 style={{ color: '#666', marginBottom: '0.5rem' }}>Không có đơn hàng nào</h3>
-          <p style={{ color: '#999', marginBottom: '2rem' }}>
-            {filter === 'all' 
-              ? 'Bạn chưa có đơn hàng nào' 
-              : `Không có đơn hàng nào với trạng thái "${getStatusInfo(filter).label}"`
-            }
-          </p>
-          <a href="/products" className={`${styles.btn} ${styles['btn-primary']}`}>
-            🛒 Bắt đầu mua sắm
-          </a>
-        </div>
-      )}
+              );
+            })}
+          </div>
+        ) : (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">📦</div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                Không có đơn hàng nào
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                {filter === 'all' 
+                  ? 'Bạn chưa có đơn hàng nào' 
+                  : `Không có đơn hàng nào với trạng thái "${getStatusInfo(filter).label}"`
+                }
+              </p>
+              <button
+                onClick={() => router.push('/products')}
+                className="px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-medium transition-colors"
+              >
+                🛒 Bắt đầu mua sắm
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

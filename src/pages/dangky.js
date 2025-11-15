@@ -3,12 +3,22 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import styles from "../styles/dangky.module.css";
+// Import icons
+import { 
+  User, 
+  Phone, 
+  Mail, 
+  Lock, 
+  ArrowLeft,
+  UserPlus
+} from 'lucide-react';
 
 export default function DangKy() {
   const router = useRouter();
 
   const [formData, setFormData] = useState({
     fullName: "",
+    phone: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -43,29 +53,51 @@ export default function DangKy() {
       return;
     }
 
+    // Kiểm tra số điện thoại
+    if (!formData.phone) {
+      setError("Vui lòng nhập số điện thoại.");
+      return;
+    }
+
+    // Kiểm tra định dạng số điện thoại (bắt đầu bằng 0 và có 10 chữ số)
+    const phoneRegex = /^0[0-9]{9}$/;
+    if (!phoneRegex.test(formData.phone)) {
+      setError("Số điện thoại phải bắt đầu bằng 0 và có 10 chữ số (ví dụ: 0981234567).");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Gửi yêu cầu đăng ký đến API backend
+      // Gọi API để đăng ký tài khoản
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullName: formData.fullName,
+          phone: formData.phone,
           email: formData.email,
           password: formData.password,
         }),
       });
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.message || "Đăng ký thất bại");
-      }
-
       const data = await res.json();
 
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Đăng ký thất bại");
+      }
+
       // Thông báo thành công
-      alert("Đăng ký thành công! Vui lòng đăng nhập.");
+      alert(`🎉 Đăng ký thành công!\n\nMã khách hàng: ${data.data.customerId}\n- Họ tên: ${data.data.fullName}\n- SĐT: ${data.data.phone}\n- Email: ${data.data.email}\n\nVui lòng đăng nhập để tiếp tục.`);
+
+      // Reset form
+      setFormData({
+        fullName: "",
+        phone: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
 
       // Chuyển hướng về trang đăng nhập
       router.push("/login");
@@ -80,13 +112,14 @@ export default function DangKy() {
   return (
     <div className={styles.registerContainer}>
       <div className={styles.registerBox}>
-        <h1 className={styles.title}>Tạo tài khoản</h1>
-        <p className={styles.subtitle}>Điền thông tin để tạo tài khoản mới</p>
+        <h1 className={styles.title}>Tạo tài khoản mới</h1>
+        <p className={styles.subtitle}>Tham gia cộng đồng Beauty Shop</p>
 
         <form onSubmit={handleSubmit} className={styles.registerForm}>
           {/* Họ và Tên */}
           <div className={styles.formGroup}>
             <label htmlFor="fullName" className={styles.label}>
+              <User size={16} className={styles.inputIcon} />
               Họ và Tên
             </label>
             <input
@@ -102,17 +135,39 @@ export default function DangKy() {
             />
           </div>
 
+          {/* Số điện thoại */}
+          <div className={styles.formGroup}>
+            <label htmlFor="phone" className={styles.label}>
+              <Phone size={16} className={styles.inputIcon} />
+              Số điện thoại
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              className={styles.input}
+              placeholder="Nhập số điện thoại (ví dụ: 0981234567)"
+              value={formData.phone}
+              onChange={handleChange}
+              required
+              disabled={loading}
+              pattern="0[0-9]{9}"
+              title="Số điện thoại phải bắt đầu bằng 0 và có 10 chữ số"
+            />
+          </div>
+
           {/* Email */}
           <div className={styles.formGroup}>
             <label htmlFor="email" className={styles.label}>
-              Email
+              <Mail size={16} className={styles.inputIcon} />
+              Tên đăng ký
             </label>
             <input
               type="email"
               id="email"
               name="email"
               className={styles.input}
-              placeholder="Nhập email của bạn"
+              placeholder="Nhập tên đăng ký của bạn"
               value={formData.email}
               onChange={handleChange}
               required
@@ -123,6 +178,7 @@ export default function DangKy() {
           {/* Mật khẩu */}
           <div className={styles.formGroup}>
             <label htmlFor="password" className={styles.label}>
+              <Lock size={16} className={styles.inputIcon} />
               Mật khẩu
             </label>
             <input
@@ -141,7 +197,8 @@ export default function DangKy() {
           {/* Nhập lại mật khẩu */}
           <div className={styles.formGroup}>
             <label htmlFor="confirmPassword" className={styles.label}>
-              Nhập lại mật khẩu
+              <Lock size={16} className={styles.inputIcon} />
+              Xác nhận mật khẩu
             </label>
             <input
               type="password"
@@ -172,7 +229,7 @@ export default function DangKy() {
         {/* Link đăng nhập */}
         <div className={styles.loginLink}>
           <p>
-            Đã có tài khoản? <Link href="/login" className={styles.link}>Đăng nhập</Link>
+            Đã có tài khoản? <Link href="/login" className={styles.link}><UserPlus size={16} />Đăng nhập</Link>
           </p>
         </div>
       </div>

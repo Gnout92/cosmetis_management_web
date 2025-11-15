@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import styles from '../../styles/login.module.css';
 
 const Wishlist = ({ user, updateUser, showNotification }) => {
+  const router = useRouter();
   const [wishlist, setWishlist] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [sortBy, setSortBy] = useState('newest'); // newest, oldest, price-low, price-high, name
@@ -170,206 +172,161 @@ const Wishlist = ({ user, updateUser, showNotification }) => {
   }
 
   return (
-    <div>
-      <div className={styles.contentHeader}>
-        <h1 className={styles.contentTitle}>Danh sách yêu thích</h1>
-        <p className={styles.contentSubtitle}>Các sản phẩm bạn đã lưu lại</p>
-      </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Danh sách yêu thích</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">Các sản phẩm bạn đã lưu lại</p>
+        </div>
 
-      {wishlist.length > 0 ? (
-        <>
-          {/* Điều khiển */}
-          <div className={styles.contentSection}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <span style={{ fontSize: '0.9rem', color: '#666' }}>Sắp xếp theo:</span>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className={styles.formInput}
-                  style={{ width: 'auto', padding: '0.5rem' }}
-                >
-                  <option value="newest">Mới nhất</option>
-                  <option value="oldest">Cũ nhất</option>
-                  <option value="price-low">Giá thấp đến cao</option>
-                  <option value="price-high">Giá cao đến thấp</option>
-                  <option value="name">Tên A-Z</option>
-                </select>
-              </div>
-              
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button
-                  onClick={handleAddAllToCart}
-                  className={`${styles.btn} ${styles['btn-primary']}`}
-                  style={{ fontSize: '0.9rem', padding: '0.5rem 1rem' }}
-                >
-                  🛒 Thêm tất cả vào giỏ
-                </button>
-                <button
-                  onClick={handleClearWishlist}
-                  className={`${styles.btn} ${styles['btn-danger']}`}
-                  style={{ fontSize: '0.9rem', padding: '0.5rem 1rem' }}
-                >
-                  🗑️ Xóa tất cả
-                </button>
+        {wishlist.length > 0 ? (
+          <>
+            {/* Controls */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-6">
+              <div className="p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Sắp xếp theo:</span>
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    >
+                      <option value="newest">Mới nhất</option>
+                      <option value="oldest">Cũ nhất</option>
+                      <option value="price-low">Giá thấp đến cao</option>
+                      <option value="price-high">Giá cao đến thấp</option>
+                      <option value="name">Tên A-Z</option>
+                    </select>
+                  </div>
+                  
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleAddAllToCart}
+                      className="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg text-sm font-medium transition-colors"
+                    >
+                      🛒 Thêm tất cả vào giỏ
+                    </button>
+                    <button
+                      onClick={handleClearWishlist}
+                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
+                    >
+                      🗑️ Xóa tất cả
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Danh sách sản phẩm */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-            {sortedWishlist.map((product) => (
-              <div key={product.id} className={styles.contentSection} style={{ padding: '1.5rem' }}>
-                {/* Hình ảnh sản phẩm */}
-                <div style={{ position: 'relative', marginBottom: '1rem' }}>
-                  <div style={{
-                    width: '100%',
-                    height: '200px',
-                    background: 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '3rem',
-                    position: 'relative',
-                    overflow: 'hidden'
-                  }}>
-                    💄
-                    
-                    {/* Badge giảm giá */}
-                    {product.discount > 0 && (
-                      <div style={{
-                        position: 'absolute',
-                        top: '0.5rem',
-                        left: '0.5rem',
-                        background: '#ff6b9d',
-                        color: 'white',
-                        padding: '0.25rem 0.5rem',
-                        borderRadius: '25px',
-                        fontSize: '0.75rem',
-                        fontWeight: '600'
-                      }}>
-                        -{product.discount}%
-                      </div>
-                    )}
-                    
-                    {/* Badge hết hàng */}
-                    {!product.inStock && (
-                      <div style={{
-                        position: 'absolute',
-                        top: '0.5rem',
-                        right: '0.5rem',
-                        background: '#f44336',
-                        color: 'white',
-                        padding: '0.25rem 0.5rem',
-                        borderRadius: '25px',
-                        fontSize: '0.75rem',
-                        fontWeight: '600'
-                      }}>
-                        Hết hàng
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Thông tin sản phẩm */}
-                <div style={{ marginBottom: '1rem' }}>
-                  <h3 style={{ 
-                    margin: '0 0 0.5rem 0', 
-                    fontSize: '1rem', 
-                    fontWeight: '600',
-                    lineHeight: '1.3',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden'
-                  }}>
-                    {product.name}
-                  </h3>
-                  
-                  <p style={{ margin: '0 0 0.5rem 0', color: '#666', fontSize: '0.85rem' }}>
-                    {product.brand}
-                  </p>
-                  
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                    <div style={{ color: '#ffd700', fontSize: '0.9rem' }}>
-                      {'★'.repeat(Math.floor(product.rating))}{'☆'.repeat(5 - Math.floor(product.rating))}
+            {/* Products Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {sortedWishlist.map((product) => (
+                <div key={product.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                  {/* Product Image */}
+                  <div className="relative">
+                    <div className="aspect-square bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/20 dark:to-purple-900/20 flex items-center justify-center">
+                      <span className="text-4xl">💄</span>
                     </div>
-                    <span style={{ fontSize: '0.85rem', color: '#666' }}>({product.reviewCount})</span>
-                  </div>
-                  
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '1.1rem', fontWeight: '600', color: '#ff6b9d' }}>
-                      {formatPrice(product.price)}
-                    </span>
-                    {product.discount > 0 && (
-                      <span style={{ fontSize: '0.9rem', color: '#999', textDecoration: 'line-through' }}>
-                        {formatPrice(product.originalPrice)}
-                      </span>
+                    
+                    {/* Badges */}
+                    <div className="absolute top-3 left-3">
+                      {product.discount > 0 && (
+                        <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                          -{product.discount}%
+                        </span>
+                      )}
+                    </div>
+                    
+                    {!product.inStock && (
+                      <div className="absolute top-3 right-3">
+                        <span className="bg-gray-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                          Hết hàng
+                        </span>
+                      </div>
                     )}
                   </div>
-                </div>
 
-                {/* Mô tả */}
-                <p style={{ 
-                  margin: '0 0 1.5rem 0', 
-                  color: '#666', 
-                  fontSize: '0.85rem', 
-                  lineHeight: '1.4',
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden'
-                }}>
-                  {product.description}
-                </p>
+                  {/* Product Info */}
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-2 line-clamp-2">
+                      {product.name}
+                    </h3>
+                    
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                      {product.brand}
+                    </p>
+                    
+                    {/* Rating */}
+                    <div className="flex items-center gap-1 mb-3">
+                      <span className="text-yellow-400 text-sm">★</span>
+                      <span className="text-xs text-gray-600 dark:text-gray-400">{product.rating}</span>
+                      <span className="text-xs text-gray-400">({product.reviewCount})</span>
+                    </div>
+                    
+                    {/* Price */}
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="font-bold text-pink-600 dark:text-pink-400">
+                        {formatPrice(product.price)}
+                      </span>
+                      {product.discount > 0 && (
+                        <span className="text-xs text-gray-400 line-through">
+                          {formatPrice(product.originalPrice)}
+                        </span>
+                      )}
+                    </div>
 
-                {/* Hành động */}
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button
-                    onClick={() => handleAddToCart(product)}
-                    disabled={!product.inStock}
-                    className={`${styles.btn} ${product.inStock ? styles['btn-primary'] : styles['btn-secondary']}`}
-                    style={{ 
-                      flex: 1, 
-                      fontSize: '0.85rem', 
-                      padding: '0.75rem',
-                      opacity: product.inStock ? 1 : 0.6
-                    }}
-                  >
-                    {product.inStock ? '🛒 Thêm vào giỏ' : 'Hết hàng'}
-                  </button>
-                  <button
-                    onClick={() => handleRemoveFromWishlist(product.id)}
-                    className={`${styles.btn} ${styles['btn-danger']}`}
-                    style={{ fontSize: '0.85rem', padding: '0.75rem' }}
-                  >
-                    ❤️
-                  </button>
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleAddToCart(product)}
+                        disabled={!product.inStock}
+                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-colors ${
+                          product.inStock
+                            ? 'bg-pink-600 hover:bg-pink-700 text-white'
+                            : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
+                        }`}
+                      >
+                        {product.inStock ? '🛒 Thêm vào giỏ' : 'Hết hàng'}
+                      </button>
+                      <button
+                        onClick={() => handleRemoveFromWishlist(product.id)}
+                        className="px-3 py-2 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-xs hover:bg-red-200 dark:hover:bg-red-900/40 transition-colors"
+                      >
+                        ❤️
+                      </button>
+                    </div>
+                    
+                    {/* Added Date */}
+                    <p className="text-xs text-gray-400 dark:text-gray-500 text-center mt-2">
+                      Thêm {new Date(product.addedAt).toLocaleDateString('vi-VN')}
+                    </p>
+                  </div>
                 </div>
-                
-                {/* Ngày thêm */}
-                <div style={{ textAlign: 'center', marginTop: '0.75rem' }}>
-                  <small style={{ color: '#999', fontSize: '0.75rem' }}>
-                    Đã thêm: {new Date(product.addedAt).toLocaleDateString('vi-VN')}
-                  </small>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          </>
+        ) : (
+          /* Empty State */
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">❤️</div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                Danh sách yêu thích trống
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Hãy thêm các sản phẩm yêu thích để mua sắm dễ dàng hơn
+              </p>
+              <button
+                onClick={() => router.push('/products')}
+                className="px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-medium transition-colors"
+              >
+                🛒 Khám phá sản phẩm
+              </button>
+            </div>
           </div>
-        </>
-      ) : (
-        <div className={styles.contentSection} style={{ textAlign: 'center', padding: '3rem 2rem' }}>
-          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>❤️</div>
-          <h3 style={{ color: '#666', marginBottom: '0.5rem' }}>Danh sách yêu thích trống</h3>
-          <p style={{ color: '#999', marginBottom: '2rem' }}>
-            Hãy thêm các sản phẩm yêu thích để mua sắm dễ dàng hơn
-          </p>
-          <a href="/products" className={`${styles.btn} ${styles['btn-primary']}`}>
-            🛒 Khám phá sản phẩm
-          </a>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

@@ -5,6 +5,16 @@ import Link from "next/link";
 import { GoogleLogin } from "@react-oauth/google";
 import styles from "../styles/login.module.css";
 import { useAuth } from "../context/AuthContext";
+// Import icons (cần cài đặt: npm install lucide-react)
+import { 
+  Mail, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  ArrowLeft,
+  UserPlus,
+  HelpCircle
+} from 'lucide-react';
 
 export default function Login() {
   const router = useRouter();
@@ -13,16 +23,16 @@ export default function Login() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // State cho đăng nhập nội bộ (Admin/User)
-  const [username, setUsername] = useState("");
+  // State cho đăng nhập bằng email/password
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Xử lý đăng nhập bằng Google (Khách hàng)
+  // Xử lý đăng nhập bằng Google (Phương thức ưu tiên)
   async function handleGoogleSuccess(credentialResponse) {
     setLoading(true);
     setError(null);
     try {
-      // Gửi token Google ID lên API backend để xác thực và/hoặc tạo user
       const res = await fetch("/api/auth/google", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -35,12 +45,14 @@ export default function Login() {
       }
 
       const { token, user, isNewUser } = await res.json();
-
-      // Sử dụng hàm login() từ context
       login(user, token);
-
-      // Điều hướng: Khách hàng đến trang chủ
-      router.push(isNewUser ? "/" : "/");
+      
+      // Nếu là user mới, chuyển đến trang tài khoản để hoàn thiện thông tin
+      if (isNewUser) {
+        router.push("/taikhoan");
+      } else {
+        router.push("/");
+      }
     } catch (err) {
       console.error("Login error:", err);
       setError(err.message || "Lỗi đăng nhập với Google");
@@ -53,40 +65,29 @@ export default function Login() {
     setError("Lỗi khi xác thực với Google. Vui lòng thử lại.");
   }
 
-  // Xử lý đăng nhập nội bộ (Admin/User)
-  async function handleInternalLogin(e) {
+  // Xử lý đăng nhập bằng Email/Password
+  async function handleEmailLogin(e) {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      // Gửi yêu cầu đăng nhập nội bộ
-      const res = await fetch("/api/auth/internal-login", {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ email, password }),
       });
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.message || "Tên đăng nhập hoặc mật khẩu không đúng");
+        throw new Error(errData.message || "Email hoặc mật khẩu không đúng");
       }
 
       const { token, user } = await res.json();
-
-      // Sử dụng hàm login() từ context
       login(user, token);
-
-      // Điều hướng theo quyền
-      if (user.role === "Admin") {
-        router.push("/admin/dashboard");
-      } else if (user.role === "User") {
-        router.push("/staff/orders");
-      } else {
-        router.push("/");
-      }
+      router.push("/");
     } catch (err) {
-      console.error("Internal login error:", err);
+      console.error("Email login error:", err);
       setError(err.message || "Lỗi đăng nhập");
     } finally {
       setLoading(false);
@@ -95,97 +96,129 @@ export default function Login() {
 
   return (
     <div className={styles.loginContainer}>
-      <div className={styles.logoSection}>
-        <h1 className={styles.title}>Chào mừng bạn đã đến Shop Kaka</h1>
-        <p className={styles.subtitle}>Thương hiệu số 1 Việt Nam</p>
-      </div>
-
-      <div className={styles.loginBox}>
-        {/* Khu vực đăng nhập nội bộ (Admin/User) */}
-        <div className={styles.internalLoginSection}>
-          <h2 className={styles.sectionTitle}>Đăng nhập Shop KaKa</h2>
-          <form onSubmit={handleInternalLogin} className={styles.loginForm}>
-            <div className={styles.formGroup}>
-              <label htmlFor="username" className={styles.label}>Tên đăng nhập</label>
-              <input
-                type="text"
-                id="username"
-                className={styles.input}
-                placeholder="Nhập tên đăng nhập"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="password" className={styles.label}>Mật khẩu</label>
-              <input
-                type="password"
-                id="password"
-                className={styles.input}
-                placeholder="Nhập mật khẩu"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <button 
-              type="submit" 
-              className={styles.loginButton}
-              disabled={loading}
-            >
-              {loading ? "Đang đăng nhập..." : "Đăng nhập"}
-            </button>
-
-            <div className={styles.forgotPassword}>
-              <Link href="/forgot-password" className={styles.link}>
-                Quên mật khẩu?
-              </Link>
-            </div>
-          </form>
+      <div className={styles.loginFormWrapper}>
+        {/* PHẦN 1: Tiêu đề */}
+        <div className={styles.headerSection}>
+          <h1 className={styles.mainTitle}>Chào mừng đến Beauty Shop</h1>
         </div>
 
-        {/* Phân cách */}
-        <div className={styles.divider}>
-          <span className={styles.dividerText}>hoặc</span>
-        </div>
+        <div className={styles.loginFormContainer}>
+          <div className={styles.loginForm}>
+            
+            {/* PHẦN 4: Form Đăng nhập Truyền thống */}
+            <div className={styles.traditionalLoginSection}>
+              <form onSubmit={handleEmailLogin}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="email" className={styles.label}>
+                    <Mail size={16} className={styles.inputIcon} />
+                    Tên đăng nhập
+                  </label>
+                  <input
+                    type="text"
+                    id="email"
+                    className={styles.input}
+                    placeholder="Nhập tên đăng nhập của bạn"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                </div>
 
-        {/* Khu vực đăng nhập bằng Google (Khách hàng) */}
-        <div className={styles.googleLoginSection}>
-          
-          <div className={styles.googleButtonWrapper}>
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={handleGoogleError}
-              theme="outline"
-              size="large"
-              text="signin_with"
-              shape="rectangular"
-              width="300"
-              locale="vi"
-            />
+                <div className={styles.formGroup}>
+                  <label htmlFor="password" className={styles.label}>
+                    <Lock size={16} className={styles.inputIcon} />
+                    Mật khẩu
+                  </label>
+                  <div className={styles.passwordInputWrapper}>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      id="password"
+                      className={styles.input}
+                      placeholder="Nhập mật khẩu của bạn"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      disabled={loading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className={styles.passwordToggle}
+                      disabled={loading}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* PHẦN 5: Hỗ trợ và Hành động */}
+                <div className={styles.forgotPasswordWrapper}>
+                  <Link href="/forgot-password" className={styles.forgotPasswordLink}>
+                    <HelpCircle size={16} />
+                    Quên mật khẩu?
+                  </Link>
+                </div>
+
+                <button 
+                  type="submit" 
+                  className={styles.loginButton}
+                  disabled={loading}
+                >
+                  {loading ? "Đang đăng nhập..." : "Đăng nhập"}
+                </button>
+              </form>
+            </div>
+
+            {/* PHẦN 3: Dấu ngăn cách */}
+            <div className={styles.divider}>
+              <div className={styles.dividerLine}></div>
+              <span className={styles.dividerText}>HOẶC</span>
+              <div className={styles.dividerLine}></div>
+            </div>
+
+            {/* PHẦN 2: Đăng nhập Nhanh (Social login) - Ở dưới */}
+            <div className={styles.quickLoginSection}>
+              <div className={styles.googleButtonWrapper}>
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  theme="outline"
+                  size="large"
+                  text="signin_with"
+                  shape="rectangular"
+                  width="100%"
+                  locale="vi"
+                />
+              </div>
+            </div>
+
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className={styles.errorMessage}>
+              <p>❌ {error}</p>
+            </div>
+          )}
+               
+          {/* Loading */}
+          {loading && (
+            <div className={styles.loadingMessage}>
+              <p>Đang xác thực... Vui lòng chờ</p>
+            </div>
+          )}
         </div>
 
-        {/* Thông báo lỗi */}
-        {error && <p className={styles.error}>❌ {error}</p>}
-        {loading && <p className={styles.loading}>Đang xác thực... Vui lòng chờ</p>}
-
-        {/* Link đăng ký */}
-        <div className={styles.registerLink}>
-          <p>
-            Chưa có tài khoản? <Link href="/dangky" className={styles.link}>Đăng ký ngay</Link>
-          </p>
+        <div className={styles.backHomeLink}>
+          <Link href="/" className={styles.backHomeButton}>
+            <ArrowLeft size={16} />
+            Quay về trang chủ
+          </Link>
         </div>
-      </div>
-
-      <div className={styles.backLink}>
-        <Link href="/" className={styles.navLink}>← Quay về trang chủ</Link>
       </div>
     </div>
+    
   );
+  
 }

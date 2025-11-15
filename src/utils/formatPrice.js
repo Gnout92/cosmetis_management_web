@@ -15,6 +15,3 @@ export function formatPrice(price) {
   return number.toLocaleString("vi-VN") + "đ";
 }
 
-// Ví dụ sử dụng:
-// console.log(formatPrice(150000)); // "150.000đ"
-// console.log(formatPrice("450000")); // "450.000đ"

@@ -1,17 +1,39 @@
-import { useState } from 'react';
-import styles from '../../styles/login.module.css';
+// src/pages/account/profile.js - Thông tin cá nhân
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import { useAuth } from "../../context/AuthContext";
+import styles from "../../styles/login.module.css";
 
-const PersonalInfo = ({ user, updateUser, showNotification }) => {
-  const [isEditing, setIsEditing] = useState(false);
+export default function PersonalInfo() {
+  const { user, isAuthenticated, updateUser } = useAuth();
+  const router = useRouter();
   const [formData, setFormData] = useState({
-    firstName: user?.profile?.firstName || '',
-    lastName: user?.profile?.lastName || '',
-    phone: user?.profile?.phone || '',
-    gender: user?.profile?.gender || '',
-    birthDate: user?.profile?.birthDate || '',
-    avatar: user?.avatar || ''
+    name: "",
+    phone: "",
+    email: "",
+    birthDate: "",
+    gender: ""
   });
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
+  const [avatarFile, setAvatarFile] = useState(null);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+    // Điền dữ liệu hiện tại
+    if (user) {
+      setFormData({
+        name: user.name || user.HoVaTen || "",
+        phone: user.phone || user.DienThoai || "",
+        email: user.email || user.Email || "",
+        birthDate: user.birthDate || user.NgaySinh || "",
+        gender: user.gender !== undefined ? user.gender.toString() : ""
+      });
+    }
+  }, [isAuthenticated, user, router]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -23,261 +45,235 @@ const PersonalInfo = ({ user, updateUser, showNotification }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    
+    setLoading(true);
+    setMessage({ type: "", text: "" });
+
     try {
-      // Giả lập API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      await updateUser({
-        name: `${formData.firstName} ${formData.lastName}`,
-        profile: {
-          ...user?.profile,
-          ...formData
-        }
+      const res = await fetch("/api/account/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify(formData)
       });
-      
-      setIsEditing(false);
-      showNotification('Cập nhật thông tin thành công!', 'success');
+
+      const data = await res.json();
+
+      if (res.ok) {
+        // Cập nhật thông tin trong context
+        updateUser(data.user);
+        setMessage({ type: "success", text: "Cập nhật thông tin thành công!" });
+      } else {
+        setMessage({ type: "error", text: data.message || "Cập nhật thất bại" });
+      }
     } catch (error) {
-      showNotification('Có lỗi xảy ra khi cập nhật thông tin', 'error');
+      console.error("Update error:", error);
+      setMessage({ type: "error", text: "Lỗi kết nối. Vui lòng thử lại." });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleCancel = () => {
-    setFormData({
-      firstName: user?.profile?.firstName || '',
-      lastName: user?.profile?.lastName || '',
-      phone: user?.profile?.phone || '',
-      gender: user?.profile?.gender || '',
-      birthDate: user?.profile?.birthDate || '',
-      avatar: user?.avatar || ''
-    });
-    setIsEditing(false);
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setAvatarFile(file);
+    const formData_upload = new FormData();
+    formData_upload.append("avatar", file);
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/account/avatar", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        },
+        body: formData_upload
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        updateUser({ ...user, avatar: data.avatarUrl });
+        setMessage({ type: "success", text: "Cập nhật ảnh đại diện thành công!" });
+      } else {
+        setMessage({ type: "error", text: "Cập nhật ảnh thất bại" });
+      }
+    } catch (error) {
+      console.error("Avatar upload error:", error);
+      setMessage({ type: "error", text: "Lỗi tải ảnh. Vui lòng thử lại." });
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // Kiểm tra đăng nhập bằng Google
+  const isGoogleLogin = user?.provider === 'google' || user?.loginMethod === 'google';
+
+  if (!isAuthenticated) return null;
+
   return (
-    <div>
-      <div className={styles.contentHeader}>
-        <h1 className={styles.contentTitle}>Thông tin cá nhân</h1>
-        <p className={styles.contentSubtitle}>Quản lý thông tin cá nhân của bạn</p>
-      </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+          {/* Header */}
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Thông tin cá nhân</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Quản lý thông tin tài khoản của bạn</p>
+          </div>
 
-      <div className={styles.contentSection}>
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Thông tin cơ bản</h2>
-          <p className={styles.sectionDescription}>
-            Thông tin này sẽ được sử dụng cho việc giao hàng và liên hệ
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit}>
-          <div className={styles.formGrid}>
-            {/* Avatar */}
-            <div className={styles.formGroup} style={{ gridColumn: '1 / -1', textAlign: 'center', marginBottom: '2rem' }}>
-              <div style={{ display: 'inline-block', position: 'relative' }}>
-                <div className={styles.avatar} style={{ width: '100px', height: '100px', fontSize: '2rem' }}>
-                  {formData.avatar ? (
-                    <img src={formData.avatar} alt="Avatar" />
-                  ) : (
-                    (formData.firstName || 'U').charAt(0).toUpperCase()
-                  )}
-                </div>
-                {isEditing && (
-                  <button 
-                    type="button" 
-                    className={`${styles.btn} ${styles['btn-secondary']}`}
-                    style={{ marginTop: '1rem', fontSize: '0.9rem' }}
-                    onClick={() => {
-                      // Mở dialog chọn ảnh (giả lập)
-                      showNotification('Tính năng upload ảnh sẽ được phát triển', 'warning');
+          <div className="px-6 py-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Avatar Section */}
+              <div className="lg:col-span-1">
+                <div className="text-center">
+                  <img 
+                    src={user?.avatar || "/default-avatar.png"} 
+                    alt="Avatar" 
+                    className="w-32 h-32 rounded-full object-cover mx-auto border-4 border-pink-200 dark:border-pink-700"
+                    onError={(e) => {
+                      e.target.src = "/default-avatar.png";
                     }}
-                  >
-                    📷 Đổi ảnh
-                  </button>
-                )}
+                  />
+                  <div className="mt-4">
+                    <label className="cursor-pointer inline-flex items-center px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white text-sm font-medium rounded-lg transition-colors">
+                      📷 Thay đổi ảnh
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleAvatarUpload}
+                        style={{ display: 'none' }}
+                        disabled={loading}
+                      />
+                    </label>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      {isGoogleLogin ? "Ảnh từ Gmail sẽ được tự động cập nhật" : "JPG, PNG hoặc GIF. Tối đa 2MB."}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Form Section */}
+              <div className="lg:col-span-2">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Họ và tên *
+                      </label>
+                      <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        required
+                        disabled={loading}
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Số điện thoại
+                      </label>
+                      <input
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        placeholder="Nhập số điện thoại"
+                        disabled={loading}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Email *
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      required
+                      disabled={loading || isGoogleLogin}
+                    />
+                    {isGoogleLogin && (
+                      <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                        ✓ Email từ Google - không thể thay đổi
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Ngày sinh
+                      </label>
+                      <input
+                        type="date"
+                        id="birthDate"
+                        name="birthDate"
+                        value={formData.birthDate}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        disabled={loading}
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="gender" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Giới tính
+                      </label>
+                      <select
+                        id="gender"
+                        name="gender"
+                        value={formData.gender}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        disabled={loading}
+                      >
+                        <option value="">Chọn giới tính</option>
+                        <option value="1">Nam</option>
+                        <option value="0">Nữ</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Message */}
+                  {message.text && (
+                    <div className={`p-4 rounded-lg ${
+                      message.type === 'success' 
+                        ? 'bg-green-50 dark:bg-green-900/50 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700' 
+                        : 'bg-red-50 dark:bg-red-900/50 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700'
+                    }`}>
+                      <p className="text-sm">{message.text}</p>
+                    </div>
+                  )}
+
+                  {/* Submit Button */}
+                  <div className="flex justify-end">
+                    <button 
+                      type="submit" 
+                      className="px-6 py-2 bg-pink-600 hover:bg-pink-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={loading}
+                    >
+                      {loading ? "Đang cập nhật..." : "Lưu thay đổi"}
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
-
-            {/* Họ */}
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Họ</label>
-              <input
-                type="text"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleInputChange}
-                className={styles.formInput}
-                disabled={!isEditing}
-                placeholder="Nhập họ của bạn"
-              />
-            </div>
-
-            {/* Tên */}
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Tên</label>
-              <input
-                type="text"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleInputChange}
-                className={styles.formInput}
-                disabled={!isEditing}
-                placeholder="Nhập tên của bạn"
-              />
-            </div>
-
-            {/* Email (không thể chỉnh sửa) */}
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Email</label>
-              <input
-                type="email"
-                value={user?.email || ''}
-                className={styles.formInput}
-                disabled
-                style={{ background: '#f5f5f5', color: '#999' }}
-              />
-              <small style={{ color: '#999', fontSize: '0.8rem', marginTop: '0.25rem', display: 'block' }}>
-                Email không thể thay đổi vì đã liên kết với Google
-              </small>
-            </div>
-
-            {/* Số điện thoại */}
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Số điện thoại</label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                className={styles.formInput}
-                disabled={!isEditing}
-                placeholder="Nhập số điện thoại"
-              />
-            </div>
-
-            {/* Giới tính */}
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Giới tính</label>
-              <select
-                name="gender"
-                value={formData.gender}
-                onChange={handleInputChange}
-                className={styles.formInput}
-                disabled={!isEditing}
-              >
-                <option value="">Chọn giới tính</option>
-                <option value="male">Nam</option>
-                <option value="female">Nữ</option>
-                <option value="other">Khác</option>
-              </select>
-            </div>
-
-            {/* Ngày sinh */}
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Ngày sinh</label>
-              <input
-                type="date"
-                name="birthDate"
-                value={formData.birthDate}
-                onChange={handleInputChange}
-                className={styles.formInput}
-                disabled={!isEditing}
-              />
-            </div>
-          </div>
-
-          {/* Nút hành động */}
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '2rem' }}>
-            {!isEditing ? (
-              <button
-                type="button"
-                onClick={() => setIsEditing(true)}
-                className={`${styles.btn} ${styles['btn-primary']}`}
-              >
-                ✏️ Chỉnh sửa
-              </button>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  className={`${styles.btn} ${styles['btn-secondary']}`}
-                >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className={`${styles.btn} ${styles['btn-success']}`}
-                >
-                  {isLoading ? 'Đang lưu...' : '💾 Lưu thay đổi'}
-                </button>
-              </>
-            )}
-          </div>
-        </form>
-      </div>
-
-      {/* Thông tin tài khoản */}
-      <div className={styles.contentSection}>
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Thông tin tài khoản</h2>
-          <p className={styles.sectionDescription}>
-            Thông tin về tài khoản và lịch sử hoạt động
-          </p>
-        </div>
-
-        <div className={styles.formGrid}>
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Loại tài khoản</label>
-            <input
-              type="text"
-              value="Google Account"
-              className={styles.formInput}
-              disabled
-              style={{ background: '#f5f5f5' }}
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Ngày tham gia</label>
-            <input
-              type="text"
-              value={user?.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : 'Không rõ'}
-              className={styles.formInput}
-              disabled
-              style={{ background: '#f5f5f5' }}
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Điểm thưởng hiện tại</label>
-            <input
-              type="text"
-              value={`${user?.loyaltyPoints || 0} điểm`}
-              className={styles.formInput}
-              disabled
-              style={{ background: '#f5f5f5' }}
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Tổng đơn hàng</label>
-            <input
-              type="text"
-              value={`${user?.orders?.length || 0} đơn hàng`}
-              className={styles.formInput}
-              disabled
-              style={{ background: '#f5f5f5' }}
-            />
           </div>
         </div>
       </div>
     </div>
   );
-};
-
-export default PersonalInfo;
+}

@@ -4,108 +4,220 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-image: url('https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=1920&h=1080&fit=crop&auto=format');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   padding: 20px;
   font-family: 'Arial', sans-serif;
+  position: relative;
 }
 
-.logoSection {
-  text-align: center;
-  margin-bottom: 40px;
+.loginContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.2);
+  pointer-events: none;
 }
 
-.title {
-  font-size: 32px;
-  color: #ffffff;
-  margin: 0 0 10px 0;
-  font-weight: bold;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.subtitle {
-  font-size: 18px;
-  color: #f0f0f0;
-  margin: 0;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.loginBox {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  padding: 40px;
+/* Container bao bọc toàn bộ */
+.loginFormWrapper {
+  background: transparent;
   width: 100%;
-  max-width: 450px;
-}
-
-/* Khu vực đăng nhập nội bộ */
-.internalLoginSection {
-  margin-bottom: 30px;
-}
-
-.sectionTitle {
-  font-size: 20px;
-  color: #333;
-  margin: 0 0 20px 0;
-  font-weight: 600;
+  max-width: 420px;
   text-align: center;
 }
 
+/* PHẦN 1: Header Section */
+.headerSection {
+  margin-bottom: 32px;
+}
+
+.mainTitle {
+  font-size: 28px;
+  font-weight: bold;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Khung bao bọc vùng đăng nhập */
+.loginFormContainer {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 32px 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  margin-bottom: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Form Container */
 .loginForm {
   display: flex;
   flex-direction: column;
+  gap: 24px;
 }
 
+/* PHẦN 2: Quick Login Section */
+.quickLoginSection {
+  margin-bottom: 8px;
+}
+
+.googleButtonWrapper {
+  margin-bottom: 16px;
+}
+
+/* PHẦN 3: Divider */
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 16px 0;
+}
+
+.dividerLine {
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.dividerText {
+  padding: 0 16px;
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+/* PHẦN 4: Traditional Login Section */
+.traditionalLoginSection {
+  margin-bottom: 16px;
+}
+
+/* Form Groups */
 .formGroup {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  text-align: left;
 }
 
 .label {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 14px;
-  color: #555;
-  margin-bottom: 8px;
+  color: #374151;
+  margin-bottom: 6px;
   font-weight: 500;
+}
+
+.inputIcon {
+  color: #6b7280;
 }
 
 .input {
   width: 100%;
-  padding: 12px 15px;
+  padding: 14px 16px;
+  padding-left: 48px;
   font-size: 16px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
   transition: border-color 0.3s, box-shadow 0.3s;
   box-sizing: border-box;
+  background: white;
+  color: #374151;
+  position: relative;
 }
 
 .input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
 }
 
 .input:disabled {
-  background-color: #f5f5f5;
+  background-color: #f9fafb;
   cursor: not-allowed;
+}
+
+.input::placeholder {
+  color: #9ca3af;
+}
+
+/* Password Input Wrapper */
+.passwordInputWrapper {
+  position: relative;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.passwordToggle:hover {
+  color: #22c55e;
+}
+
+.passwordToggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* PHẦN 5: Forgot Password & Login Button */
+.forgotPasswordWrapper {
+  text-align: right;
+  margin-bottom: 16px;
+}
+
+.forgotPasswordLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #22c55e;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.forgotPasswordLink:hover {
+  color: #16a34a;
+  text-decoration: underline;
 }
 
 .loginButton {
   width: 100%;
-  padding: 14px;
+  padding: 16px;
   font-size: 16px;
   font-weight: 600;
   color: white;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #14532d 0%, #166534 100%);
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
-  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .loginButton:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 20px rgba(20, 83, 45, 0.4);
 }
 
 .loginButton:active:not(:disabled) {
@@ -113,134 +225,116 @@
 }
 
 .loginButton:disabled {
-  background: #ccc;
+  background: #9ca3af;
   cursor: not-allowed;
+  transform: none;
 }
 
-.forgotPassword {
-  text-align: right;
-  margin-top: 12px;
-}
-
-/* Phân cách */
-.divider {
-  position: relative;
+/* Messages */
+.errorMessage,
+.loadingMessage {
   text-align: center;
-  margin: 30px 0;
-}
-
-.divider::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: #ddd;
-}
-
-.dividerText {
-  position: relative;
-  background: white;
-  padding: 0 15px;
-  color: #999;
+  margin-top: 16px;
   font-size: 14px;
-  font-weight: 500;
-}
-
-/* Khu vực Google Login */
-.googleLoginSection {
-  margin-bottom: 20px;
-}
-
-.googleButtonWrapper {
+  padding: 12px;
+  border-radius: 8px;
   display: flex;
+  align-items: center;
   justify-content: center;
-  margin-top: 20px;
+  gap: 8px;
 }
 
-/* Thông báo */
-.loading,
-.error {
-  text-align: center;
-  margin-top: 15px;
-  font-size: 14px;
-  padding: 10px;
-  border-radius: 6px;
-}
-
-.loading {
-  color: #22c55e;
-  background-color: #f0fdf4;
-  border: 1px solid #bbf7d0;
-}
-
-.error {
-  color: #dc3545;
+.errorMessage {
+  color: #dc2626;
   background-color: #fef2f2;
   border: 1px solid #fecaca;
 }
 
-/* Link đăng ký */
-.registerLink {
-  text-align: center;
-  margin-top: 25px;
+.loadingMessage {
+  color: #059669;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+/* PHẦN 6: Navigation Links */
+.navigationLinks {
+  margin-top: 24px;
   padding-top: 20px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #e5e7eb;
+}
+
+.registerLink {
+  margin-bottom: 16px;
 }
 
 .registerLink p {
   margin: 0;
   font-size: 14px;
-  color: #666;
+  color: #70a070;
 }
 
-.link {
-  color: #667eea;
+.registerLinkButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #22c55e;
   text-decoration: none;
   font-weight: 600;
   transition: color 0.3s;
 }
 
-.link:hover {
-  color: #764ba2;
+.registerLinkButton:hover {
+  color: #16a34a;
   text-decoration: underline;
 }
 
-/* Nút quay lại */
-.backLink {
-  margin-top: 30px;
-  text-align: center;
+.backHomeLink {
+  margin-top: 12px;
 }
 
-.navLink {
-  color: #ffffff;
+.backHomeButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #70a070;
   text-decoration: none;
+  font-size: 14px;
   font-weight: 500;
-  font-size: 16px;
-  transition: opacity 0.3s;
+  transition: color 0.3s, opacity 0.3s;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.navLink:hover {
-  opacity: 0.8;
-  text-decoration: underline;
+.backHomeButton:hover {
+  color: #ffffff;
+  opacity: 0.9;
+  background: rgba(255, 255, 255, 0.1);
+  text-decoration: none;
 }
+
+
 
 /* Responsive */
 @media (max-width: 600px) {
-  .loginBox {
-    padding: 30px 20px;
+  .loginContainer {
+    padding: 16px;
+    background-attachment: scroll;
   }
-
-  .title {
-    font-size: 26px;
+  
+  .loginFormWrapper {
+    max-width: 100%;
   }
-
-  .subtitle {
-    font-size: 16px;
+  
+  .mainTitle {
+    font-size: 24px;
   }
-
-  .sectionTitle {
-    font-size: 18px;
+  
+  .loginFormContainer {
+    padding: 24px 20px;
+  }
+  
+  .loginForm {
+    gap: 20px;
   }
 }
