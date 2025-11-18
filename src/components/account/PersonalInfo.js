@@ -8,11 +8,10 @@ export default function PersonalInfo() {
   const { user, isAuthenticated, updateUser } = useAuth();
   const router = useRouter();
   const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
+    ten_hien_thi: "",
     email: "",
-    birthDate: "",
-    gender: ""
+    ngay_sinh: "",
+    gioi_tinh: ""
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
@@ -23,14 +22,13 @@ export default function PersonalInfo() {
       router.push("/login");
       return;
     }
-    // Điền dữ liệu hiện tại
+    // Điền dữ liệu hiện tại từ database
     if (user) {
       setFormData({
-        name: user.name || user.HoVaTen || "",
-        phone: user.phone || user.DienThoai || "",
-        email: user.email || user.Email || "",
-        birthDate: user.birthDate || user.NgaySinh || "",
-        gender: user.gender !== undefined ? user.gender.toString() : ""
+        ten_hien_thi: user.ten_hien_thi || user.name || user.HoVaTen || "",
+        email: user.email || "",
+        ngay_sinh: user.ngay_sinh || user.birthDate || "",
+        gioi_tinh: user.gioi_tinh || user.gender || ""
       });
     }
   }, [isAuthenticated, user, router]);
@@ -55,14 +53,18 @@ export default function PersonalInfo() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          ten_hien_thi: formData.ten_hien_thi,
+          ngay_sinh: formData.ngay_sinh,
+          gioi_tinh: formData.gioi_tinh
+        })
       });
 
       const data = await res.json();
 
       if (res.ok) {
         // Cập nhật thông tin trong context
-        updateUser(data.user);
+        updateUser(data.data);
         setMessage({ type: "success", text: "Cập nhật thông tin thành công!" });
       } else {
         setMessage({ type: "error", text: data.message || "Cập nhật thất bại" });
@@ -129,7 +131,7 @@ export default function PersonalInfo() {
               <div className="lg:col-span-1">
                 <div className="text-center">
                   <img 
-                    src={user?.avatar || "/default-avatar.png"} 
+                    src={user?.anh_dai_dien || user?.avatar || "/default-avatar.png"} 
                     alt="Avatar" 
                     className="w-32 h-32 rounded-full object-cover mx-auto border-4 border-pink-200 dark:border-pink-700"
                     onError={(e) => {
@@ -159,14 +161,14 @@ export default function PersonalInfo() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Họ và tên *
+                      <label htmlFor="ten_hien_thi" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Tên hiển thị *
                       </label>
                       <input
                         type="text"
-                        id="name"
-                        name="name"
-                        value={formData.name}
+                        id="ten_hien_thi"
+                        name="ten_hien_thi"
+                        value={formData.ten_hien_thi}
                         onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         required
@@ -175,19 +177,22 @@ export default function PersonalInfo() {
                     </div>
 
                     <div>
-                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Số điện thoại
+                      <label htmlFor="gioi_tinh" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Giới tính
                       </label>
-                      <input
-                        type="tel"
-                        id="phone"
-                        name="phone"
-                        value={formData.phone}
+                      <select
+                        id="gioi_tinh"
+                        name="gioi_tinh"
+                        value={formData.gioi_tinh}
                         onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        placeholder="Nhập số điện thoại"
                         disabled={loading}
-                      />
+                      >
+                        <option value="">Chọn giới tính</option>
+                        <option value="Male">Nam</option>
+                        <option value="Female">Nữ</option>
+                        <option value="Other">Khác</option>
+                      </select>
                     </div>
                   </div>
 
@@ -214,14 +219,14 @@ export default function PersonalInfo() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label htmlFor="ngay_sinh" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Ngày sinh
                       </label>
                       <input
                         type="date"
-                        id="birthDate"
-                        name="birthDate"
-                        value={formData.birthDate}
+                        id="ngay_sinh"
+                        name="ngay_sinh"
+                        value={formData.ngay_sinh}
                         onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         disabled={loading}
@@ -229,21 +234,20 @@ export default function PersonalInfo() {
                     </div>
 
                     <div>
-                      <label htmlFor="gender" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Giới tính
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Ảnh đại diện
                       </label>
-                      <select
-                        id="gender"
-                        name="gender"
-                        value={formData.gender}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        disabled={loading}
-                      >
-                        <option value="">Chọn giới tính</option>
-                        <option value="1">Nam</option>
-                        <option value="0">Nữ</option>
-                      </select>
+                      <img 
+                        src={user?.anh_dai_dien || user?.avatar || "/default-avatar.png"} 
+                        alt="Avatar" 
+                        className="w-16 h-16 rounded-full object-cover"
+                        onError={(e) => {
+                          e.target.src = "/default-avatar.png";
+                        }}
+                      />
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {isGoogleLogin ? "✓ Ảnh từ Gmail sẽ tự động cập nhật" : "Ảnh đại diện từ Gmail"}
+                      </p>
                     </div>
                   </div>
 

@@ -55,6 +55,9 @@
 
 .sectionIcon {
   color: #667eea;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 8px;
 }
 
 .sectionHeader h2 {
@@ -94,7 +97,7 @@
   color: #667eea;
 }
 
-/* ✅ Đổi từ input (global) thành .input (local) */
+/* Input chuẩn */
 .input {
   width: 100%;
   padding: 12px 15px;
@@ -105,7 +108,6 @@
   background: white;
 }
 
-/* ✅ Đổi từ input:focus thành .input:focus */
 .input:focus {
   outline: none;
   border-color: #667eea;
@@ -176,6 +178,17 @@
   text-decoration: none;
 }
 
+.editButton svg,
+.saveButton svg,
+.cancelButton svg,
+.logoutButton svg,
+.retryButton svg,
+.debugButton svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
 .editButton {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -217,7 +230,7 @@
   box-shadow: 0 8px 25px rgba(255, 65, 108, 0.3);
 }
 
-/* ✅ Đổi từ button:disabled (global) sang các class local có trạng thái disabled */
+/* Trạng thái disabled cho nút */
 .editButton:disabled,
 .saveButton:disabled,
 .cancelButton:disabled,
@@ -261,13 +274,21 @@
 .errorMessage {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 15px;
   background: linear-gradient(135deg, #ff6b6b 0%, #ffa8a8 100%);
   color: white;
   padding: 15px 20px;
   border-radius: 10px;
   margin-bottom: 20px;
   font-weight: 500;
+  flex-wrap: wrap;
+}
+
+.errorActions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
 .successMessage {
@@ -281,7 +302,6 @@
 }
 
 .retryButton {
-  margin-left: auto;
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: white;
@@ -297,6 +317,29 @@
 
 .retryButton:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+
+.debugButton {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.3s ease;
+}
+
+.debugButton:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.errorMessage svg {
+  width: 16px;
+  height: 16px;
 }
 
 .loadingContainer {
@@ -315,42 +358,42 @@
   margin: 0;
 }
 
-/* Responsive design */
+/* Responsive */
 @media (max-width: 768px) {
   .container {
     padding: 10px;
   }
-  
+
   .accountContainer {
     margin: 0;
   }
-  
+
   .header {
     padding: 30px 20px;
   }
-  
+
   .title {
     font-size: 2rem;
   }
-  
+
   .content {
     padding: 30px 20px;
   }
-  
+
   .profileCard,
   .securityCard {
     padding: 20px;
   }
-  
+
   .buttonGroup {
     flex-direction: column;
   }
-  
+
   .securityCard {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .logoutSection {
     text-align: center;
   }
@@ -360,19 +403,19 @@
   .title {
     font-size: 1.5rem;
   }
-  
+
   .subtitle {
     font-size: 1rem;
   }
-  
+
   .header {
     padding: 20px 15px;
   }
-  
+
   .content {
     padding: 20px 15px;
   }
-  
+
   .profileCard,
   .securityCard {
     padding: 15px;

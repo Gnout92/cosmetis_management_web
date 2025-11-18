@@ -28,42 +28,89 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  // Hàm xác định đường dẫn redirect dựa trên role
+  const getRedirectPath = (user) => {
+    // Kiểm tra role từ user object
+    const role = user?.role || user?.userRole || user?.type || 'user';
+    
+    switch (role.toLowerCase()) {
+      case 'admin':
+        return '/admin';
+      case 'qlbh':
+      case 'qlbanhang':
+      case 'sales':
+        return '/QLBH';
+      case 'qlk':
+      case 'qlkhohang':
+      case 'inventory':
+        return '/QLK';
+      case 'user':
+      case 'customer':
+      default:
+        return '/'; // Trang chủ cho user bình thường
+    }
+  };
+
+  // Hàm xử lý login thành công
+  const handleLoginSuccess = async (user, token, isNewUser = false) => {
+    try {
+      // Gọi context login để lưu thông tin user
+      login(user, token);
+      
+      // Xác định đường dẫn redirect
+      let redirectPath;
+      
+      if (isNewUser) {
+        // User mới đến trang tài khoản để hoàn thiện thông tin
+        redirectPath = '/taikhoan';
+      } else {
+        // User cũ redirect theo role
+        redirectPath = getRedirectPath(user);
+      }
+      
+      console.log(`Redirecting to: ${redirectPath} (role: ${user?.role})`);
+      
+      // Chuyển hướng đến trang phù hợp
+      await router.push(redirectPath);
+      
+    } catch (err) {
+      console.error('Login success handler error:', err);
+      setError('Lỗi khi chuyển hướng trang');
+    }
+  };
+
   // Xử lý đăng nhập bằng Google (Phương thức ưu tiên)
   async function handleGoogleSuccess(credentialResponse) {
-  setLoading(true);
-  setError(null);
-  try {
-    const idToken = credentialResponse?.credential;
-    if (!idToken) throw new Error("Không nhận được mã xác thực từ Google");
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: credentialResponse.credential }),
+      });
 
-    const res = await fetch("/api/auth/google", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: idToken }),
-    });
-
-    if (!res.ok) {
-      const raw = await res.text(); // có thể là text hoặc json
-      try {
-        const json = JSON.parse(raw);
-        throw new Error(json.message || "Đăng nhập thất bại");
-      } catch {
-        throw new Error(raw?.slice(0, 200) || "Đăng nhập thất bại");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || "Đăng nhập thất bại");
       }
+
+      const { token, user, isNewUser } = await res.json();
+      login(user, token);
+      
+      // Nếu là user mới, chuyển đến trang tài khoản để hoàn thiện thông tin
+      if (isNewUser) {
+        router.push("/taikhoan");
+      } else {
+        router.push("/");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError(err.message || "Lỗi đăng nhập với Google");
+    } finally {
+      setLoading(false);
     }
-
-    const data = await res.json(); // { token, user, isNewUser }
-    login(data.user, data.token);
-    if (data.isNewUser) router.push("/taikhoan");
-    else router.push("/");
-  } catch (err) {
-    console.error("Login error:", err);
-    setError(err.message || "Lỗi đăng nhập với Google");
-  } finally {
-    setLoading(false);
   }
-}
-
 
   function handleGoogleError() {
     setError("Lỗi khi xác thực với Google. Vui lòng thử lại.");
@@ -88,8 +135,8 @@ export default function Login() {
       }
 
       const { token, user } = await res.json();
-      login(user, token);
-      router.push("/");
+      await handleLoginSuccess(user, token, false);
+      
     } catch (err) {
       console.error("Email login error:", err);
       setError(err.message || "Lỗi đăng nhập");
@@ -171,6 +218,8 @@ export default function Login() {
                 >
                   {loading ? "Đang đăng nhập..." : "Đăng nhập"}
                 </button>
+
+
               </form>
             </div>
 

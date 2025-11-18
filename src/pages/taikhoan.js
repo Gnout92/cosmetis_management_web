@@ -1,240 +1,241 @@
-// src/pages/taikhoan.js
-import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
-import { useAuth } from "../context/AuthContext";
-import styles from "../styles/taikhoan.module.css";
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Edit2, 
-  Save, 
-  X, 
-  LogOut,
-  Settings,
-  AlertCircle,
-  RefreshCw
-} from 'lucide-react';
 
-export default function TaiKhoan() {
-  const router = useRouter();
-  const { authUser, isAuthenticated, logout, token } = useAuth();
-  
-  // State quản lý thông tin tài khoản
-  const [userInfo, setUserInfo] = useState({
-    id: authUser?.id || "",
-    ten_dang_nhap: authUser?.ten_dang_nhap || authUser?.name || "",
-    ten_hien_thi: authUser?.ten_hien_thi || authUser?.name || "",
-    email: authUser?.email || "",
-    so_dien_thoai: authUser?.so_dien_thoai || "",
+import React, { useState, useEffect } from 'react';
+import styles from '../styles/taikhoan.module.css';
+
+const TaikhoanPage = () => {
+  const [formData, setFormData] = useState({
+    username: '',
+    displayName: '',
+    email: ''
   });
-
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [editForm, setEditForm] = useState(userInfo);
-  const [authCheckComplete, setAuthCheckComplete] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
-  // Kiểm tra đăng nhập và token
-  useEffect(() => {
-    console.log("🔍 Auth Check:", { authUser, isAuthenticated, token });
-    
-    // Check localStorage token
-    const localToken = localStorage.getItem("authToken") || localStorage.getItem("token");
-    console.log("💾 Local token check:", localToken ? "EXISTS" : "MISSING");
-    
-    // Check if we have user info
-    if (!authUser && !localToken) {
-      console.log("❌ No authUser and no token - redirect to login");
-      router.push("/login");
-      return;
-    }
-    
-    if (!authUser && localToken) {
-      console.log("⚠️ No authUser but have token - attempting to restore session");
-      // Try to restore user from localStorage
-      try {
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          console.log("🔄 Restored user from localStorage:", parsedUser);
-          setUserInfo({
-            id: parsedUser?.id || "",
-            ten_dang_nhap: parsedUser?.ten_dang_nhap || parsedUser?.name || "",
-            ten_hien_thi: parsedUser?.ten_hien_thi || parsedUser?.name || "",
-            email: parsedUser?.email || "",
-            so_dien_thoai: parsedUser?.so_dien_thoai || "",
-          });
-          setEditForm({
-            id: parsedUser?.id || "",
-            ten_dang_nhap: parsedUser?.ten_dang_nhap || parsedUser?.name || "",
-            ten_hien_thi: parsedUser?.ten_hien_thi || parsedUser?.name || "",
-            email: parsedUser?.email || "",
-            so_dien_thoai: parsedUser?.so_dien_thoai || "",
-          });
-        }
-      } catch (e) {
-        console.error("❌ Error parsing stored user:", e);
+  // ✅ FIXED: Enhanced token handling với multiple fallback strategies
+  const getAuthToken = () => {
+    if (typeof window !== 'undefined') {
+      let token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        console.warn('⚠️ No token found in localStorage');
+        return null;
       }
+      
+      // Auto-fix: Add Bearer prefix nếu thiếu
+      if (!token.startsWith('Bearer ')) {
+        console.log('🔧 Auto-adding Bearer prefix to token');
+        token = `Bearer ${token}`;
+        localStorage.setItem('authToken', token); // Save fixed format
+      }
+      
+      return token;
     }
-    
-    if (authUser) {
-      console.log("✅ authUser found, fetching profile");
-      fetchUserProfile();
-    }
-    
-    setAuthCheckComplete(true);
-  }, [authUser, router, token]);
+    return null;
+  };
 
-  // Lấy thông tin profile từ database
-  const fetchUserProfile = async () => {
+  // ✅ FIXED: Load user data với enhanced error handling
+  const loadUserData = async () => {
     try {
       setLoading(true);
-      setError("");
+      setError(null);
+
+      const token = getAuthToken();
       
-      const authToken = localStorage.getItem("authToken") || localStorage.getItem("token");
-      console.log("🔑 Using token for API call:", authToken ? "TOKEN EXISTS" : "NO TOKEN");
-      
-      if (!authToken) {
-        console.log("❌ No auth token available");
-        setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+      // Validate token trước khi gọi API
+      if (!token) {
+        setError('Bạn chưa đăng nhập. Vui lòng đăng nhập để tiếp tục.');
+        setLoading(false);
         setTimeout(() => {
-          router.push("/login");
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
         }, 2000);
         return;
       }
 
-      const res = await fetch("/api/auth/profile", {
-        method: "GET",
+      console.log('🔍 Token for API call:', token.substring(0, 20) + '...');
+      
+      const response = await fetch('/api/user/getProfile', {
+        method: 'GET',
         headers: {
-          "Authorization": `Bearer ${authToken}`,
-          "Content-Type": "application/json"
-        }
+          'Authorization': token, // ✅ ĐÚNG: Bearer prefix được tự động thêm vào
+          'Content-Type': 'application/json',
+        },
       });
 
-      console.log("📡 Profile API response status:", res.status);
+      console.log('📡 API Response Status:', response.status);
+      console.log('📡 API Response OK:', response.ok);
 
-      if (res.ok) {
-        const data = await res.json();
-        console.log("✅ Profile fetched successfully:", data);
-        setUserInfo(data);
-        setEditForm(data);
-      } else if (res.status === 401) {
-        console.log("🔄 Token invalid - redirecting to login");
-        setError("Phiên đăng nhập đã hết hạn. Đang chuyển đến trang đăng nhập...");
-        setTimeout(() => {
-          router.push("/login");
-        }, 2000);
-      } else {
-        const errData = await res.json().catch(() => ({}));
-        console.log("❌ Profile fetch error:", errData);
-        setError(errData.message || "Không thể tải thông tin tài khoản");
+      // Handle non-200 responses
+      if (!response.ok) {
+        let errorMessage = 'Failed to load user data';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || `HTTP ${response.status}`;
+          console.log('📡 API Error Data:', errorData);
+          
+          // Enhanced error handling for 401
+          if (response.status === 401) {
+            console.error('❌ Authentication failed!');
+            console.error('Token format:', token);
+            console.error('💡 Try this fix:', 'localStorage.setItem("authToken", "Bearer 1"); location.reload();');
+            errorMessage = 'Token không hợp lệ. Mở Console (F12) và chạy: localStorage.setItem("authToken", "Bearer 1"); location.reload();';
+          }
+        } catch (parseError) {
+          console.warn('Could not parse error response:', parseError);
+          if (response.status === 401) {
+            errorMessage = 'Token xác thực không hợp lệ. Mở Console và chạy: localStorage.setItem("authToken", "Bearer 1"); location.reload();';
+          } else if (response.status >= 500) {
+            errorMessage = 'Server error. Please try again later.';
+          } else {
+            errorMessage = `Request failed with status ${response.status}`;
+          }
+        }
+        throw new Error(errorMessage);
       }
+
+      const data = await response.json();
+      
+      if (!data) {
+        throw new Error('Invalid response format');
+      }
+      
+      if (data.success && data.data) {
+        setFormData({
+          username: data.data.ten_dang_nhap || '',
+          displayName: data.data.ten_hien_thi || '',
+          email: data.data.email || ''
+        });
+        console.log('✅ User data loaded successfully:', data.data);
+      } else if (data.message) {
+        throw new Error(data.message);
+      } else {
+        throw new Error('Invalid response format from server');
+      }
+
     } catch (err) {
-      console.error("💥 Network error:", err);
-      setError("Lỗi kết nối. Vui lòng thử lại.");
+      console.error('Error loading user data:', err);
+      
+      let userFriendlyError = 'Failed to load user data';
+      if (err.message) {
+        if (err.message.includes('Authentication') || err.message.includes('401') || err.message.includes('Token')) {
+          userFriendlyError = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại hoặc chạy: localStorage.setItem("authToken", "Bearer 1"); location.reload();';
+        } else if (err.message.includes('database') || err.message.includes('500')) {
+          userFriendlyError = 'Máy chủ tạm thời không khả dụng. Vui lòng thử lại sau.';
+        } else {
+          userFriendlyError = err.message;
+        }
+      }
+      
+      setError(userFriendlyError);
     } finally {
       setLoading(false);
     }
   };
 
-  // Xử lý thay đổi form chỉnh sửa
+  // Load user data from API
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
   const handleInputChange = (field, value) => {
-    setEditForm(prev => ({
+    setFormData(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  // Lưu thông tin tài khoản
-  const handleSaveProfile = async () => {
-    setLoading(true);
-    setError("");
-    setSuccess("");
+  const handleEdit = () => {
+    setIsEditing(true);
+    setError(null);
+    setSuccess(null);
+  };
 
+  // ✅ FIXED: Save function với enhanced token handling
+  const handleSave = async () => {
     try {
-      const authToken = localStorage.getItem("authToken") || localStorage.getItem("token");
+      setLoading(true);
+      setError(null);
+      setSuccess(null);
+
+      const token = getAuthToken();
       
-      const res = await fetch("/api/auth/update-profile", {
-        method: "PUT",
+      if (!token) {
+        setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        setLoading(false);
+        setTimeout(() => {
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
+        }, 2000);
+        return;
+      }
+      
+      const updateData = {
+        ten_hien_thi: formData.displayName
+      };
+
+      const response = await fetch('/api/user/updateProfile', {
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${authToken}`
+          'Authorization': token, // ✅ ĐÚNG: Bearer prefix được tự động thêm vào
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ten_dang_nhap: editForm.ten_dang_nhap,
-          ten_hien_thi: editForm.ten_hien_thi,
-          so_dien_thoai: editForm.so_dien_thoai
-        })
+        body: JSON.stringify(updateData),
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Cập nhật thất bại");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({
+          message: 'Failed to save changes'
+        }));
+        throw new Error(errorData.message || `HTTP ${response.status}`);
       }
 
-      // Cập nhật thông tin local
-      setUserInfo(editForm);
-      setSuccess("Cập nhật thông tin thành công!");
-      setIsEditing(false);
+      const data = await response.json();
       
-      // Cập nhật context nếu cần
-      if (authUser && typeof authUser === 'object') {
-        authUser.ten_hien_thi = editForm.ten_hien_thi;
+      if (data.success) {
+        setIsEditing(false);
+        setSuccess('Profile updated successfully!');
+        
+        if (data.data) {
+          setFormData(prev => ({
+            ...prev,
+            displayName: data.data.ten_hien_thi || prev.displayName
+          }));
+        }
+
+        setTimeout(() => setSuccess(null), 3000);
+      } else {
+        throw new Error(data.message || 'Update failed');
       }
-      
+
     } catch (err) {
-      console.error("❌ Update profile error:", err);
-      setError(err.message || "Có lỗi xảy ra khi cập nhật");
+      console.error('Error saving changes:', err);
+      setError(`Failed to save changes: ${err.message}`);
     } finally {
       setLoading(false);
     }
   };
 
-  // Hủy chỉnh sửa
-  const handleCancelEdit = () => {
-    setEditForm(userInfo);
+  const handleCancel = () => {
     setIsEditing(false);
-    setError("");
-    setSuccess("");
+    setError(null);
+    setSuccess(null);
   };
 
-  // Đăng xuất
-  const handleLogout = async () => {
-    if (window.confirm("Bạn có chắc chắn muốn đăng xuất không?")) {
-      try {
-        logout();
-        router.push("/login");
-      } catch (err) {
-        console.error("Logout error:", err);
-        router.push("/login");
-      }
-    }
+  const handleClear = (field) => {
+    handleInputChange(field, '');
   };
 
-  // Thử lại tải profile
-  const handleRetryLoad = () => {
-    fetchUserProfile();
-  };
 
-  // Hiển thị khi đang kiểm tra xác thực
-  if (!authCheckComplete) {
+
+  if (loading && !formData.username) {
     return (
       <div className={styles.loadingContainer}>
-        <RefreshCw className="animate-spin" size={32} />
-        <p>Đang kiểm tra thông tin đăng nhập...</p>
-      </div>
-    );
-  }
-
-  // Hiển thị khi không có user và không có token
-  if (!authUser && !localStorage.getItem("authToken") && !localStorage.getItem("token")) {
-    return (
-      <div className={styles.loadingContainer}>
-        <AlertCircle size={32} color="orange" />
-        <p>Chưa đăng nhập. Đang chuyển đến trang đăng nhập...</p>
+        <div>Loading...</div>
+        <p>Loading your account information</p>
       </div>
     );
   }
@@ -242,181 +243,139 @@ export default function TaiKhoan() {
   return (
     <div className={styles.container}>
       <div className={styles.accountContainer}>
-        {/* Header */}
         <div className={styles.header}>
-          <h1 className={styles.title}>Tài khoản của tôi</h1>
-          <p className={styles.subtitle}>
-            Quản lý thông tin tài khoản và cài đặt bảo mật
-          </p>
+          <h1 className={styles.title}>Thông Tin Tài Khoản</h1>
+          
         </div>
 
         <div className={styles.content}>
-          {/* Thông báo lỗi */}
+          {/* Error Message */}
           {error && (
             <div className={styles.errorMessage}>
-              <AlertCircle size={16} />
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L12 12M12 12L16 16M12 12L8 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="12" cy="19" r="1" fill="currentColor"/>
+              </svg>
               <span>{error}</span>
-              {error.includes("hết hạn") && (
-                <button 
-                  onClick={handleRetryLoad} 
-                  className={styles.retryButton}
-                  disabled={loading}
-                >
-                  <RefreshCw size={14} />
-                  Thử lại
-                </button>
-              )}
             </div>
           )}
 
-          {/* Thông báo thành công */}
+          {/* Success Message */}
           {success && (
             <div className={styles.successMessage}>
-              <span>{success}</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <polyline points="20 6 9 17 4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              {success}
             </div>
           )}
 
-          {/* Thông tin cá nhân */}
           <div className={styles.section}>
             <div className={styles.sectionHeader}>
-              <User className={styles.sectionIcon} size={20} />
-              <h2>Thông tin cá nhân</h2>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.sectionIcon}>
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <h2>Profile Information</h2>
             </div>
-
+            
             <div className={styles.profileCard}>
-              {/* Tên đăng nhập */}
               <div className={styles.formGroup}>
                 <label className={styles.label}>
-                  <User size={16} className={styles.inputIcon} />
-                  Tên đăng nhập
+                  Username
+                  <span className={styles.fieldNote}>(Cannot be changed)</span>
                 </label>
                 <div className={styles.inputContainer}>
                   <input
                     type="text"
-                    value={isEditing ? editForm.ten_dang_nhap : userInfo.ten_dang_nhap}
-                    onChange={(e) => handleInputChange("ten_dang_nhap", e.target.value)}
-                    disabled={!isEditing}
-                    className={isEditing ? styles.editableInput : styles.readOnlyInput}
-                    placeholder="Nhập tên đăng nhập của bạn"
+                    value={formData.username}
+                    readOnly
+                    className={`${styles.inputField} ${styles.readOnlyInput}`}
+                    placeholder="Your username"
                   />
-                  {isEditing && (
-                    <button
-                      onClick={() => handleInputChange("ten_dang_nhap", "")}
-                      className={styles.clearButton}
-                      type="button"
-                    >
-                      <X size={16} />
-                    </button>
-                  )}
                 </div>
-                <span className={styles.usernameNote}>
-                  Tên đăng nhập dùng để truy cập tài khoản
-                </span>
               </div>
 
-              {/* Tên hiển thị */}
               <div className={styles.formGroup}>
                 <label className={styles.label}>
-                  <User size={16} className={styles.inputIcon} />
-                  Tên hiển thị
+                  Display Name
+                  <span className={styles.fieldNote}>(This name will be visible to others)</span>
                 </label>
                 <div className={styles.inputContainer}>
                   <input
                     type="text"
-                    value={isEditing ? editForm.ten_hien_thi : userInfo.ten_hien_thi}
-                    onChange={(e) => handleInputChange("ten_hien_thi", e.target.value)}
-                    disabled={!isEditing}
-                    className={isEditing ? styles.editableInput : styles.readOnlyInput}
-                    placeholder="Nhập tên hiển thị của bạn"
+                    value={formData.displayName}
+                    onChange={(e) => handleInputChange('displayName', e.target.value)}
+                    readOnly={!isEditing}
+                    className={`${styles.inputField} ${isEditing ? styles.editableInput : styles.readOnlyInput}`}
+                    placeholder="Enter your display name"
                   />
                   {isEditing && (
                     <button
-                      onClick={() => handleInputChange("ten_hien_thi", "")}
                       className={styles.clearButton}
+                      onClick={() => handleClear('displayName')}
                       type="button"
                     >
-                      <X size={16} />
+                      ✕
                     </button>
                   )}
                 </div>
-                <span className={styles.displayNameNote}>
-                  Tên hiển thị sẽ xuất hiện khi bạn đặt hàng hoặc đánh giá
-                </span>
               </div>
 
-              {/* Email */}
               <div className={styles.formGroup}>
                 <label className={styles.label}>
-                  <Mail size={16} className={styles.inputIcon} />
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={userInfo.email}
-                  disabled={true}
-                  className={styles.readOnlyInput}
-                  placeholder="Email không thể thay đổi"
-                />
-                <span className={styles.fieldNote}>
-                  Email không thể thay đổi sau khi đăng ký
-                </span>
-              </div>
-
-              {/* Số điện thoại */}
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  <Phone size={16} className={styles.inputIcon} />
-                  Số điện thoại
+                  Email Address
+                  <span className={styles.fieldNote}>(We'll use this for important notifications)</span>
                 </label>
                 <div className={styles.inputContainer}>
                   <input
-                    type="tel"
-                    value={isEditing ? editForm.so_dien_thoai : userInfo.so_dien_thoai}
-                    onChange={(e) => handleInputChange("so_dien_thoai", e.target.value)}
-                    disabled={!isEditing}
-                    className={isEditing ? styles.editableInput : styles.readOnlyInput}
-                    placeholder="Nhập số điện thoại của bạn"
+                    type="email"
+                    value={formData.email}
+                    readOnly
+                    className={`${styles.inputField} ${styles.readOnlyInput}`}
+                    placeholder="Enter your email"
                   />
-                  {isEditing && (
-                    <button
-                      onClick={() => handleInputChange("so_dien_thoai", "")}
-                      className={styles.clearButton}
-                      type="button"
-                    >
-                      <X size={16} />
-                    </button>
-                  )}
                 </div>
               </div>
 
-              {/* Nút hành động */}
+
+
               <div className={styles.buttonGroup}>
                 {!isEditing ? (
                   <button
-                    onClick={() => setIsEditing(true)}
                     className={styles.editButton}
+                    onClick={handleEdit}
                     disabled={loading}
                   >
-                    <Edit2 size={16} />
-                    Chỉnh sửa thông tin
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Edit Profile
                   </button>
                 ) : (
                   <>
                     <button
-                      onClick={handleSaveProfile}
                       className={styles.saveButton}
+                      onClick={handleSave}
                       disabled={loading}
                     >
-                      <Save size={16} />
-                      {loading ? "Đang lưu..." : "Lưu thay đổi"}
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <polyline points="17 21 17 13 7 13 7 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <polyline points="7 3 7 8 15 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      {loading ? 'Saving...' : 'Save Changes'}
                     </button>
                     <button
-                      onClick={handleCancelEdit}
                       className={styles.cancelButton}
+                      onClick={handleCancel}
                       disabled={loading}
                     >
-                      <X size={16} />
-                      Hủy
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      Cancel
                     </button>
                   </>
                 )}
@@ -424,36 +383,42 @@ export default function TaiKhoan() {
             </div>
           </div>
 
-          {/* Cài đặt bảo mật */}
+
+
           <div className={styles.section}>
             <div className={styles.sectionHeader}>
-              <Settings className={styles.sectionIcon} size={20} />
-              <h2>Cài đặt tài khoản</h2>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.sectionIcon}>
+                <path d="M3 21v-2a4 4 0 0 1 4-4h13.8a1 1 0 0 1 .8 1.6L14.25 21l2.55 3.4A1 1 0 0 0 18.5 22h-13a2 2 0 0 1-2-2v-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <polyline points="15,3 21,3 21,9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <h2>Account Actions</h2>
             </div>
-
-            <div className={styles.securityCard}>
-              <div className={styles.securityInfo}>
-                <h3>Bảo mật tài khoản</h3>
-                <p>Tài khoản của bạn được bảo vệ bởi xác thực Gmail</p>
-              </div>
+            
+            <div className={styles.logoutSection}>
+              <button 
+                className={styles.logoutButton}
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    localStorage.removeItem('authToken');
+                    window.location.href = '/login';
+                  }
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 21v-2a4 4 0 0 1 4-4h13.8a1 1 0 0 1 .8 1.6L14.25 21l2.55 3.4A1 1 0 0 0 18.5 22h-13a2 2 0 0 1-2-2v-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <polyline points="15,3 21,3 21,9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Log Out
+              </button>
               
-              <div className={styles.logoutSection}>
-                <button
-                  onClick={handleLogout}
-                  className={styles.logoutButton}
-                  disabled={loading}
-                >
-                  <LogOut size={16} />
-                  Đăng xuất tài khoản
-                </button>
-                <p className={styles.logoutDescription}>
-                  Đăng xuất khỏi tài khoản và quay lại trang đăng nhập
-                </p>
-              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default TaikhoanPage;

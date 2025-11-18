@@ -19,8 +19,8 @@
     "googleapis": "^166.0.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.544.0",
-    "mysql2": "^3.15.1",
-    "next": "^14.2.33",
+    "mysql2": "^3.15.3",
+    "next": "^16.0.1",
     "react": "latest",
     "react-dom": "latest",
     "react-icons": "^5.2.1"
@@ -40,7 +40,5 @@
     "management-system",
     "mencare"
   ],
-  "author": "MiniMax Agent",
-  "license": "MIT",
-  "main": "[id].js"
+  "license": "MIT"
 }

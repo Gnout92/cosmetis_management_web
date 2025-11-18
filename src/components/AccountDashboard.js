@@ -1,20 +1,23 @@
-import { useState, useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
-import PersonalInfo from './account/PersonalInfo';
-import AddressManagement from './account/AddressManagement';
-import OrderHistory from './account/OrderHistory';
-import PaymentMethods from './account/PaymentMethods';
-import Wishlist from './account/Wishlist';
-import Notifications from './account/Notifications';
-import SecuritySettings from './account/SecuritySettings';
-import LoyaltyProgram from './account/LoyaltyProgram';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { useAuth } from '../context/AuthContext';
 import styles from '../styles/login.module.css';
 
 export default function AccountDashboard() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const router = useRouter();
   const [userStats, setUserStats] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const handleLogout = async () => {
+    try {
+      logout();
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -117,7 +120,7 @@ export default function AccountDashboard() {
       <div className={styles.accountHeader}>
         <div className={styles.userInfo}>
           <img 
-            src={user?.avatar || "/default-avatar.png"} 
+            src={user?.anh_dai_dien || user?.avatar || "/default-avatar.png"} 
             alt="Avatar" 
             className={styles.userAvatar}
             onError={(e) => {
@@ -126,9 +129,9 @@ export default function AccountDashboard() {
           />
           <div>
             <h1 className={styles.welcomeTitle}>
-              Chào mừng, {user?.HoVaTen || "Khách hàng"}!
+              Chào mừng, {user?.ten_hien_thi || user?.HoVaTen || user?.name || "Khách hàng"}!
             </h1>
-            <p className={styles.userEmail}>{user?.Email}</p>
+            <p className={styles.userEmail}>{user?.email || user?.Email}</p>
             {userStats && (
               <div className={styles.userStats}>
                 <span>💰 Điểm tích lũy: {userStats.totalPoints || 0}</span>
@@ -137,6 +140,21 @@ export default function AccountDashboard() {
               </div>
             )}
           </div>
+          <button 
+            onClick={handleLogout}
+            className={styles.logoutButton}
+            style={{
+              backgroundColor: '#ef4444',
+              color: 'white',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            🚪 Đăng xuất
+          </button>
         </div>
       </div>
 

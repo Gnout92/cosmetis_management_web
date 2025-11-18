@@ -89,10 +89,26 @@ export function AuthProvider({ children }) {
   }, []);
 
   // Enhanced logout function
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
     console.log("🚪 Logout called");
     
     try {
+      // Call logout API if token exists
+      if (token) {
+        try {
+          await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          console.log("✅ Logout API called successfully");
+        } catch (apiError) {
+          console.warn("⚠️ Logout API error (continuing anyway):", apiError);
+        }
+      }
+
       // Clear state
       setAuthUser(null);
       setToken(null);
@@ -115,7 +131,7 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.error("❌ Logout error:", err);
     }
-  }, []);
+  }, [token]);
 
   // Check token validity
   const isTokenValid = useCallback(() => {
@@ -166,6 +182,18 @@ export function AuthProvider({ children }) {
 
   const isAuthenticated = !!authUser && !!token;
 
+  // Update user function
+  const updateUser = useCallback((userData) => {
+    console.log("🔄 UpdateUser called with:", userData);
+    
+    if (userData && authUser) {
+      const updatedUser = { ...authUser, ...userData };
+      setAuthUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      console.log("✅ User updated successfully:", updatedUser);
+    }
+  }, [authUser]);
+
   return (
     <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
       <AuthContext.Provider
@@ -175,6 +203,7 @@ export function AuthProvider({ children }) {
           isAuthenticated,
           login,
           logout,
+          updateUser,
           loading,
           isTokenValid
         }}

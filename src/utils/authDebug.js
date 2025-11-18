@@ -1,4 +1,4 @@
-// src/utils/authDebug.js
+// src/pages/api/utils/authDebug.js
 // Debug utilities for authentication issues
 // Use: Copy this code and paste into browser console, then run debugAuth()
 
