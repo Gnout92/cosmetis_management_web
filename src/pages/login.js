@@ -23,31 +23,28 @@ export default function Login() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // State cho đăng nhập bằng email/password
-  const [email, setEmail] = useState("");
+  // State cho đăng nhập bằng username/password
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   // Hàm xác định đường dẫn redirect dựa trên role
   const getRedirectPath = (user) => {
     // Kiểm tra role từ user object
-    const role = user?.role || user?.userRole || user?.type || 'user';
+    const role = user?.role || user?.vai_tro || 'Customer';
     
     switch (role.toLowerCase()) {
       case 'admin':
-        return '/admin';
+        return '/NoiBo/Admin';
       case 'qlbh':
-      case 'qlbanhang':
       case 'sales':
-        return '/QLBH';
-      case 'qlk':
-      case 'qlkhohang':
-      case 'inventory':
-        return '/QLK';
-      case 'user':
+        return '/NoiBo/QLBH';
+      case 'qlkho':
+      case 'warehouse':
+        return '/NoiBo/QLKho';
       case 'customer':
       default:
-        return '/'; // Trang chủ cho user bình thường
+        return '/'; // Trang chủ cho khách hàng
     }
   };
 
@@ -79,7 +76,7 @@ export default function Login() {
     }
   };
 
-  // Xử lý đăng nhập bằng Google (Phương thức ưu tiên)
+  // Xử lý đăng nhập bằng Google (Luồng 1)
   async function handleGoogleSuccess(credentialResponse) {
     setLoading(true);
     setError(null);
@@ -96,16 +93,16 @@ export default function Login() {
       }
 
       const { token, user, isNewUser } = await res.json();
+      
+      // Lưu thông tin user vào context/localStorage
       login(user, token);
       
-      // Nếu là user mới, chuyển đến trang tài khoản để hoàn thiện thông tin
-      if (isNewUser) {
-        router.push("/taikhoan");
-      } else {
-        router.push("/");
-      }
+      // Gmail login luôn về trang chủ (Customer role)
+      // Ảnh đại diện = ảnh Gmail, tên = tên Gmail, email = email Gmail
+      router.push("/");
+      
     } catch (err) {
-      console.error("Login error:", err);
+      console.error("Google login error:", err);
       setError(err.message || "Lỗi đăng nhập với Google");
     } finally {
       setLoading(false);
@@ -116,8 +113,8 @@ export default function Login() {
     setError("Lỗi khi xác thực với Google. Vui lòng thử lại.");
   }
 
-  // Xử lý đăng nhập bằng Email/Password
-  async function handleEmailLogin(e) {
+  // Xử lý đăng nhập bằng Username/Password (Luồng 2)
+  async function handleUsernameLogin(e) {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -126,19 +123,28 @@ export default function Login() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username, password }),
       });
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.message || "Email hoặc mật khẩu không đúng");
+        throw new Error(errData.message || "Tên đăng nhập hoặc mật khẩu không đúng");
       }
 
-      const { token, user } = await res.json();
-      await handleLoginSuccess(user, token, false);
+      const { token, user, redirect } = await res.json();
+      
+      // Lưu thông tin user vào context/localStorage
+      login(user, token);
+      
+      // Redirect theo role từ API trả về
+      // QLBH → /NoiBo/QLBH
+      // QLKho → /NoiBo/QLKho  
+      // Admin → /NoiBo/Admin
+      // Customer → /
+      router.push(redirect || getRedirectPath(user));
       
     } catch (err) {
-      console.error("Email login error:", err);
+      console.error("Username login error:", err);
       setError(err.message || "Lỗi đăng nhập");
     } finally {
       setLoading(false);
@@ -158,19 +164,19 @@ export default function Login() {
             
             {/* PHẦN 4: Form Đăng nhập Truyền thống */}
             <div className={styles.traditionalLoginSection}>
-              <form onSubmit={handleEmailLogin}>
+              <form onSubmit={handleUsernameLogin}>
                 <div className={styles.formGroup}>
-                  <label htmlFor="email" className={styles.label}>
+                  <label htmlFor="username" className={styles.label}>
                     <Mail size={16} className={styles.inputIcon} />
                     Tên đăng nhập
                   </label>
                   <input
                     type="text"
-                    id="email"
+                    id="username"
                     className={styles.input}
                     placeholder="Nhập tên đăng nhập của bạn"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     required
                     disabled={loading}
                   />

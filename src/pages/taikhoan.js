@@ -1,19 +1,62 @@
-
+// src/pages/taikhoan.js
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
 import styles from '../styles/taikhoan.module.css';
+// Import modern SVG icons from lucide-react
+import { 
+  User, 
+  Package, 
+  ShoppingCart, 
+  LogOut,
+  Edit2,
+  Save,
+  X,
+  Mail,
+  Calendar,
+  MapPin,
+  Plus,
+  Minus,
+  Trash2,
+  AlertCircle,
+  Clock,
+  CreditCard,
+  TruckIcon as Truck,
+  CheckCircle2
+} from 'lucide-react';
 
 const TaikhoanPage = () => {
+  const router = useRouter();
+  
+  // Active menu state
+  const [activeMenu, setActiveMenu] = useState('profile');
+  
+  // Form data
   const [formData, setFormData] = useState({
     username: '',
     displayName: '',
-    email: ''
+    email: '',
+    avatar: '',
+    firstName: '',
+    lastName: '',
+    role: 'Customer'
   });
+  
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  
+  // Cart states
+  const [cartItems, setCartItems] = useState([]);
+  const [cartLoading, setCartLoading] = useState(false);
+  
+  // Orders states
+  const [orders, setOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [ordersError, setOrdersError] = useState(null);
 
-  // ✅ FIXED: Enhanced token handling với multiple fallback strategies
+  // Get auth token with Bearer prefix
   const getAuthToken = () => {
     if (typeof window !== 'undefined') {
       let token = localStorage.getItem('authToken');
@@ -23,11 +66,10 @@ const TaikhoanPage = () => {
         return null;
       }
       
-      // Auto-fix: Add Bearer prefix nếu thiếu
+      // Auto-fix: Add Bearer prefix if missing
       if (!token.startsWith('Bearer ')) {
-        console.log('🔧 Auto-adding Bearer prefix to token');
         token = `Bearer ${token}`;
-        localStorage.setItem('authToken', token); // Save fixed format
+        localStorage.setItem('authToken', token);
       }
       
       return token;
@@ -35,7 +77,7 @@ const TaikhoanPage = () => {
     return null;
   };
 
-  // ✅ FIXED: Load user data với enhanced error handling
+  // Load user data from API /api/auth/me
   const loadUserData = async () => {
     try {
       setLoading(true);
@@ -43,103 +85,160 @@ const TaikhoanPage = () => {
 
       const token = getAuthToken();
       
-      // Validate token trước khi gọi API
       if (!token) {
         setError('Bạn chưa đăng nhập. Vui lòng đăng nhập để tiếp tục.');
         setLoading(false);
         setTimeout(() => {
-          if (typeof window !== 'undefined') {
-            window.location.href = '/login';
-          }
+          router.push('/login');
         }, 2000);
         return;
       }
 
-      console.log('🔍 Token for API call:', token.substring(0, 20) + '...');
-      
-      const response = await fetch('/api/user/getProfile', {
+      const response = await fetch('/api/auth/me', {
         method: 'GET',
         headers: {
-          'Authorization': token, // ✅ ĐÚNG: Bearer prefix được tự động thêm vào
+          'Authorization': token,
           'Content-Type': 'application/json',
         },
       });
 
-      console.log('📡 API Response Status:', response.status);
-      console.log('📡 API Response OK:', response.ok);
-
-      // Handle non-200 responses
       if (!response.ok) {
-        let errorMessage = 'Failed to load user data';
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || `HTTP ${response.status}`;
-          console.log('📡 API Error Data:', errorData);
-          
-          // Enhanced error handling for 401
-          if (response.status === 401) {
-            console.error('❌ Authentication failed!');
-            console.error('Token format:', token);
-            console.error('💡 Try this fix:', 'localStorage.setItem("authToken", "Bearer 1"); location.reload();');
-            errorMessage = 'Token không hợp lệ. Mở Console (F12) và chạy: localStorage.setItem("authToken", "Bearer 1"); location.reload();';
-          }
-        } catch (parseError) {
-          console.warn('Could not parse error response:', parseError);
-          if (response.status === 401) {
-            errorMessage = 'Token xác thực không hợp lệ. Mở Console và chạy: localStorage.setItem("authToken", "Bearer 1"); location.reload();';
-          } else if (response.status >= 500) {
-            errorMessage = 'Server error. Please try again later.';
-          } else {
-            errorMessage = `Request failed with status ${response.status}`;
-          }
+        if (response.status === 401) {
+          localStorage.removeItem('authToken');
+          router.push('/login');
+          return;
         }
-        throw new Error(errorMessage);
+        throw new Error('Không thể tải thông tin người dùng');
       }
 
       const data = await response.json();
       
-      if (!data) {
-        throw new Error('Invalid response format');
-      }
-      
-      if (data.success && data.data) {
+      if (data.success && data.user) {
         setFormData({
-          username: data.data.ten_dang_nhap || '',
-          displayName: data.data.ten_hien_thi || '',
-          email: data.data.email || ''
+          username: data.user.username || '',
+          displayName: data.user.displayName || '',
+          email: data.user.email || '',
+          avatar: data.user.avatar || '/images/default-avatar.png',
+          firstName: data.user.firstName || '',
+          lastName: data.user.lastName || '',
+          role: data.user.role || 'Customer'
         });
-        console.log('✅ User data loaded successfully:', data.data);
-      } else if (data.message) {
-        throw new Error(data.message);
-      } else {
-        throw new Error('Invalid response format from server');
       }
 
     } catch (err) {
       console.error('Error loading user data:', err);
-      
-      let userFriendlyError = 'Failed to load user data';
-      if (err.message) {
-        if (err.message.includes('Authentication') || err.message.includes('401') || err.message.includes('Token')) {
-          userFriendlyError = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại hoặc chạy: localStorage.setItem("authToken", "Bearer 1"); location.reload();';
-        } else if (err.message.includes('database') || err.message.includes('500')) {
-          userFriendlyError = 'Máy chủ tạm thời không khả dụng. Vui lòng thử lại sau.';
-        } else {
-          userFriendlyError = err.message;
-        }
-      }
-      
-      setError(userFriendlyError);
+      setError(err.message || 'Lỗi khi tải thông tin người dùng');
     } finally {
       setLoading(false);
     }
   };
 
-  // Load user data from API
+  // Load orders data from API
+  const loadOrdersData = async () => {
+    try {
+      setOrdersLoading(true);
+      setOrdersError(null);
+
+      const token = getAuthToken();
+      
+      if (!token) {
+        setOrdersError('Bạn chưa đăng nhập.');
+        return;
+      }
+
+      const response = await fetch('/api/orders/my-orders', {
+        method: 'GET',
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Không thể tải danh sách đơn hàng');
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.orders) {
+        setOrders(data.orders);
+      }
+
+    } catch (err) {
+      console.error('Error loading orders:', err);
+      setOrdersError(err.message || 'Lỗi khi tải danh sách đơn hàng');
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
+  // Load cart data from localStorage
+  const loadCartData = () => {
+    try {
+      setCartLoading(true);
+      if (typeof window !== 'undefined') {
+        const savedCart = localStorage.getItem('cosmetic_cart');
+        if (savedCart) {
+          const cartData = JSON.parse(savedCart);
+          setCartItems(cartData);
+        } else {
+          setCartItems([]);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading cart:', err);
+      setCartItems([]);
+    } finally {
+      setCartLoading(false);
+    }
+  };
+
+  // Update cart quantity
+  const updateQuantity = (productId, newQuantity) => {
+    if (newQuantity < 1) return;
+    
+    const updatedCart = cartItems.map(item => 
+      item.id === productId ? { ...item, quantity: newQuantity } : item
+    );
+    
+    setCartItems(updatedCart);
+    localStorage.setItem('cosmetic_cart', JSON.stringify(updatedCart));
+  };
+
+  // Remove item from cart
+  const removeFromCart = (productId) => {
+    const updatedCart = cartItems.filter(item => item.id !== productId);
+    setCartItems(updatedCart);
+    localStorage.setItem('cosmetic_cart', JSON.stringify(updatedCart));
+  };
+
+  // Calculate cart total
+  const calculateCartTotal = () => {
+    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  };
+
+  // Load data on mount
   useEffect(() => {
     loadUserData();
+    loadCartData();
+    loadOrdersData();
   }, []);
 
+  // Reload cart when activeMenu changes to 'cart'
+  useEffect(() => {
+    if (activeMenu === 'cart') {
+      loadCartData();
+    }
+  }, [activeMenu]);
+
+  // Reload orders when activeMenu changes to 'tracking'
+  useEffect(() => {
+    if (activeMenu === 'tracking') {
+      loadOrdersData();
+    }
+  }, [activeMenu]);
+
+  // Handle input change
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -147,13 +246,14 @@ const TaikhoanPage = () => {
     }));
   };
 
+  // Handle edit mode
   const handleEdit = () => {
     setIsEditing(true);
     setError(null);
     setSuccess(null);
   };
 
-  // ✅ FIXED: Save function với enhanced token handling
+  // Handle save changes
   const handleSave = async () => {
     try {
       setLoading(true);
@@ -164,78 +264,115 @@ const TaikhoanPage = () => {
       
       if (!token) {
         setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-        setLoading(false);
-        setTimeout(() => {
-          if (typeof window !== 'undefined') {
-            window.location.href = '/login';
-          }
-        }, 2000);
+        setTimeout(() => router.push('/login'), 2000);
         return;
       }
       
       const updateData = {
-        ten_hien_thi: formData.displayName
+        displayName: formData.displayName,
+        firstName: formData.firstName,
+        lastName: formData.lastName
       };
 
       const response = await fetch('/api/user/updateProfile', {
         method: 'PUT',
         headers: {
-          'Authorization': token, // ✅ ĐÚNG: Bearer prefix được tự động thêm vào
+          'Authorization': token,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(updateData),
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({
-          message: 'Failed to save changes'
-        }));
-        throw new Error(errorData.message || `HTTP ${response.status}`);
+        throw new Error('Không thể cập nhật thông tin');
       }
 
       const data = await response.json();
       
       if (data.success) {
         setIsEditing(false);
-        setSuccess('Profile updated successfully!');
-        
-        if (data.data) {
-          setFormData(prev => ({
-            ...prev,
-            displayName: data.data.ten_hien_thi || prev.displayName
-          }));
-        }
-
+        setSuccess('Cập nhật thông tin thành công!');
         setTimeout(() => setSuccess(null), 3000);
-      } else {
-        throw new Error(data.message || 'Update failed');
       }
 
     } catch (err) {
       console.error('Error saving changes:', err);
-      setError(`Failed to save changes: ${err.message}`);
+      setError(err.message || 'Lỗi khi lưu thay đổi');
     } finally {
       setLoading(false);
     }
   };
 
+  // Handle cancel edit
   const handleCancel = () => {
     setIsEditing(false);
-    setError(null);
-    setSuccess(null);
+    loadUserData(); // Reload original data
   };
 
-  const handleClear = (field) => {
-    handleInputChange(field, '');
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      const token = getAuthToken();
+      
+      // Call logout API
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      // Clear local storage
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+      
+      // Redirect to login
+      router.push('/login');
+      
+    } catch (err) {
+      console.error('Logout error:', err);
+      // Still logout locally even if API fails
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+      router.push('/login');
+    }
   };
 
-
+  // Menu items with modern icons
+  const menuItems = [
+    {
+      id: 'profile',
+      label: 'Thông Tin Cá Nhân',
+      icon: <User size={20} />,
+      content: 'profile'
+    },
+    {
+      id: 'tracking',
+      label: 'Đơn Hàng Của Tôi',
+      icon: <Package size={20} />,
+      content: 'tracking'
+    },
+    {
+      id: 'cart',
+      label: 'Giỏ Hàng',
+      icon: <ShoppingCart size={20} />,
+      content: 'cart'
+    },
+    {
+      id: 'logout',
+      label: 'Đăng Xuất',
+      icon: <LogOut size={20} />,
+      action: 'logout',
+      isDanger: true
+    }
+  ];
 
   if (loading && !formData.username) {
     return (
       <div className={styles.loadingContainer}>
-        <div>Loading...</div>
-        <p>Loading your account information</p>
+        <div className={styles.spinner}></div>
+        <p>Đang tải thông tin...</p>
       </div>
     );
   }
@@ -243,179 +380,433 @@ const TaikhoanPage = () => {
   return (
     <div className={styles.container}>
       <div className={styles.accountContainer}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Thông Tin Tài Khoản</h1>
-          
-        </div>
+        
+        {/* SIDEBAR MENU */}
+        <aside className={styles.sidebar}>
+          <div className={styles.sidebarHeader}>
+            <div className={styles.avatarSection}>
+              <img 
+                src={formData.avatar} 
+                alt="Avatar" 
+                className={styles.avatar}
+              />
+              <div className={styles.userInfo}>
+                <h3>{formData.displayName || formData.username}</h3>
+                <p>{formData.email}</p>
+              </div>
+            </div>
+          </div>
 
-        <div className={styles.content}>
-          {/* Error Message */}
+          <nav className={styles.sidebarNav}>
+            {menuItems.map(item => (
+              <button
+                key={item.id}
+                className={`${styles.menuItem} ${activeMenu === item.id ? styles.active : ''} ${item.isDanger ? styles.danger : ''}`}
+                onClick={() => {
+                  if (item.action === 'logout') {
+                    handleLogout();
+                  } else {
+                    setActiveMenu(item.id);
+                  }
+                }}
+              >
+                <span className={styles.menuIcon}>{item.icon}</span>
+                <span className={styles.menuLabel}>{item.label}</span>
+              </button>
+            ))}
+          </nav>
+        </aside>
+
+        {/* MAIN CONTENT AREA */}
+        <main className={styles.mainContent}>
+          
+          {/* Error/Success Messages */}
           {error && (
             <div className={styles.errorMessage}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L12 12M12 12L16 16M12 12L8 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <circle cx="12" cy="19" r="1" fill="currentColor"/>
-              </svg>
+              <X size={16} />
               <span>{error}</span>
             </div>
           )}
 
-          {/* Success Message */}
           {success && (
             <div className={styles.successMessage}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <polyline points="20 6 9 17 4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              {success}
+              <Save size={16} />
+              <span>{success}</span>
             </div>
           )}
 
-          <div className={styles.section}>
-            <div className={styles.sectionHeader}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.sectionIcon}>
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <h2>Profile Information</h2>
-            </div>
-            
-            <div className={styles.profileCard}>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  Username
-                  <span className={styles.fieldNote}>(Cannot be changed)</span>
-                </label>
-                <div className={styles.inputContainer}>
+          {/* PROFILE VIEW */}
+          {activeMenu === 'profile' && (
+            <div className={styles.contentSection}>
+              <div className={styles.sectionHeader}>
+                <h1>Thông Tin Cá Nhân</h1>
+                {!isEditing && (
+                  <button className={styles.editButton} onClick={handleEdit}>
+                    <Edit2 size={16} />
+                    Chỉnh sửa
+                  </button>
+                )}
+              </div>
+
+              <div className={styles.profileCard}>
+                <div className={styles.formGroup}>
+                  <label>
+                    <User size={16} />
+                    Tên đăng nhập
+                  </label>
                   <input
                     type="text"
                     value={formData.username}
                     readOnly
-                    className={`${styles.inputField} ${styles.readOnlyInput}`}
-                    placeholder="Your username"
+                    className={styles.inputReadonly}
                   />
+                  <small>Không thể thay đổi</small>
                 </div>
-              </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  Display Name
-                  <span className={styles.fieldNote}>(This name will be visible to others)</span>
-                </label>
-                <div className={styles.inputContainer}>
+                <div className={styles.formGroup}>
+                  <label>
+                    <Mail size={16} />
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    readOnly
+                    className={styles.inputReadonly}
+                  />
+                  <small>Email từ Google / Đăng ký</small>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label>
+                    <User size={16} />
+                    Tên hiển thị
+                  </label>
                   <input
                     type="text"
                     value={formData.displayName}
                     onChange={(e) => handleInputChange('displayName', e.target.value)}
                     readOnly={!isEditing}
-                    className={`${styles.inputField} ${isEditing ? styles.editableInput : styles.readOnlyInput}`}
-                    placeholder="Enter your display name"
+                    className={isEditing ? styles.inputEditable : styles.inputReadonly}
+                    placeholder="Nhập tên hiển thị"
                   />
-                  {isEditing && (
-                    <button
-                      className={styles.clearButton}
-                      onClick={() => handleClear('displayName')}
-                      type="button"
-                    >
-                      ✕
-                    </button>
-                  )}
+                  <small>Tên này sẽ hiển thị công khai</small>
                 </div>
-              </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  Email Address
-                  <span className={styles.fieldNote}>(We'll use this for important notifications)</span>
-                </label>
-                <div className={styles.inputContainer}>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    readOnly
-                    className={`${styles.inputField} ${styles.readOnlyInput}`}
-                    placeholder="Enter your email"
-                  />
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label>Họ</label>
+                    <input
+                      type="text"
+                      value={formData.firstName}
+                      onChange={(e) => handleInputChange('firstName', e.target.value)}
+                      readOnly={!isEditing}
+                      className={isEditing ? styles.inputEditable : styles.inputReadonly}
+                      placeholder="Nhập họ"
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label>Tên</label>
+                    <input
+                      type="text"
+                      value={formData.lastName}
+                      onChange={(e) => handleInputChange('lastName', e.target.value)}
+                      readOnly={!isEditing}
+                      className={isEditing ? styles.inputEditable : styles.inputReadonly}
+                      placeholder="Nhập tên"
+                    />
+                  </div>
                 </div>
-              </div>
 
-
-
-              <div className={styles.buttonGroup}>
-                {!isEditing ? (
-                  <button
-                    className={styles.editButton}
-                    onClick={handleEdit}
-                    disabled={loading}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    Edit Profile
-                  </button>
-                ) : (
-                  <>
-                    <button
-                      className={styles.saveButton}
+                {isEditing && (
+                  <div className={styles.buttonGroup}>
+                    <button 
+                      className={styles.saveButton} 
                       onClick={handleSave}
                       disabled={loading}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <polyline points="17 21 17 13 7 13 7 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <polyline points="7 3 7 8 15 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                      {loading ? 'Saving...' : 'Save Changes'}
+                      <Save size={16} />
+                      {loading ? 'Đang lưu...' : 'Lưu thay đổi'}
                     </button>
-                    <button
-                      className={styles.cancelButton}
+                    <button 
+                      className={styles.cancelButton} 
                       onClick={handleCancel}
                       disabled={loading}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                      Cancel
+                      <X size={16} />
+                      Hủy
                     </button>
-                  </>
+                  </div>
                 )}
               </div>
             </div>
-          </div>
+          )}
 
+          {/* ORDER TRACKING VIEW */}
+          {activeMenu === 'tracking' && (
+            <div className={styles.contentSection}>
+              <div className={styles.sectionHeader}>
+                <h1>Đơn Hàng Của Tôi</h1>
+                <span className={styles.orderCount}>
+                  {orders.length} đơn hàng
+                </span>
+              </div>
 
+              {ordersLoading ? (
+                <div className={styles.ordersLoading}>
+                  <div className={styles.spinner}></div>
+                  <p>Đang tải danh sách đơn hàng...</p>
+                </div>
+              ) : ordersError ? (
+                <div className={styles.ordersError}>
+                  <AlertCircle size={48} className={styles.errorIcon} />
+                  <h3>Không thể tải danh sách đơn hàng</h3>
+                  <p>{ordersError}</p>
+                  <button onClick={loadOrdersData} className={styles.retryButton}>
+                    Thử lại
+                  </button>
+                </div>
+              ) : orders.length === 0 ? (
+                <div className={styles.emptyOrders}>
+                  <Package size={64} className={styles.emptyIcon} />
+                  <h3>Chưa có đơn hàng nào</h3>
+                  <p>Bạn chưa đặt đơn hàng nào. Hãy mua sắm ngay!</p>
+                  <Link href="/" className={styles.shopNowButton}>
+                    Mua sắm ngay
+                  </Link>
+                </div>
+              ) : (
+                <div className={styles.ordersList}>
+                  {orders.map((order) => (
+                    <div key={order.id} className={styles.orderCard}>
+                      {/* Order Header */}
+                      <div className={styles.orderHeader}>
+                        <div className={styles.orderInfo}>
+                          <h3 className={styles.orderId}>
+                            <Package size={18} />
+                            {order.orderId}
+                          </h3>
+                          <p className={styles.orderDate}>
+                            <Clock size={14} />
+                            {new Date(order.createdAt).toLocaleString('vi-VN', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                        </div>
+                        <div 
+                          className={styles.orderStatus}
+                          style={{ backgroundColor: order.statusColor }}
+                        >
+                          {order.statusText}
+                        </div>
+                      </div>
 
-          <div className={styles.section}>
-            <div className={styles.sectionHeader}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.sectionIcon}>
-                <path d="M3 21v-2a4 4 0 0 1 4-4h13.8a1 1 0 0 1 .8 1.6L14.25 21l2.55 3.4A1 1 0 0 0 18.5 22h-13a2 2 0 0 1-2-2v-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <polyline points="15,3 21,3 21,9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <h2>Account Actions</h2>
+                      {/* Order Details */}
+                      <div className={styles.orderBody}>
+                        <div className={styles.orderSummary}>
+                          <div className={styles.summaryItem}>
+                            <span className={styles.label}>Số sản phẩm:</span>
+                            <span className={styles.value}>{order.productCount} sản phẩm</span>
+                          </div>
+                          <div className={styles.summaryItem}>
+                            <span className={styles.label}>Tổng tiền hàng:</span>
+                            <span className={styles.value}>
+                              {new Intl.NumberFormat('vi-VN', {
+                                style: 'currency',
+                                currency: 'VND'
+                              }).format(order.subtotal)}
+                            </span>
+                          </div>
+                          {order.shippingFee > 0 && (
+                            <div className={styles.summaryItem}>
+                              <span className={styles.label}>Phí vận chuyển:</span>
+                              <span className={styles.value}>
+                                {new Intl.NumberFormat('vi-VN', {
+                                  style: 'currency',
+                                  currency: 'VND'
+                                }).format(order.shippingFee)}
+                              </span>
+                            </div>
+                          )}
+                          {order.discount > 0 && (
+                            <div className={styles.summaryItem}>
+                              <span className={styles.label}>Giảm giá:</span>
+                              <span className={`${styles.value} ${styles.discount}`}>
+                                -{new Intl.NumberFormat('vi-VN', {
+                                  style: 'currency',
+                                  currency: 'VND'
+                                }).format(order.discount)}
+                              </span>
+                            </div>
+                          )}
+                          <div className={`${styles.summaryItem} ${styles.total}`}>
+                            <span className={styles.label}>Tổng thanh toán:</span>
+                            <span className={styles.value}>
+                              {new Intl.NumberFormat('vi-VN', {
+                                style: 'currency',
+                                currency: 'VND'
+                              }).format(order.total)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Shipping Info */}
+                        <div className={styles.shippingInfo}>
+                          <h4>
+                            <Truck size={16} />
+                            Thông tin giao hàng
+                          </h4>
+                          <p><strong>{order.shippingInfo.name}</strong></p>
+                          <p>{order.shippingInfo.phone}</p>
+                          <p className={styles.address}>{order.shippingInfo.fullAddress}</p>
+                        </div>
+                      </div>
+
+                      {/* Order Footer */}
+                      <div className={styles.orderFooter}>
+                        <div className={styles.paymentMethod}>
+                          <CreditCard size={14} />
+                          {order.paymentMethod === 'cod' ? 'Thanh toán khi nhận hàng' : 
+                           order.paymentMethod === 'banking' ? 'Chuyển khoản ngân hàng' :
+                           order.paymentMethod === 'momo' ? 'Ví MoMo' : 'Khác'}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            
-            <div className={styles.logoutSection}>
-              <button 
-                className={styles.logoutButton}
-                onClick={() => {
-                  if (typeof window !== 'undefined') {
-                    localStorage.removeItem('authToken');
-                    window.location.href = '/login';
-                  }
-                }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M3 21v-2a4 4 0 0 1 4-4h13.8a1 1 0 0 1 .8 1.6L14.25 21l2.55 3.4A1 1 0 0 0 18.5 22h-13a2 2 0 0 1-2-2v-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <polyline points="15,3 21,3 21,9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Log Out
-              </button>
-              
+          )}
+
+          {/* CART VIEW */}
+          {activeMenu === 'cart' && (
+            <div className={styles.contentSection}>
+              <div className={styles.sectionHeader}>
+                <h1>Giỏ Hàng Của Tôi</h1>
+                <span className={styles.cartCount}>
+                  {cartItems.length} sản phẩm
+                </span>
+              </div>
+
+              {cartLoading ? (
+                <div className={styles.cartLoading}>
+                  <div className={styles.spinner}></div>
+                  <p>Đang tải giỏ hàng...</p>
+                </div>
+              ) : cartItems.length === 0 ? (
+                <div className={styles.emptyCart}>
+                  <ShoppingCart size={64} className={styles.emptyIcon} />
+                  <h3>Giỏ hàng trống</h3>
+                  <p>Bạn chưa có sản phẩm nào trong giỏ hàng</p>
+                  <Link href="/" className={styles.shopNowButton}>
+                    Mua sắm ngay
+                  </Link>
+                </div>
+              ) : (
+                <div className={styles.cartContent}>
+                  <div className={styles.cartItems}>
+                    {cartItems.map((item) => (
+                      <div key={item.id} className={styles.cartItem}>
+                        <div className={styles.itemImage}>
+                          <img 
+                            src={item.image || '/images/default-product.png'} 
+                            alt={item.name}
+                            onError={(e) => { e.target.src = '/images/default-product.png'; }}
+                          />
+                        </div>
+                        
+                        <div className={styles.itemDetails}>
+                          <h4>{item.name}</h4>
+                          {item.variant && (
+                            <p className={styles.itemVariant}>{item.variant}</p>
+                          )}
+                          <p className={styles.itemPrice}>
+                            {new Intl.NumberFormat('vi-VN', {
+                              style: 'currency',
+                              currency: 'VND'
+                            }).format(item.price)}
+                          </p>
+                        </div>
+
+                        <div className={styles.itemQuantity}>
+                          <button 
+                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            className={styles.qtyButton}
+                            disabled={item.quantity <= 1}
+                          >
+                            <Minus size={16} />
+                          </button>
+                          <span className={styles.qtyValue}>{item.quantity}</span>
+                          <button 
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            className={styles.qtyButton}
+                          >
+                            <Plus size={16} />
+                          </button>
+                        </div>
+
+                        <div className={styles.itemTotal}>
+                          <p className={styles.itemTotalPrice}>
+                            {new Intl.NumberFormat('vi-VN', {
+                              style: 'currency',
+                              currency: 'VND'
+                            }).format(item.price * item.quantity)}
+                          </p>
+                          <button 
+                            onClick={() => removeFromCart(item.id)}
+                            className={styles.removeButton}
+                          >
+                            <Trash2 size={16} />
+                            Xóa
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className={styles.cartSummary}>
+                    <h3>Tổng Cộng</h3>
+                    <div className={styles.summaryRow}>
+                      <span>Tạm tính:</span>
+                      <span className={styles.summaryValue}>
+                        {new Intl.NumberFormat('vi-VN', {
+                          style: 'currency',
+                          currency: 'VND'
+                        }).format(calculateCartTotal())}
+                      </span>
+                    </div>
+                    <div className={styles.summaryRow}>
+                      <span>Phí vận chuyển:</span>
+                      <span className={styles.summaryValue}>Tính khi thanh toán</span>
+                    </div>
+                    <div className={styles.summaryTotal}>
+                      <span>Tổng cộng:</span>
+                      <span className={styles.totalValue}>
+                        {new Intl.NumberFormat('vi-VN', {
+                          style: 'currency',
+                          currency: 'VND'
+                        }).format(calculateCartTotal())}
+                      </span>
+                    </div>
+                    <Link href="/giohang" className={styles.checkoutButton}>
+                      Tiến hành thanh toán
+                    </Link>
+                    <p className={styles.cartNote}>
+                      <AlertCircle size={14} />
+                      Giá cuối cùng sẽ được xác nhận khi thanh toán
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-        </div>
+          )}
+
+        </main>
       </div>
     </div>
   );

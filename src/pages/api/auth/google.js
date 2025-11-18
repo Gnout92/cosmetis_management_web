@@ -50,12 +50,18 @@ export default async function handler(req, res) {
       );
 
       let userId, isNewUser = false;
+      
+      // Đảm bảo luôn có tên hiển thị: Ưu tiên name > givenName > email
+      const displayName = profile.name || profile.givenName || profile.email?.split('@')[0] || 'User';
+      const firstName = profile.familyName || '';
+      const lastName = profile.givenName || '';
 
       if (lk.length) {
         userId = lk[0].nguoi_dung_id;
+        // Cập nhật thông tin từ Gmail, đảm bảo tên luôn có giá trị
         await conn.execute(
           "UPDATE nguoi_dung SET email=?, ten_hien_thi=?, ho=?, ten=?, anh_dai_dien=? WHERE id=?",
-          [profile.email, profile.name || null, profile.familyName || null, profile.givenName || null, profile.picture || null, userId]
+          [profile.email, displayName, firstName, lastName, profile.picture || null, userId]
         );
       } else {
         // Tìm theo email
@@ -65,10 +71,20 @@ export default async function handler(req, res) {
         );
         if (u.length) {
           userId = u[0].id;
+          // Cập nhật ảnh đại diện và tên từ Gmail cho user hiện có
+          await conn.execute(
+            "UPDATE nguoi_dung SET anh_dai_dien=?, ten_hien_thi=?, ho=?, ten=? WHERE id=?",
+            [profile.picture || null, displayName, firstName, lastName, userId]
+          );
         } else {
+          // Tạo user mới với:
+          // - Ảnh đại diện = ảnh Gmail
+          // - Tên hiển thị = tên Gmail (đảm bảo luôn có giá trị)
+          // - Email = email Gmail
+          // - Role mặc định = Customer
           const [ins] = await conn.execute(
             "INSERT INTO nguoi_dung (email, ten_hien_thi, ho, ten, anh_dai_dien, vai_tro) VALUES (?, ?, ?, ?, ?, 'Customer')",
-            [profile.email, profile.name || null, profile.familyName || null, profile.givenName || null, profile.picture || null]
+            [profile.email, displayName, firstName, lastName, profile.picture || null]
           );
           userId = ins.insertId;
           isNewUser = true;
