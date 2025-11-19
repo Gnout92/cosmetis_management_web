@@ -1,9 +1,11 @@
-
 {
   "compilerOptions": {
-    "baseUrl": ".",
+    "baseUrl": ".", // Bắt đầu tìm kiếm từ thư mục gốc
     "paths": {
-      "@/*": ["src/*"]
+      // Ánh xạ '@/' tới bất kỳ file/thư mục nào trong thư mục gốc ('./*')
+      "@/*": ["./*"] 
     }
-  }
+  },
+  "include": ["**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
 }

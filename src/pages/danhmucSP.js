@@ -1,230 +1,168 @@
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import styles from '../styles/danhmucSP.module.css';
+// src/pages/danhmucSP.js
+import { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
+import styles from "../styles/danhmucSP.module.css";
 
-const products = [
-  // 48 products exactly matching the SQL INSERT statements with proper category mapping
-  { id: 1, name: 'Son môi đỏ Ruby', description: 'Son đỏ Ruby lâu trôi', categoryId: 1, categoryName: 'Son môi', price: 200000, originalPrice: 250000, stock: 50, image: "/images/banners/son.jpg", rating: 4.5, reviews: 120, variant: 'Màu đỏ Ruby - 3.5g', category: 'Son môi' },
-  { id: 2, name: 'mặt nạ dưỡng ẩm ', description: 'mặt nạ chống lão hóa ', categoryId: 1, categoryName: 'mặt nạ', price: 180000, originalPrice: 220000, stock: 40, image: "/images/banners/matna.jpg", rating: 4.3, reviews: 89, variant: 'Dạng giấy - 1 miếng', category: 'Mặt nạ' },
-  { id: 3, name: 'Son môi cam Sunset', description: 'Son cam tươi sáng', categoryId: 1, categoryName: 'Son môi', price: 190000, originalPrice: 230000, stock: 35, image: "/images/banners/son2.jpg", rating: 4.4, reviews: 76, variant: 'Màu cam Sunset - 3.5g', category: 'Son môi' },
-  { id: 4, name: 'Kem dưỡng ẩm ban ngày', description: 'Dưỡng ẩm và chống nắng', categoryId: 2, categoryName: 'Kem chống nắng', price: 150000, originalPrice: 180000, stock: 30, image: "/images/banners/chongmat.jpg", rating: 4.6, reviews: 145, variant: '50ml - Dạng kem', category: 'Kem chống nắng' },
-  { id: 5, name: 'Kem dưỡng ẩm ban đêm', description: 'Dưỡng ẩm sâu cho da', categoryId: 2, categoryName: 'Kem chống nắng', price: 160000, originalPrice: 200000, stock: 25, image: "/images/banners/kemduong1.jpg", rating: 4.7, reviews: 198, variant: '50ml - Dạng kem đêm', category: 'Kem dưỡng ẩm' },
-  { id: 6, name: 'Serum vitamin C', description: 'Serum sáng da và mờ thâm', categoryId: 2, categoryName: 'Kem chống nắng', price: 220000, originalPrice: 260000, stock: 20, image: "/images/banners/vtmc.jpg", rating: 4.8, reviews: 234, variant: '30ml - Serum dưỡng da', category: 'Serum' },
-  { id: 7, name: 'Sữa rửa mặt làm sạch sâu', description: 'Loại bỏ bụi bẩn và bã nhờn', categoryId: 1, categoryName: 'Sữa rửa mặt', price: 120000, originalPrice: 150000, stock: 0, image: "/images/banners/simple.jpg", rating: 4.2, reviews: 167, variant: '100ml - Dạng gel', category: 'Sữa rửa mặt' },
-  { id: 8, name: 'Sữa rửa mặt dịu nhẹ', description: 'Phù hợp da nhạy cảm', categoryId: 1, categoryName: 'Sữa rửa mặt', price: 110000, originalPrice: 140000, stock: 8, image: "/images/banners/dieunhe.jpg", rating: 4.4, reviews: 123, variant: '100ml - Dạng sữa', category: 'Sữa rửa mặt' },
-  { id: 9, name: 'Toner cân bằng da', description: 'Cân bằng độ pH cho da', categoryId: 8, categoryName: 'Toner', price: 90000, originalPrice: 120000, stock: 60, image: "/images/banners/tonner1.jpg", rating: 4.3, reviews: 89, variant: '150ml - Dạng nước', category: 'Toner' },
-  { id: 10, name: 'Xịt khoáng dưỡng ẩm', description: 'Giữ ẩm tức thì cho da', categoryId: 7, categoryName: 'Xịt khoáng', price: 95000, originalPrice: 130000, stock: 40, image: "/images/banners/xinkhoang1.jpg", rating: 4.1, reviews: 156, variant: '100ml - Dạng xịt', category: 'Xịt khoáng' },
-  { id: 11, name: 'Mặt nạ giấy dưỡng da', description: 'Dưỡng ẩm và làm sáng da', categoryId: 4, categoryName: 'Mặt nạ', price: 70000, originalPrice: 100000, stock: 3, image: "/images/banners/matne2.jpg", rating: 4.0, reviews: 234, variant: 'Dạng giấy - 1 miếng', category: 'Mặt nạ' },
-  { id: 12, name: 'Mặt nạ đất sét', description: 'Làm sạch lỗ chân lông', categoryId: 4, categoryName: 'Mặt nạ', price: 75000, originalPrice: 105000, stock: 60, image: "/images/banners/datset.jpg", rating: 4.2, reviews: 187, variant: '50ml - Dạng đất sét', category: 'Mặt nạ' },
-  { id: 13, name: 'Nước hoa Chanel No.5', description: 'Hương thơm nữ tính', categoryId: 3, categoryName: 'Dầu gội', price: 1200000, originalPrice: 1500000, stock: 20, image: "/images/banners/chanel1.jpg", rating: 4.9, reviews: 345, variant: '50ml - Eau de Parfum', category: 'Nước hoa' },
-  { id: 14, name: 'Nước hoa Dior Sauvage', description: 'Hương thơm nam tính', categoryId: 3, categoryName: 'Dầu gội', price: 1300000, originalPrice: 1600000, stock: 5, image: "/images/banners/deor1.jpg", rating: 4.8, reviews: 278, variant: '60ml - Eau de Toilette', category: 'Nước hoa' },
-  { id: 15, name: 'Kem chống nắng SPF50+', description: 'Bảo vệ da khỏi tia UV', categoryId: 2, categoryName: 'Kem chống nắng', price: 180000, originalPrice: 220000, stock: 50, image: "/images/banners/21.jpg", rating: 4.5, reviews: 198, variant: '50ml - SPF50+', category: 'Kem chống nắng' },
-  { id: 16, name: 'Kem chống nắng SPF30', description: 'Bảo vệ da hàng ngày', categoryId: 2, categoryName: 'Kem chống nắng', price: 150000, originalPrice: 190000, stock: 45, image: "/images/banners/22.jpg", rating: 4.3, reviews: 167, variant: '50ml - SPF30', category: 'Kem chống nắng' },
-  { id: 17, name: 'Dầu gội dưỡng tóc mềm', description: 'Dưỡng tóc suôn mượt', categoryId: 3, categoryName: 'Dầu gội', price: 120000, originalPrice: 150000, stock: 40, image: "/images/banners/23.jpg", rating: 4.4, reviews: 134, variant: '300ml - Dạng dầu gội', category: 'Dầu gội' },
-  { id: 18, name: 'Dầu gội trị gàu', description: 'Ngăn ngừa gàu hiệu quả', categoryId: 3, categoryName: 'Dầu gội', price: 130000, originalPrice: 160000, stock: 2, image: "/images/banners/24.jpg", rating: 4.2, reviews: 89, variant: '300ml - Trị gàu', category: 'Dầu gội' },
-  { id: 19, name: 'Dầu xả dưỡng tóc', description: 'Giữ tóc mềm mượt', categoryId: 3, categoryName: 'Dầu gội', price: 100000, originalPrice: 130000, stock: 40, image: "/images/banners/25.jpg", rating: 4.3, reviews: 156, variant: '300ml - Dạng dầu xả', category: 'Dầu gội' },
-  { id: 20, name: 'Son dưỡng có màu', description: 'Dưỡng và tạo màu nhẹ', categoryId: 1, categoryName: 'Son môi', price: 90000, originalPrice: 120000, stock: 55, image: "/images/banners/26.jpg", rating: 4.1, reviews: 234, variant: 'Màu hồng nhẹ - 3.5g', category: 'Son môi' },
-  { id: 21, name: 'Son bóng dưỡng ẩm', description: 'Tạo độ bóng và mềm môi', categoryId: 1, categoryName: 'Son môi', price: 85000, originalPrice: 110000, stock: 50, image: "/images/banners/27.jpg", rating: 4.0, reviews: 187, variant: 'Dạng son bóng - 3.5g', category: 'Son môi' },
-  { id: 22, name: 'Kem dưỡng mắt chống nhăn', description: 'Giảm quầng thâm mắt', categoryId: 6, categoryName: 'Kem dưỡng ẩm', price: 200000, originalPrice: 250000, stock: 30, image: "/images/banners/28.jpg", rating: 4.6, reviews: 198, variant: '15ml - Kem dưỡng mắt', category: 'Kem dưỡng ẩm' },
-  { id: 23, name: 'Serum chống lão hóa', description: 'Giữ da trẻ trung', categoryId: 6, categoryName: 'Kem dưỡng ẩm', price: 250000, originalPrice: 300000, stock: 25, image: "/images/banners/29.jpg", rating: 4.7, reviews: 234, variant: '30ml - Serum chống lão hóa', category: 'Serum' },
-  { id: 24, name: 'Sữa rửa mặt tạo bọt', description: 'Loại bỏ bụi bẩn hiệu quả', categoryId: 1, categoryName: 'Sữa rửa mặt', price: 100000, originalPrice: 130000, stock: 6, image: "/images/banners/30.jpg", rating: 4.2, reviews: 167, variant: '100ml - Dạng bọt', category: 'Sữa rửa mặt' },
-  { id: 25, name: 'Sữa rửa mặt không tạo bọt', description: 'Dịu nhẹ cho da nhạy cảm', categoryId: 1, categoryName: 'Sữa rửa mặt', price: 105000, originalPrice: 135000, stock: 45, image: "/images/banners/31.jpg", rating: 4.3, reviews: 123, variant: '100ml - Không bọt', category: 'Sữa rửa mặt' },
-  { id: 26, name: 'Toner làm sáng da', description: 'Làm sáng và đều màu da', categoryId: 8, categoryName: 'Toner', price: 95000, originalPrice: 125000, stock: 60, image: "/images/banners/32.jpg", rating: 4.4, reviews: 89, variant: '150ml - Dạng nước', category: 'Toner' },
-  { id: 27, name: 'Xịt khoáng khoáng chất', description: 'Dưỡng ẩm và làm dịu da', categoryId: 7, categoryName: 'Xịt khoáng', price: 98000, originalPrice: 128000, stock: 9, image: "/images/banners/33.jpg", rating: 4.2, reviews: 156, variant: '100ml - Dạng xịt', category: 'Xịt khoáng' },
-  { id: 28, name: 'Mặt nạ ngủ', description: 'Dưỡng ẩm sâu qua đêm', categoryId: 4, categoryName: 'Mặt nạ', price: 80000, originalPrice: 110000, stock: 65, image: "/images/banners/35.jpg", rating: 4.1, reviews: 234, variant: '50ml - Mặt nạ ngủ', category: 'Mặt nạ' },
-  { id: 29, name: 'Mặt nạ giấy cấp ẩm', description: 'Cấp nước tức thì', categoryId: 4, categoryName: 'Mặt nạ', price: 75000, originalPrice: 105000, stock: 60, image: "/images/banners/36.jpg", rating: 4.0, reviews: 187, variant: 'Dạng giấy - 1 miếng', category: 'Mặt nạ' },
-  { id: 30, name: 'Nước hoa Versace Eros', description: 'Hương nam mạnh mẽ', categoryId: 3, categoryName: 'Dầu gội', price: 1250000, originalPrice: 1550000, stock: 20, image: "/images/banners/37.jpg", rating: 4.8, reviews: 278, variant: '50ml - Eau de Toilette', category: 'Nước hoa' },
-  { id: 31, name: 'Nước hoa Gucci Bloom', description: 'Hương nữ tính nhẹ nhàng', categoryId: 3, categoryName: 'Dầu gội', price: 1150000, originalPrice: 1450000, stock: 18, image: "/images/banners/38.jpg", rating: 4.9, reviews: 345, variant: '50ml - Eau de Parfum', category: 'Nước hoa' },
-  { id: 32, name: 'Kem chống nắng dạng gel', description: 'Dạng gel thấm nhanh', categoryId: 2, categoryName: 'Kem chống nắng', price: 170000, originalPrice: 210000, stock: 50, image: "/images/banners/39.jpg", rating: 4.4, reviews: 198, variant: '50ml - Dạng gel', category: 'Kem chống nắng' },
-  { id: 33, name: 'Kem chống nắng dạng sữa', description: 'Dạng sữa dễ thoa', categoryId: 2, categoryName: 'Kem chống nắng', price: 160000, originalPrice: 200000, stock: 45, image: "/images/banners/40.jpg", rating: 4.3, reviews: 167, variant: '50ml - Dạng sữa', category: 'Kem chống nắng' },
-  { id: 34, name: 'Dầu gội thảo mộc', description: 'Ngăn rụng tóc', categoryId: 3, categoryName: 'Dầu gội', price: 140000, originalPrice: 170000, stock: 35, image: "/images/banners/41.jpg", rating: 4.5, reviews: 134, variant: '300ml - Thảo mộc', category: 'Dầu gội' },
-  { id: 35, name: 'Dầu gội nam', description: 'Giữ tóc khỏe mạnh', categoryId: 3, categoryName: 'Dầu gội', price: 130000, originalPrice: 160000, stock: 1, image: "/images/banners/42.jpg", rating: 4.1, reviews: 89, variant: '300ml - Dành cho nam', category: 'Dầu gội' },
-  { id: 36, name: 'Dầu xả phục hồi tóc', description: 'Hồi phục tóc hư tổn', categoryId: 3, categoryName: 'Dầu gội', price: 120000, originalPrice: 150000, stock: 40, image: "/images/banners/43.jpg", rating: 4.2, reviews: 156, variant: '300ml - Phục hồi', category: 'Dầu gội' },
-  { id: 37, name: 'Son môi nude', description: 'Tông nude tự nhiên', categoryId: 1, categoryName: 'Son môi', price: 180000, originalPrice: 220000, stock: 50, image: "/images/banners/44.jpg", rating: 4.3, reviews: 234, variant: 'Màu nude - 3.5g', category: 'Son môi' },
-  { id: 38, name: 'Son môi đỏ cherry', description: 'Đỏ cherry tươi sáng', categoryId: 1, categoryName: 'Son môi', price: 190000, originalPrice: 230000, stock: 40, image: "/images/banners/45.jpg", rating: 4.4, reviews: 187, variant: 'Màu đỏ cherry - 3.5g', category: 'Son môi' },
-  { id: 39, name: 'Kem dưỡng tay', description: 'Dưỡng ẩm và mềm da tay', categoryId: 6, categoryName: 'Kem dưỡng ẩm', price: 100000, originalPrice: 130000, stock: 50, image: "/images/banners/46.jpg", rating: 4.1, reviews: 198, variant: '50ml - Kem dưỡng tay', category: 'Kem dưỡng ẩm' },
-  { id: 40, name: 'Kem dưỡng chân', description: 'Dưỡng ẩm và mềm da chân', categoryId: 6, categoryName: 'Kem dưỡng ẩm', price: 90000, originalPrice: 120000, stock: 45, image: "/images/banners/47.jpg", rating: 4.0, reviews: 234, variant: '50ml - Kem dưỡng chân', category: 'Kem dưỡng ẩm' },
-  { id: 41, name: 'Serum trị mụn', description: 'Giảm mụn và thâm', categoryId: 6, categoryName: 'Kem dưỡng ẩm', price: 230000, originalPrice: 270000, stock: 7, image: "/images/banners/48.jpg", rating: 4.6, reviews: 234, variant: '30ml - Serum trị mụn', category: 'Serum' },
-  { id: 42, name: 'Sữa rửa mặt than hoạt tính', description: 'Loại bỏ bụi bẩn và dầu thừa', categoryId: 1, categoryName: 'Sữa rửa mặt', price: 110000, originalPrice: 140000, stock: 50, image: "/images/banners/49.jpg", rating: 4.3, reviews: 167, variant: '100ml - Than hoạt tính', category: 'Sữa rửa mặt' },
-  { id: 43, name: 'Sữa rửa mặt trà xanh', description: 'Làm dịu da nhạy cảm', categoryId: 1, categoryName: 'Sữa rửa mặt', price: 105000, originalPrice: 135000, stock: 50, image: "/images/banners/50.jpg", rating: 4.2, reviews: 123, variant: '100ml - Trà xanh', category: 'Sữa rửa mặt' },
-  { id: 44, name: 'Toner dịu nhẹ', description: 'Dịu nhẹ cho da nhạy cảm', categoryId: 8, categoryName: 'Toner', price: 90000, originalPrice: 120000, stock: 60, image: "/images/banners/51.jpg", rating: 4.3, reviews: 89, variant: '150ml - Dịu nhẹ', category: 'Toner' },
-  { id: 45, name: 'Xịt khoáng se khít lỗ chân lông', description: 'Se khít lỗ chân lông', categoryId: 7, categoryName: 'Xịt khoáng', price: 95000, originalPrice: 125000, stock: 50, image: "/images/banners/52.jpg", rating: 4.1, reviews: 156, variant: '100ml - Se khít lỗ chân lông', category: 'Xịt khoáng' },
-  { id: 46, name: 'Mặt nạ ngủ dưỡng trắng', description: 'Dưỡng trắng da qua đêm', categoryId: 4, categoryName: 'Mặt nạ', price: 85000, originalPrice: 110000, stock: 65, image: "/images/banners/53.jpg", rating: 4.2, reviews: 234, variant: '50ml - Dưỡng trắng', category: 'Mặt nạ' },
-  { id: 47, name: 'Mặt nạ than hoạt tính', description: 'Làm sạch sâu', categoryId: 4, categoryName: 'Mặt nạ', price: 80000, originalPrice: 105000, stock: 60, image: "/images/banners/54.jpg", rating: 4.0, reviews: 187, variant: '50ml - Than hoạt tính', category: 'Mặt nạ' },
-  { id: 48, name: 'Nước hoa Lancome La Vie Est Belle', description: 'Hương nữ tính', categoryId: 3, categoryName: 'Dầu gội', price: 1200000, originalPrice: 1500000, stock: 20, image: "/images/banners/55.jpg", rating: 4.9, reviews: 278, variant: '50ml - Eau de Parfum', category: 'Nước hoa' }
-];
-
-// Category mapping exactly matching the database
-const categories = {
-  1: 'Sữa rửa mặt',
-  2: 'Kem chống nắng', 
-  3: 'Dầu gội',
-  4: 'Mặt nạ',
-  5: 'Sữa tắm',
-  6: 'Kem dưỡng ẩm',
-  7: 'Xịt khoáng',
-  8: 'Toner'
-};
+const DEFAULT_PAGE_SIZE = 20;
 
 export default function DanhMucSP() {
-  const [filteredProducts, setFilteredProducts] = useState(products);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [priceFilter, setPriceFilter] = useState('');
-  const [stockFilter, setStockFilter] = useState('');
-  const [sortBy, setSortBy] = useState('name-asc');
-  const [currentView, setCurrentView] = useState('grid');
+  // dữ liệu từ API
+  const [items, setItems] = useState([]);
+  const [total, setTotal] = useState(0);
+
+  // phân trang & lọc
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [priceFilter, setPriceFilter] = useState(""); // "min-max"
+  const [stockFilter, setStockFilter] = useState(""); // in-stock | low-stock | out-of-stock
+  const [sortBy, setSortBy] = useState("name-asc");
+  const [currentView, setCurrentView] = useState("grid");
+
+  // UI khác
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [cartCount, setCartCount] = useState(0);
+  const [categories, setCategories] = useState({}); // id -> name
 
-  // Load cart count on mount
+  // map sort FE -> API
+  const mapSortToApi = (sort) => {
+    switch (sort) {
+      case "name-asc":
+        return { sortBy: "name", sortDir: "asc" };
+      case "name-desc":
+        return { sortBy: "name", sortDir: "desc" };
+      case "price-asc":
+        return { sortBy: "price", sortDir: "asc" };
+      case "price-desc":
+        return { sortBy: "price", sortDir: "desc" };
+      case "stock-desc":
+        return { sortBy: "stock", sortDir: "desc" };
+      default:
+        return { sortBy: "name", sortDir: "asc" };
+    }
+  };
+
+  // Tải danh mục (nếu bạn chưa có API /api/categories, tạm hardcode)
   useEffect(() => {
-    updateCartCount();
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+    (async () => {
+      try {
+        const res = await fetch("/api/categories");
+        if (res.ok) {
+          const data = await res.json();
+          // hỗ trợ cả dạng [{id, name}] hoặc object
+          const map =
+            Array.isArray(data)
+              ? data.reduce((acc, c) => {
+                  acc[c.id] = c.name || c.ten || c.title || `${c.id}`;
+                  return acc;
+                }, {})
+              : data || {};
+          setCategories(map);
+        } else {
+          // fallback cứng nếu API chưa có
+          setCategories({
+            1: "Sữa rửa mặt",
+            2: "Kem chống nắng",
+            3: "Dầu gội",
+            4: "Mặt nạ",
+            5: "Sữa tắm",
+            6: "Kem dưỡng ẩm",
+            7: "Xịt khoáng",
+            8: "Toner",
+          });
+        }
+      } catch {
+        setCategories({
+          1: "Sữa rửa mặt",
+          2: "Kem chống nắng",
+          3: "Dầu gội",
+          4: "Mặt nạ",
+          5: "Sữa tắm",
+          6: "Kem dưỡng ẩm",
+          7: "Xịt khoáng",
+          8: "Toner",
+        });
+      }
+    })();
   }, []);
 
-  // Update cart count from localStorage
-  const updateCartCount = () => {
-    const savedCart = localStorage.getItem('cosmetic_cart');
+  // Cart badge
+  useEffect(() => {
+    const savedCart = typeof window !== "undefined" && localStorage.getItem("cosmetic_cart");
     if (savedCart) {
       const cartData = JSON.parse(savedCart);
-      const totalItems = cartData.reduce((sum, item) => sum + item.quantity, 0);
+      const totalItems = cartData.reduce((sum, item) => sum + (item.quantity || 0), 0);
       setCartCount(totalItems);
     } else {
       setCartCount(0);
     }
-  };
+  }, []);
 
-  // Apply filters whenever filter criteria change
+  // build query string từ state
+  const queryString = useMemo(() => {
+    const params = new URLSearchParams();
+    params.set("page", String(page));
+    params.set("pageSize", String(pageSize));
+
+    if (searchQuery.trim()) params.set("q", searchQuery.trim());
+    if (selectedCategory) params.set("categoryId", String(selectedCategory));
+    if (priceFilter) params.set("price", priceFilter);
+    if (stockFilter) params.set("stock", stockFilter);
+
+    const { sortBy: apiSortBy, sortDir } = mapSortToApi(sortBy);
+    params.set("sortBy", apiSortBy);
+    params.set("sortDir", sortDir);
+
+    return params.toString();
+  }, [page, pageSize, searchQuery, selectedCategory, priceFilter, stockFilter, sortBy]);
+
+  // fetch sản phẩm từ API mỗi khi query thay đổi
   useEffect(() => {
-    let filtered = [...products];
+    let abort = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/products?${queryString}`);
+        const data = await res.json();
 
-    // Search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(product => 
-        product.name.toLowerCase().includes(query) ||
-        product.description.toLowerCase().includes(query) ||
-        product.categoryName.toLowerCase().includes(query)
-      );
-    }
+        // Hỗ trợ cả format {items,total} hoặc mảng thẳng
+        const list = Array.isArray(data) ? data : (data.items || data.rows || []);
+        const totalCount = Array.isArray(data) ? list.length : (data.total ?? list.length);
 
-    // Category filter
-    if (selectedCategory) {
-      filtered = filtered.filter(product => 
-        product.categoryId.toString() === selectedCategory
-      );
-    }
-
-    // Price filter
-    if (priceFilter) {
-      const [min, max] = priceFilter.split('-').map(Number);
-      filtered = filtered.filter(product => 
-        product.price >= min && product.price <= max
-      );
-    }
-
-    // Stock filter
-    if (stockFilter) {
-      switch (stockFilter) {
-        case 'in-stock':
-          filtered = filtered.filter(product => product.stock > 10);
-          break;
-        case 'low-stock':
-          filtered = filtered.filter(product => product.stock > 0 && product.stock <= 10);
-          break;
-        case 'out-of-stock':
-          filtered = filtered.filter(product => product.stock === 0);
-          break;
+        if (!abort) {
+          setItems(list || []);
+          setTotal(totalCount || 0);
+        }
+      } catch (e) {
+        if (!abort) {
+          setItems([]);
+          setTotal(0);
+        }
+      } finally {
+        if (!abort) setLoading(false);
       }
-    }
+    })();
+    return () => {
+      abort = true;
+    };
+  }, [queryString]);
 
-    // Sort
-    switch (sortBy) {
-      case 'name-asc':
-        filtered.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case 'name-desc':
-        filtered.sort((a, b) => b.name.localeCompare(a.name));
-        break;
-      case 'price-asc':
-        filtered.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-desc':
-        filtered.sort((a, b) => b.price - a.price);
-        break;
-      case 'stock-desc':
-        filtered.sort((a, b) => b.stock - a.stock);
-        break;
-      default:
-        break;
-    }
-
-    setFilteredProducts(filtered);
-  }, [searchQuery, selectedCategory, priceFilter, stockFilter, sortBy]);
-
-  // Add to cart function
-  const addToCart = (product, event) => {
-    event.stopPropagation();
-    
-    if (product.stock === 0) {
-      showNotification('Sản phẩm đã hết hàng!', 'error');
-      return;
-    }
-
-    const savedCart = localStorage.getItem('cosmetic_cart');
-    let cartItems = savedCart ? JSON.parse(savedCart) : [];
-    
-    const existingItemIndex = cartItems.findIndex(item => item.id === product.id);
-    
-    if (existingItemIndex > -1) {
-      cartItems[existingItemIndex].quantity += 1;
-      showNotification(`Đã cập nhật số lượng "${product.name}" trong giỏ hàng!`);
-    } else {
-      cartItems.push({
-        id: product.id,
-        name: product.name,
-        image: product.image,
-        price: product.price,
-        originalPrice: product.originalPrice,
-        category: product.category || product.categoryName,
-        variant: product.variant || 'Mặc định',
-        inStock: product.stock > 0,
-        quantity: 1
-      });
-      showNotification(`✅ Đã thêm "${product.name}" vào giỏ hàng!`);
-    }
-    
-    localStorage.setItem('cosmetic_cart', JSON.stringify(cartItems));
-    updateCartCount();
-  };
-
-  // Show notification
-  const showNotification = (message, type = 'success') => {
-    const notification = document.createElement('div');
-    notification.className = `${styles.notification} ${type === 'error' ? styles.notificationError : ''}`;
+  // Helpers UI
+  const showNotification = (message, type = "success") => {
+    const notification = document.createElement("div");
+    notification.className = `${styles.notification} ${type === "error" ? styles.notificationError : ""}`;
     notification.textContent = message;
     document.body.appendChild(notification);
-    
     setTimeout(() => {
-      if (document.body.contains(notification)) {
-        document.body.removeChild(notification);
-      }
+      if (document.body.contains(notification)) document.body.removeChild(notification);
     }, 3000);
   };
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(price);
-  };
+  const formatPrice = (price) =>
+    new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price ?? 0);
 
   const getDiscountPercent = (original, current) => {
     if (!original || original <= current) return 0;
@@ -232,63 +170,82 @@ export default function DanhMucSP() {
   };
 
   const getStockStatus = (stock) => {
-    if (stock === 0) {
-      return <span className={styles.outOfStock}>❌ Hết hàng</span>;
-    }
-    if (stock < 10) {
-      return <span className={styles.lowStock}>⚠️ Còn {stock} sản phẩm</span>;
-    }
-    return <span className={styles.inStock}>🚛 2-4 ngày | <i className={`fas fa-map-marker-alt ${styles.locationIcon}`}></i> TP.Hồ Chí Minh</span>;
+    const s = Number(stock || 0);
+    if (s === 0) return <span className={styles.outOfStock}>❌ Hết hàng</span>;
+    if (s < 10) return <span className={styles.lowStock}>⚠️ Còn {s} sản phẩm</span>;
+    return (
+      <span className={styles.inStock}>
+        🚛 2-4 ngày | <i className={`fas fa-map-marker-alt ${styles.locationIcon}`}></i> TP.Hồ Chí Minh
+      </span>
+    );
   };
 
   const renderStars = (rating) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    
-    for (let i = 0; i < 5; i++) {
-      if (i < fullStars) {
-        stars.push(<span key={i} className={styles.star}>⭐</span>);
-      } else {
-        stars.push(<span key={i} className={styles.starEmpty}>☆</span>);
-      }
+    const full = Math.floor(Number(rating || 0));
+    return Array.from({ length: 5 }).map((_, i) =>
+      i < full ? <span key={i} className={styles.star}>⭐</span> : <span key={i} className={styles.starEmpty}>☆</span>
+    );
+  };
+
+  const getVipLabel = (id) => {
+    const labels = ["❤ Rs Vip Dịch", "💎 Premium Quality", "🔥 Hot Deal", "⚡ Fast Ship", "🎁 Gift Box", "💝 Limited Edition"];
+    return labels[(Number(id) || 0) % labels.length];
+  };
+
+  const getMainImage = (p) => p?.image || (Array.isArray(p?.images) ? p.images[0] : "") || "/images/banners/placeholder.jpg";
+  const getCategoryName = (p) => p?.categoryName || categories[p?.categoryId] || "Khác";
+
+  // Cart
+  const addToCart = (product, event) => {
+    event?.stopPropagation?.();
+    const stock = Number(product.stock ?? product.quantityOnHand ?? 0);
+    if (stock === 0) {
+      showNotification("Sản phẩm đã hết hàng!", "error");
+      return;
     }
-    
-    return stars;
+    const saved = localStorage.getItem("cosmetic_cart");
+    const cart = saved ? JSON.parse(saved) : [];
+    const idx = cart.findIndex((x) => x.id === product.id);
+    if (idx > -1) cart[idx].quantity += 1;
+    else
+      cart.push({
+        id: product.id,
+        name: product.name,
+        image: getMainImage(product),
+        price: product.price,
+        originalPrice: product.originalPrice,
+        category: getCategoryName(product),
+        variant: product.variant || "Mặc định",
+        inStock: stock > 0,
+        quantity: 1,
+      });
+    localStorage.setItem("cosmetic_cart", JSON.stringify(cart));
+    const totalItems = cart.reduce((s, it) => s + (it.quantity || 0), 0);
+    setCartCount(totalItems);
+    showNotification(`✅ Đã thêm "${product.name}" vào giỏ hàng!`);
   };
 
-  const getVipLabel = (productId) => {
-    // Tạo các label khác nhau dựa trên ID sản phẩm
-    const labels = [
-      '❤ Rs Vip Dịch',
-      '💎 Premium Quality', 
-      '🔥 Hot Deal',
-      '⚡ Fast Ship',
-      '🎁 Gift Box',
-      '💝 Limited Edition'
-    ];
-    return labels[productId % labels.length];
-  };
-
-  const openProductModal = (product) => {
-    setSelectedProduct(product);
+  const openProductModal = (p) => {
+    setSelectedProduct(p);
     setShowModal(true);
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
   };
-
   const closeProductModal = () => {
     setShowModal(false);
     setSelectedProduct(null);
-    document.body.style.overflow = 'auto';
+    document.body.style.overflow = "auto";
   };
 
   const resetFilters = () => {
-    setSearchQuery('');
-    setSelectedCategory('');
-    setPriceFilter('');
-    setStockFilter('');
-    setSortBy('name-asc');
+    setSearchQuery("");
+    setSelectedCategory("");
+    setPriceFilter("");
+    setStockFilter("");
+    setSortBy("name-asc");
+    setPage(1);
   };
 
+  // loading
   if (loading) {
     return (
       <div className={styles.container}>
@@ -296,8 +253,8 @@ export default function DanhMucSP() {
           <h1 className={styles.title}>Đang tải sản phẩm...</h1>
         </div>
         <div className={styles.loadingProducts}>
-          {[...Array(12)].map((_, index) => (
-            <div key={index} className={styles.loadingCard}>
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div key={i} className={styles.loadingCard}>
               <div className={styles.loadingImage}></div>
               <div className={styles.loadingContent}>
                 <div className={`${styles.loadingLine} ${styles.short}`}></div>
@@ -310,6 +267,9 @@ export default function DanhMucSP() {
       </div>
     );
   }
+
+  // tổng số trang
+  const totalPages = Math.max(1, Math.ceil((total || 0) / pageSize));
 
   return (
     <div className={styles.container}>
@@ -325,20 +285,15 @@ export default function DanhMucSP() {
             <Link href="/giohang" className={styles.cartLink}>
               <i className="fas fa-shopping-cart"></i>
               <span>Giỏ hàng</span>
-              {cartCount > 0 && (
-                <span className={styles.cartBadge}>{cartCount}</span>
-              )}
+              {cartCount > 0 && <span className={styles.cartBadge}>{cartCount}</span>}
             </Link>
           </div>
         </div>
-        
-        <div className={styles.stats}>
-          
-        </div>
+        <div className={styles.stats}></div>
       </div>
 
       <div className={styles.content}>
-        {/* Filters - Horizontal Layout */}
+        {/* Filters */}
         <div className={styles.filtersHorizontal}>
           <div className={styles.filterGroup}>
             <h3 className={styles.filterTitle}>
@@ -350,14 +305,14 @@ export default function DanhMucSP() {
                 type="text"
                 placeholder="Tìm kiếm sản phẩm..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
+                }}
                 className={styles.searchInput}
               />
               {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className={styles.clearSearch}
-                >
+                <button onClick={() => setSearchQuery("")} className={styles.clearSearch}>
                   <i className="fas fa-times"></i>
                 </button>
               )}
@@ -371,12 +326,17 @@ export default function DanhMucSP() {
             </h3>
             <select
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+                setPage(1);
+              }}
               className={styles.filterSelect}
             >
               <option value="">Tất cả danh mục</option>
               {Object.entries(categories).map(([id, name]) => (
-                <option key={id} value={id}>{name}</option>
+                <option key={id} value={id}>
+                  {name}
+                </option>
               ))}
             </select>
           </div>
@@ -388,7 +348,10 @@ export default function DanhMucSP() {
             </h3>
             <select
               value={priceFilter}
-              onChange={(e) => setPriceFilter(e.target.value)}
+              onChange={(e) => {
+                setPriceFilter(e.target.value);
+                setPage(1);
+              }}
               className={styles.filterSelect}
             >
               <option value="">Tất cả mức giá</option>
@@ -406,39 +369,41 @@ export default function DanhMucSP() {
             </h3>
             <select
               value={stockFilter}
-              onChange={(e) => setStockFilter(e.target.value)}
+              onChange={(e) => {
+                setStockFilter(e.target.value);
+                setPage(1);
+              }}
               className={styles.filterSelect}
             >
               <option value="">Tất cả</option>
               <option value="in-stock">Còn hàng (&gt;10)</option>
-
               <option value="low-stock">Sắp hết (1-10)</option>
               <option value="out-of-stock">Hết hàng</option>
             </select>
           </div>
 
           <div className={styles.filterGroup}>
-            <button
-              onClick={resetFilters}
-              className={styles.resetButton}
-            >
+            <button onClick={resetFilters} className={styles.resetButton}>
               <i className="fas fa-undo"></i>
               Đặt lại bộ lọc
             </button>
           </div>
         </div>
 
-        {/* Products */}
+        {/* Toolbar */}
         <div className={styles.main}>
           <div className={styles.toolbar}>
             <div className={styles.resultsInfo}>
-              {/* <span>Hiển thị {filteredProducts.length} sản phẩm</span> */}
+              <span>Hiển thị {items.length} / {total}</span>
             </div>
 
             <div className={styles.toolbarRight}>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
+                onChange={(e) => {
+                  setSortBy(e.target.value);
+                  setPage(1);
+                }}
                 className={styles.sortSelect}
               >
                 <option value="name-asc">Tên A-Z</option>
@@ -450,14 +415,14 @@ export default function DanhMucSP() {
 
               <div className={styles.viewToggle}>
                 <button
-                  onClick={() => setCurrentView('grid')}
-                  className={`${styles.viewBtn} ${currentView === 'grid' ? styles.active : ''}`}
+                  onClick={() => setCurrentView("grid")}
+                  className={`${styles.viewBtn} ${currentView === "grid" ? styles.active : ""}`}
                 >
                   <i className="fas fa-th"></i>
                 </button>
                 <button
-                  onClick={() => setCurrentView('list')}
-                  className={`${styles.viewBtn} ${currentView === 'list' ? styles.active : ''}`}
+                  onClick={() => setCurrentView("list")}
+                  className={`${styles.viewBtn} ${currentView === "list" ? styles.active : ""}`}
                 >
                   <i className="fas fa-list"></i>
                 </button>
@@ -465,76 +430,57 @@ export default function DanhMucSP() {
             </div>
           </div>
 
-          {filteredProducts.length === 0 ? (
+          {/* Grid / List */}
+          {items.length === 0 ? (
             <div className={styles.noResults}>
               <i className="fas fa-search"></i>
               <h3>Không tìm thấy sản phẩm</h3>
               <p>Hãy thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
             </div>
           ) : (
-            <div className={`${styles.productsGrid} ${currentView === 'list' ? styles.listView : ''}`}>
-              {filteredProducts.map((product) => {
-                const discount = getDiscountPercent(product.originalPrice, product.price);
-
+            <div className={`${styles.productsGrid} ${currentView === "list" ? styles.listView : ""}`}>
+              {items.map((p) => {
+                const img = getMainImage(p);
+                const discount = getDiscountPercent(p.originalPrice, p.price);
+                const stock = p.stock ?? p.quantityOnHand ?? 0;
                 return (
                   <div
-                    key={product.id}
-                    className={`${styles.productCard} ${currentView === 'list' ? styles.listView : ''}`}
-                    onClick={() => openProductModal(product)}
+                    key={p.id}
+                    className={`${styles.productCard} ${currentView === "list" ? styles.listView : ""}`}
+                    onClick={() => openProductModal(p)}
                   >
                     <div className={styles.productImageContainer}>
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className={styles.productImage}
-                      />
-                      {discount > 0 && (
-                        <div className={`${styles.productBadge} ${styles.sale}`}>
-                          -{discount}%
-                        </div>
-                      )}
-                      {product.stock === 0 && (
-                        <div className={`${styles.productBadge} ${styles.outOfStock}`}>
-                          Hết hàng
-                        </div>
-                      )}
+                      <img src={img} alt={p.name} className={styles.productImage} />
+                      {discount > 0 && <div className={`${styles.productBadge} ${styles.sale}`}>-{discount}%</div>}
+                      {Number(stock) === 0 && <div className={`${styles.productBadge} ${styles.outOfStock}`}>Hết hàng</div>}
                     </div>
 
                     <div className={styles.productContent}>
-                      <div className={styles.productCategory}>{product.categoryName}</div>
-                      <h3 className={styles.productName}>{product.name}</h3>
-                      
+                      <div className={styles.productCategory}>{getCategoryName(p)}</div>
+                      <h3 className={styles.productName}>{p.name}</h3>
+
                       <div className={styles.productRating}>
                         <div className={styles.ratingStars}>
-                          {renderStars(product.rating)}
-                          <span className={styles.ratingValue}>{product.rating}</span>
+                          {renderStars(p.rating)}
+                          <span className={styles.ratingValue}>{p.rating ?? 0}</span>
                         </div>
                       </div>
 
-                      <div className={styles.productVipLabel}>
-                        ({getVipLabel(product.id)})
-                      </div>
-
-                      <p className={styles.productDescription}>{product.description}</p>
+                      <div className={styles.productVipLabel}>({getVipLabel(p.id)})</div>
+                      <p className={styles.productDescription}>{p.description}</p>
 
                       <div className={styles.productPricing}>
-                        <span className={styles.currentPrice}>{formatPrice(product.price)}</span>
-                        {discount > 0 && (
-                          <span className={styles.discountPercent}>-{discount}%</span>
-                        )}
-                        {product.originalPrice && product.originalPrice > product.price && (
-                          <span className={styles.soldCount}>đã bán 5k+</span>
-                        )}
+                        <span className={styles.currentPrice}>{formatPrice(p.price)}</span>
+                        {discount > 0 && <span className={styles.discountPercent}>-{discount}%</span>}
+                        {p.originalPrice > p.price && <span className={styles.soldCount}>đã bán 5k+</span>}
                       </div>
 
                       <div className={styles.productFooter}>
-                        <div className={styles.stockInfo}>
-                          {getStockStatus(product.stock)}
-                        </div>
+                        <div className={styles.stockInfo}>{getStockStatus(stock)}</div>
                         <button
                           className={styles.addToCartBtn}
-                          disabled={product.stock === 0}
-                          onClick={(e) => addToCart(product, e)}
+                          disabled={Number(stock) === 0}
+                          onClick={(e) => addToCart(p, e)}
                         >
                           <i className="fas fa-shopping-cart"></i>
                           Thêm
@@ -546,10 +492,41 @@ export default function DanhMucSP() {
               })}
             </div>
           )}
+
+          {/* Pagination */}
+          <div className={styles.pagination}>
+            <button disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+              ‹ Trước
+            </button>
+            <span>
+              Trang {page}/{totalPages}
+            </span>
+            <button
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            >
+              Sau ›
+            </button>
+
+            <select
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setPage(1);
+              }}
+              className={styles.pageSize}
+            >
+              {[12, 20, 28, 40].map((n) => (
+                <option key={n} value={n}>
+                  {n}/trang
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* Product Modal */}
+      {/* Modal */}
       {showModal && selectedProduct && (
         <div className={styles.modal} onClick={closeProductModal}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -563,52 +540,45 @@ export default function DanhMucSP() {
             <div className={styles.modalBody}>
               <div className={styles.productDetails}>
                 <div className={styles.productImageModal}>
-                  <img
-                    src={selectedProduct.image}
-                    alt={selectedProduct.name}
-                  />
+                  <img src={getMainImage(selectedProduct)} alt={selectedProduct.name} />
                 </div>
 
                 <div className={styles.productInfoModal}>
-                  <div className={styles.productCategoryModal}>
-                    {selectedProduct.categoryName}
-                  </div>
-                  <h1 className={styles.productTitleModal}>
-                    {selectedProduct.name}
-                  </h1>
-                  <p className={styles.productDescriptionModal}>
-                    {selectedProduct.description}
-                  </p>
+                  <div className={styles.productCategoryModal}>{getCategoryName(selectedProduct)}</div>
+                  <h1 className={styles.productTitleModal}>{selectedProduct.name}</h1>
+                  <p className={styles.productDescriptionModal}>{selectedProduct.description}</p>
 
                   <div className={styles.productPricingModal}>
-                    <span className={styles.currentPriceModal}>
-                      {formatPrice(selectedProduct.price)}
-                    </span>
+                    <span className={styles.currentPriceModal}>{formatPrice(selectedProduct.price)}</span>
                     {getDiscountPercent(selectedProduct.originalPrice, selectedProduct.price) > 0 && (
-                      <span className={styles.discountPercent}>-{getDiscountPercent(selectedProduct.originalPrice, selectedProduct.price)}%</span>
-                    )}
-                    {selectedProduct.originalPrice && selectedProduct.originalPrice > selectedProduct.price && (
-                      <span className={styles.originalPriceModal}>
-                        đã bán 5k+
+                      <span className={styles.discountPercent}>
+                        -{getDiscountPercent(selectedProduct.originalPrice, selectedProduct.price)}%
                       </span>
+                    )}
+                    {selectedProduct.originalPrice > selectedProduct.price && (
+                      <span className={styles.originalPriceModal}>đã bán 5k+</span>
                     )}
                   </div>
 
                   <div className={styles.stockInfoModal}>
                     <i className="fas fa-box"></i>
-                    <span>Tồn kho: {selectedProduct.stock} sản phẩm</span>
+                    <span>
+                      Tồn kho: {selectedProduct.stock ?? selectedProduct.quantityOnHand ?? 0} sản phẩm
+                    </span>
                   </div>
 
                   <div className={styles.ratingInfo}>
                     <div className={styles.stars}>
-                      {[...Array(5)].map((_, index) => (
+                      {Array.from({ length: 5 }).map((_, i) => (
                         <i
-                          key={index}
-                          className={`fas fa-star ${index < Math.floor(selectedProduct.rating) ? styles.active : ''}`}
+                          key={i}
+                          className={`fas fa-star ${
+                            i < Math.floor(selectedProduct.rating || 0) ? styles.active : ""
+                          }`}
                         ></i>
                       ))}
                       <span className={styles.ratingText}>
-                        {selectedProduct.rating} ({selectedProduct.reviews} đánh giá)
+                        {selectedProduct.rating ?? 0} ({selectedProduct.reviews ?? 0} đánh giá)
                       </span>
                     </div>
                   </div>
@@ -619,7 +589,7 @@ export default function DanhMucSP() {
             <div className={styles.modalActions}>
               <button
                 className={`${styles.modalActionBtn} ${styles.addToCartModalBtn}`}
-                disabled={selectedProduct.stock === 0}
+                disabled={(selectedProduct.stock ?? selectedProduct.quantityOnHand ?? 0) === 0}
                 onClick={(e) => {
                   addToCart(selectedProduct, e);
                   closeProductModal();
@@ -630,11 +600,11 @@ export default function DanhMucSP() {
               </button>
               <button
                 className={`${styles.modalActionBtn} ${styles.buyNowBtn}`}
-                disabled={selectedProduct.stock === 0}
+                disabled={(selectedProduct.stock ?? selectedProduct.quantityOnHand ?? 0) === 0}
                 onClick={(e) => {
                   addToCart(selectedProduct, e);
                   closeProductModal();
-                  window.location.href = '/giohang';
+                  window.location.href = "/giohang";
                 }}
               >
                 <i className="fas fa-credit-card"></i>
