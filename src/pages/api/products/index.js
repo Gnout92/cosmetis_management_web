@@ -1,15 +1,13 @@
 // src/pages/api/products/index.js
-import { createHandler } from "./lib/api/handler";
-
+import { createHandler } from "@/lib/api/handler";
 import {
   getAllProducts,
   getProductById,
   addProduct,
   updateProduct,
   deleteProduct,
-} from "./src/services/productService.js";
-
-
+} from "@/services/productService";
+//
 // tiện ích: parse "100000-500000" hoặc min/max rời
 function parsePriceQuery({ price, minPrice, maxPrice }) {
   let _min = minPrice != null ? Number(minPrice) : undefined;
