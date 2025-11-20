@@ -1,4 +1,3 @@
-// src/pages/danhmucSP.js
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import styles from "../styles/danhmucSP.module.css";
@@ -30,61 +29,31 @@ export default function DanhMucSP() {
   // map sort FE -> API
   const mapSortToApi = (sort) => {
     switch (sort) {
-      case "name-asc":
-        return { sortBy: "name", sortDir: "asc" };
-      case "name-desc":
-        return { sortBy: "name", sortDir: "desc" };
-      case "price-asc":
-        return { sortBy: "price", sortDir: "asc" };
-      case "price-desc":
-        return { sortBy: "price", sortDir: "desc" };
-      case "stock-desc":
-        return { sortBy: "stock", sortDir: "desc" };
-      default:
-        return { sortBy: "name", sortDir: "asc" };
+      case "name-asc":  return { sortBy: "name", sortDir: "asc" };
+      case "name-desc": return { sortBy: "name", sortDir: "desc" };
+      case "price-asc": return { sortBy: "price", sortDir: "asc" };
+      case "price-desc":return { sortBy: "price", sortDir: "desc" };
+      case "stock-desc":return { sortBy: "stock", sortDir: "desc" };
+      default:          return { sortBy: "name", sortDir: "asc" };
     }
   };
 
-  // Tải danh mục (nếu bạn chưa có API /api/categories, tạm hardcode)
+  // Tải danh mục -> dùng route map mới
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("/api/categories");
+        const res = await fetch("/api/categories/map");
         if (res.ok) {
-          const data = await res.json();
-          // hỗ trợ cả dạng [{id, name}] hoặc object
-          const map =
-            Array.isArray(data)
-              ? data.reduce((acc, c) => {
-                  acc[c.id] = c.name || c.ten || c.title || `${c.id}`;
-                  return acc;
-                }, {})
-              : data || {};
-          setCategories(map);
+          const data = await res.json(); // { [id]: name }
+          setCategories(data || {});
         } else {
-          // fallback cứng nếu API chưa có
-          setCategories({
-            1: "Sữa rửa mặt",
-            2: "Kem chống nắng",
-            3: "Dầu gội",
-            4: "Mặt nạ",
-            5: "Sữa tắm",
-            6: "Kem dưỡng ẩm",
-            7: "Xịt khoáng",
-            8: "Toner",
-          });
-        }
-      } catch {
-        setCategories({
-          1: "Sữa rửa mặt",
-          2: "Kem chống nắng",
-          3: "Dầu gội",
-          4: "Mặt nạ",
-          5: "Sữa tắm",
-          6: "Kem dưỡng ẩm",
-          7: "Xịt khoáng",
-          8: "Toner",
-        });
+         // Thất bại: Đặt categories thành object rỗng
+         setCategories({}); 
+       }
+     } catch (error) {
+       console.error("Lỗi khi tải danh mục:", error);
+       // Lỗi mạng/Server: Đặt categories thành object rỗng
+       setCategories({});
       }
     })();
   }, []);
@@ -115,11 +84,10 @@ export default function DanhMucSP() {
     const { sortBy: apiSortBy, sortDir } = mapSortToApi(sortBy);
     params.set("sortBy", apiSortBy);
     params.set("sortDir", sortDir);
-
     return params.toString();
   }, [page, pageSize, searchQuery, selectedCategory, priceFilter, stockFilter, sortBy]);
 
-  // fetch sản phẩm từ API mỗi khi query thay đổi
+  // fetch sản phẩm
   useEffect(() => {
     let abort = false;
     (async () => {
@@ -127,16 +95,13 @@ export default function DanhMucSP() {
       try {
         const res = await fetch(`/api/products?${queryString}`);
         const data = await res.json();
-
-        // Hỗ trợ cả format {items,total} hoặc mảng thẳng
         const list = Array.isArray(data) ? data : (data.items || data.rows || []);
         const totalCount = Array.isArray(data) ? list.length : (data.total ?? list.length);
-
         if (!abort) {
           setItems(list || []);
           setTotal(totalCount || 0);
         }
-      } catch (e) {
+      } catch {
         if (!abort) {
           setItems([]);
           setTotal(0);
@@ -145,12 +110,10 @@ export default function DanhMucSP() {
         if (!abort) setLoading(false);
       }
     })();
-    return () => {
-      abort = true;
-    };
+    return () => { abort = true; };
   }, [queryString]);
 
-  // Helpers UI
+  // Helpers UI (giữ nguyên như bạn đang có)
   const showNotification = (message, type = "success") => {
     const notification = document.createElement("div");
     notification.className = `${styles.notification} ${type === "error" ? styles.notificationError : ""}`;
@@ -173,11 +136,7 @@ export default function DanhMucSP() {
     const s = Number(stock || 0);
     if (s === 0) return <span className={styles.outOfStock}>❌ Hết hàng</span>;
     if (s < 10) return <span className={styles.lowStock}>⚠️ Còn {s} sản phẩm</span>;
-    return (
-      <span className={styles.inStock}>
-        🚛 2-4 ngày | <i className={`fas fa-map-marker-alt ${styles.locationIcon}`}></i> TP.Hồ Chí Minh
-      </span>
-    );
+    return <span className={styles.inStock}>🚛 2-4 ngày | <i className={`fas fa-map-marker-alt ${styles.locationIcon}`}></i> TP.Hồ Chí Minh</span>;
   };
 
   const renderStars = (rating) => {
@@ -188,14 +147,14 @@ export default function DanhMucSP() {
   };
 
   const getVipLabel = (id) => {
-    const labels = ["❤ Rs Vip Dịch", "💎 Premium Quality", "🔥 Hot Deal", "⚡ Fast Ship", "🎁 Gift Box", "💝 Limited Edition"];
+    const labels = ["❤ Rs Vip Dịch","💎 Premium Quality","🔥 Hot Deal","⚡ Fast Ship","🎁 Gift Box","💝 Limited Edition"];
     return labels[(Number(id) || 0) % labels.length];
   };
 
-  const getMainImage = (p) => p?.image || (Array.isArray(p?.images) ? p.images[0] : "") || "/images/banners/placeholder.jpg";
+  const getMainImage = (p) =>
+    p?.image || (Array.isArray(p?.images) ? p.images[0] : "") || "/images/banners/placeholder.jpg";
   const getCategoryName = (p) => p?.categoryName || categories[p?.categoryId] || "Khác";
 
-  // Cart
   const addToCart = (product, event) => {
     event?.stopPropagation?.();
     const stock = Number(product.stock ?? product.quantityOnHand ?? 0);
@@ -235,23 +194,16 @@ export default function DanhMucSP() {
     setSelectedProduct(null);
     document.body.style.overflow = "auto";
   };
-
   const resetFilters = () => {
-    setSearchQuery("");
-    setSelectedCategory("");
-    setPriceFilter("");
-    setStockFilter("");
-    setSortBy("name-asc");
-    setPage(1);
+    setSearchQuery(""); setSelectedCategory("");
+    setPriceFilter(""); setStockFilter("");
+    setSortBy("name-asc"); setPage(1);
   };
 
-  // loading
   if (loading) {
     return (
       <div className={styles.container}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Đang tải sản phẩm...</h1>
-        </div>
+        <div className={styles.header}><h1 className={styles.title}>Đang tải sản phẩm...</h1></div>
         <div className={styles.loadingProducts}>
           {Array.from({ length: 12 }).map((_, i) => (
             <div key={i} className={styles.loadingCard}>
@@ -268,9 +220,8 @@ export default function DanhMucSP() {
     );
   }
 
-  // tổng số trang
   const totalPages = Math.max(1, Math.ceil((total || 0) / pageSize));
-
+  
   return (
     <div className={styles.container}>
       {/* Header */}
