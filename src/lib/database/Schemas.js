@@ -1,4 +1,4 @@
-// src/lib/database/schemas.js
+// src/lib/database/Schemas.js
 
 // 1) Tên bảng thật trong DB MySQL `myphamshop`
 export const TABLES = Object.freeze({
