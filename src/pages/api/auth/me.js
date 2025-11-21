@@ -1,130 +1,65 @@
 // src/pages/api/auth/me.js
 import jwt from "jsonwebtoken";
-import { getPool } from "../../../lib/database/db";
+import { getPool } from "@/lib/database/db"; // dùng cùng module với login/google
 
-/**
- * API: Lấy thông tin user hiện tại
- * 
- * Flow:
- * 1. Verify JWT token từ Authorization header hoặc cookie
- * 2. Lấy thông tin chi tiết từ database
- * 3. Trả về thông tin user + địa chỉ (nếu có)
- */
-
-function verifyToken(token) {
-  try {
-    return jwt.verify(token, process.env.JWT_SECRET || "dev_secret");
-  } catch (err) {
-    return null;
-  }
-}
+const JWT_SECRET = process.env.JWT_SECRET || "super_secret_change_me";
 
 export default async function handler(req, res) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ message: "Method Not Allowed" });
+  if (req.method !== "GET") return res.status(405).json({ success: false, message: "Method Not Allowed" });
+
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith("Bearer ")) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
   }
 
+  const token = authHeader.slice(7);
+  let decoded;
   try {
-    // Lấy token từ header hoặc cookie
-    let token = null;
-    
-    // Thử lấy từ Authorization header
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      token = authHeader.substring(7);
-    }
-    
-    // Nếu không có trong header, thử lấy từ cookie
-    if (!token && req.cookies && req.cookies.token) {
-      token = req.cookies.token;
-    }
+    decoded = jwt.verify(token, JWT_SECRET); // phải trùng secret
+  } catch {
+    return res.status(401).json({ success: false, message: "Invalid token" });
+  }
 
-    if (!token) {
-      return res.status(401).json({ 
-        success: false,
-        message: "Unauthorized - No token provided" 
-      });
-    }
+  const uid = decoded?.uid;
+  if (!uid) return res.status(401).json({ success: false, message: "Invalid token payload" });
 
-    // Verify token
-    const decoded = verifyToken(token);
-    
-    if (!decoded || !decoded.uid) {
-      return res.status(401).json({ 
-        success: false,
-        message: "Unauthorized - Invalid token" 
-      });
-    }
-
+  try {
     const pool = getPool();
-
-    // Lấy thông tin user từ database
-    const [users] = await pool.execute(
+    // Lấy từ VIEW đã có cột vai_tro (đã tạo trước đó)
+    const [rows] = await pool.execute(
       `SELECT 
-        id,
-        ten_dang_nhap,
-        email,
-        ten_hien_thi,
-        ho,
-        ten,
-        anh_dai_dien,
-        vai_tro,
-        ngay_sinh,
-        gioi_tinh,
-        dang_hoat_dong,
-        thoi_gian_tao,
-        thoi_gian_cap_nhat
-      FROM nguoi_dung 
-      WHERE id = ? AND dang_hoat_dong = 1
-      LIMIT 1`,
-      [decoded.uid]
+         id,
+         email,
+         ten_dang_nhap AS username,
+         ten_hien_thi AS displayName,
+         ho AS firstName,
+         ten AS lastName,
+         anh_dai_dien AS avatar,
+         ngay_sinh AS birthDate,
+         gioi_tinh AS gender,
+         vai_tro AS role,
+         thoi_gian_tao AS createdAt
+       FROM v_nguoi_dung
+       WHERE id = ?
+       LIMIT 1`,
+      [uid]
     );
 
-    if (!users || users.length === 0) {
-      return res.status(404).json({ 
-        success: false,
-        message: "User not found or inactive" 
-      });
-    }
+    if (!rows.length) return res.status(404).json({ success: false, message: "User not found" });
 
-    const user = users[0];
-
-    // Tạo object user trả về
-    // CHỈ LẤY THÔNG TIN TỪ BẢNG nguoi_dung
-    // Ưu tiên hiển thị: ten_hien_thi (Gmail name) > ho + ten > ten_dang_nhap > email
-    const fullName = user.ten_hien_thi || 
-                     (user.ho && user.ten ? `${user.ho} ${user.ten}`.trim() : null) ||
-                     user.ten_dang_nhap || 
-                     user.email?.split('@')[0] || 
-                     'User';
-    
-    const userData = {
-      id: user.id,
-      username: user.ten_dang_nhap || user.email?.split('@')[0] || '',
-      email: user.email || '',
-      displayName: fullName,
-      firstName: user.ho || '',
-      lastName: user.ten || '',
-      avatar: user.anh_dai_dien || "/images/default-avatar.png",
-      role: user.vai_tro || "Customer",
-      birthDate: user.ngay_sinh || null,
-      gender: user.gioi_tinh || null,
-      isActive: user.dang_hoat_dong || 0,
-      createdAt: user.thoi_gian_tao || null,
-      updatedAt: user.thoi_gian_cap_nhat || null,
-    };
-
-    return res.status(200).json({ 
+    const u = rows[0];
+    // đồng bộ alias cho FE cũ
+    return res.status(200).json({
       success: true,
-      user: userData 
+      user: {
+        ...u,
+        roles: [u.role || "Customer"],
+        primaryRole: u.role || "Customer",
+        vai_tro: u.role || "Customer",
+      },
     });
-
-  } catch (err) {
-    console.error("[/api/auth/me] error:", err);
-    const msg = typeof err?.message === "string" ? err.message : "Internal server error";
-    return res.status(500).json({ 
-      success: false,
-      message: msg 
-    });
+  } catch (e) {
+    console.error("[/api/auth/me] error:", e);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 }
