@@ -1,20 +1,11 @@
 // src/pages/login.js
 import { useState } from "react";
-import { useRouter } from "next/router"; 
+import { useRouter } from "next/router";
 import Link from "next/link";
 import { GoogleLogin } from "@react-oauth/google";
 import styles from "../styles/login.module.css";
 import { useAuth } from "../context/AuthContext";
-// Import icons (cần cài đặt: npm install lucide-react)
-import { 
-  Mail, 
-  Lock, 
-  Eye, 
-  EyeOff, 
-  ArrowLeft,
-  UserPlus,
-  HelpCircle
-} from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowLeft, HelpCircle } from "lucide-react";
 
 export default function Login() {
   const router = useRouter();
@@ -28,55 +19,41 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  // Hàm xác định đường dẫn redirect dựa trên role
-  const getRedirectPath = (user) => {
-    // Kiểm tra role từ user object
-    const role = user?.role || user?.vai_tro || 'Customer';
-    
-    switch (role.toLowerCase()) {
-      case 'admin':
-        return '/NoiBo/Admin';
-      case 'qlbh':
-      case 'sales':
-        return '/NoiBo/QLBH';
-      case 'qlkho':
-      case 'warehouse':
-        return '/NoiBo/QLKho';
-      case 'customer':
-      default:
-        return '/'; // Trang chủ cho khách hàng
-    }
-  };
+  // --- Helper: chuẩn hoá role và xác định đường dẫn ---
+const getRedirectPath = (user) => {
+  // Ưu tiên các field đã có:
+  const raw =
+    user?.primaryRole ??
+    user?.role ??
+    user?.vai_tro ??
+    (Array.isArray(user?.roles) && user.roles.length ? user.roles[0] : "Customer");
 
-  // Hàm xử lý login thành công
+  const norm = String(raw || "Customer").trim().toLowerCase().replace(/[\s_]+/g, "");
+  console.log("[LOGIN] resolve role -> raw:", raw, "| normalized:", norm);
+
+  if (norm === "admin") return "/NoiBo/Admin";
+  if (["warehouse", "warehous", "qlkho", "ql_kho"].includes(norm)) return "/NoiBo/QLKho";
+  if (["product", "qlsanpham", "ql_sanpham", "sales", "qlbh", "staff", "qlkhachhang", "ql_khachhang"].includes(norm)) {
+    return "/NoiBo/QLBH";
+  }
+  return "/";
+};
+  // --- Sau khi login thành công ---
   const handleLoginSuccess = async (user, token, isNewUser = false) => {
     try {
-      // Gọi context login để lưu thông tin user
       login(user, token);
-      
-      // Xác định đường dẫn redirect
-      let redirectPath;
-      
-      if (isNewUser) {
-        // User mới đến trang tài khoản để hoàn thiện thông tin
-        redirectPath = '/taikhoan';
-      } else {
-        // User cũ redirect theo role
-        redirectPath = getRedirectPath(user);
-      }
-      
-      console.log(`Redirecting to: ${redirectPath} (role: ${user?.role})`);
-      
-      // Chuyển hướng đến trang phù hợp
+
+      let redirectPath = isNewUser ? "/taikhoan" : getRedirectPath(user);
+      console.log("[LOGIN] will redirect to:", redirectPath, "| user.role:", user?.role, "| user.primaryRole:", user?.primaryRole, "| user.roles:", user?.roles);
+
       await router.push(redirectPath);
-      
     } catch (err) {
-      console.error('Login success handler error:', err);
-      setError('Lỗi khi chuyển hướng trang');
+      console.error("[LOGIN] redirect error:", err);
+      setError("Lỗi khi chuyển hướng trang");
     }
   };
 
-  // Xử lý đăng nhập bằng Google (Luồng 1)
+  // --- Google login ---
   async function handleGoogleSuccess(credentialResponse) {
     setLoading(true);
     setError(null);
@@ -93,16 +70,11 @@ export default function Login() {
       }
 
       const { token, user, isNewUser } = await res.json();
-      
-      // Lưu thông tin user vào context/localStorage
-      login(user, token);
-      
-      // Gmail login luôn về trang chủ (Customer role)
-      // Ảnh đại diện = ảnh Gmail, tên = tên Gmail, email = email Gmail
-      router.push("/");
-      
+
+      console.log("[LOGIN][google] payload =", user);
+      await handleLoginSuccess(user, token, isNewUser);
     } catch (err) {
-      console.error("Google login error:", err);
+      console.error("[LOGIN][google] error:", err);
       setError(err.message || "Lỗi đăng nhập với Google");
     } finally {
       setLoading(false);
@@ -113,7 +85,7 @@ export default function Login() {
     setError("Lỗi khi xác thực với Google. Vui lòng thử lại.");
   }
 
-  // Xử lý đăng nhập bằng Username/Password (Luồng 2)
+  // --- Username/Password login ---
   async function handleUsernameLogin(e) {
     e.preventDefault();
     setLoading(true);
@@ -132,19 +104,17 @@ export default function Login() {
       }
 
       const { token, user, redirect } = await res.json();
-      
-      // Lưu thông tin user vào context/localStorage
-      login(user, token);
-      
-      // Redirect theo role từ API trả về
-      // QLBH → /NoiBo/QLBH
-      // QLKho → /NoiBo/QLKho  
-      // Admin → /NoiBo/Admin
-      // Customer → /
-      router.push(redirect || getRedirectPath(user));
-      
+
+      console.group("[LOGIN] API success");
+      console.log("api.redirect =", redirect);
+      console.log("user.payload =", user);
+      console.log("computed.redirect =", getRedirectPath(user));
+      console.groupEnd();
+
+      // Ưu tiên redirect từ API, nếu không có -> tự tính
+      await handleLoginSuccess(user, token, false);
     } catch (err) {
-      console.error("Username login error:", err);
+      console.error("[LOGIN][password] error:", err);
       setError(err.message || "Lỗi đăng nhập");
     } finally {
       setLoading(false);
@@ -154,15 +124,13 @@ export default function Login() {
   return (
     <div className={styles.loginContainer}>
       <div className={styles.loginFormWrapper}>
-        {/* PHẦN 1: Tiêu đề */}
         <div className={styles.headerSection}>
           <h1 className={styles.mainTitle}>Chào mừng đến Beauty Shop</h1>
         </div>
 
         <div className={styles.loginFormContainer}>
           <div className={styles.loginForm}>
-            
-            {/* PHẦN 4: Form Đăng nhập Truyền thống */}
+            {/* Đăng nhập truyền thống */}
             <div className={styles.traditionalLoginSection}>
               <form onSubmit={handleUsernameLogin}>
                 <div className={styles.formGroup}>
@@ -209,7 +177,6 @@ export default function Login() {
                   </div>
                 </div>
 
-                {/* PHẦN 5: Hỗ trợ và Hành động */}
                 <div className={styles.forgotPasswordWrapper}>
                   <Link href="/forgot-password" className={styles.forgotPasswordLink}>
                     <HelpCircle size={16} />
@@ -217,26 +184,20 @@ export default function Login() {
                   </Link>
                 </div>
 
-                <button 
-                  type="submit" 
-                  className={styles.loginButton}
-                  disabled={loading}
-                >
+                <button type="submit" className={styles.loginButton} disabled={loading}>
                   {loading ? "Đang đăng nhập..." : "Đăng nhập"}
                 </button>
-
-
               </form>
             </div>
 
-            {/* PHẦN 3: Dấu ngăn cách */}
+            {/* Dấu ngăn cách */}
             <div className={styles.divider}>
               <div className={styles.dividerLine}></div>
               <span className={styles.dividerText}>HOẶC</span>
               <div className={styles.dividerLine}></div>
             </div>
 
-            {/* PHẦN 2: Đăng nhập Nhanh (Social login) - Ở dưới */}
+            {/* Social login */}
             <div className={styles.quickLoginSection}>
               <div className={styles.googleButtonWrapper}>
                 <GoogleLogin
@@ -246,22 +207,18 @@ export default function Login() {
                   size="large"
                   text="signin_with"
                   shape="rectangular"
-                  width="100%"
                   locale="vi"
                 />
               </div>
             </div>
-
           </div>
 
-          {/* Error Message */}
           {error && (
             <div className={styles.errorMessage}>
               <p>❌ {error}</p>
             </div>
           )}
-               
-          {/* Loading */}
+
           {loading && (
             <div className={styles.loadingMessage}>
               <p>Đang xác thực... Vui lòng chờ</p>
@@ -277,7 +234,5 @@ export default function Login() {
         </div>
       </div>
     </div>
-    
   );
-  
 }

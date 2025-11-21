@@ -1,20 +1,7 @@
 // src/pages/api/auth/login.js
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { getPool } from "../../../lib/database/db";
-
-/**
- * API: Đăng nhập bằng TÊN ĐĂNG NHẬP và MẬT KHẨU
- * Sử dụng hệ thống RBAC: bảng vai_tro
- * 
- * Flow:
- * 1. Nhận username và password từ client
- * 2. Tìm user trong database (nguoi_dung)
- * 3. Verify password với bcrypt
- * 4. Lấy vai trò từ bảng nguoi_dung_vai_tro JOIN vai_tro
- * 5. Tạo JWT token với roles
- * 6. Trả về thông tin user + roles để frontend redirect
- */
+import { getPool } from "@/lib/database/db";
 
 function signAppToken(payload) {
   return jwt.sign(
@@ -24,6 +11,24 @@ function signAppToken(payload) {
   );
 }
 
+// Chuẩn hoá tên role để map route
+function normalizeRole(name) {
+  return String(name || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_]+/g, "");
+}
+
+function resolveRedirect(roleName) {
+  const norm = normalizeRole(roleName || "Customer");
+  if (norm === "admin") return "/NoiBo/Admin";
+  if (["warehouse","warehous","qlkho","ql_kho"].includes(norm)) return "/NoiBo/QLKho";
+  if (["product","qlsanpham","ql_sanpham","sales","qlbh","staff","qlkhachhang","ql_khachhang"].includes(norm)) {
+    return "/NoiBo/QLBH";
+  }
+  return "/";
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method Not Allowed" });
@@ -31,105 +36,69 @@ export default async function handler(req, res) {
 
   try {
     const { username, password } = req.body || {};
-
-    // Validate input
     if (!username || !password) {
-      return res.status(400).json({ 
-        success: false,
-        message: "Vui lòng nhập tên đăng nhập và mật khẩu" 
-      });
+      return res.status(400).json({ success: false, message: "Vui lòng nhập tên đăng nhập và mật khẩu" });
     }
 
     const pool = getPool();
 
-    // Tìm user trong database
+    // 1) Tìm user (active)
     const [users] = await pool.execute(
-      `SELECT 
-        id,
-        ten_dang_nhap,
-        email,
-        ten_hien_thi,
-        ho,
-        ten,
-        anh_dai_dien,
-        mat_khau_hash,
-        dang_hoat_dong,
-        thoi_gian_tao
-      FROM nguoi_dung 
-      WHERE ten_dang_nhap = ? AND dang_hoat_dong = 1
-      LIMIT 1`,
+      `SELECT id, ten_dang_nhap, email, ten_hien_thi, ho, ten, anh_dai_dien,
+              mat_khau_hash, dang_hoat_dong, thoi_gian_tao
+         FROM nguoi_dung 
+        WHERE ten_dang_nhap = ? AND dang_hoat_dong = 1
+        LIMIT 1`,
       [username]
     );
-
     if (!users || users.length === 0) {
-      return res.status(401).json({ 
-        success: false,
-        message: "Tên đăng nhập hoặc mật khẩu không chính xác" 
-      });
+      return res.status(401).json({ success: false, message: "Tên đăng nhập hoặc mật khẩu không chính xác" });
     }
-
     const user = users[0];
 
-    // Kiểm tra password
+    // 2) Verify password
     if (!user.mat_khau_hash) {
-      return res.status(401).json({ 
-        success: false,
-        message: "Tài khoản này chưa thiết lập mật khẩu. Vui lòng đăng nhập bằng Google" 
-      });
+      return res.status(401).json({ success: false, message: "Tài khoản này chưa thiết lập mật khẩu. Vui lòng đăng nhập bằng Google" });
+    }
+    const ok = await bcrypt.compare(password, user.mat_khau_hash);
+    if (!ok) {
+      return res.status(401).json({ success: false, message: "Tên đăng nhập hoặc mật khẩu không chính xác" });
     }
 
-    const validPassword = await bcrypt.compare(password, user.mat_khau_hash);
-
-    if (!validPassword) {
-      return res.status(401).json({ 
-        success: false,
-        message: "Tên đăng nhập hoặc mật khẩu không chính xác" 
-      });
-    }
-
-    // Lấy vai trò từ bảng RBAC
-    const [roleRows] = await pool.execute(
-      `SELECT vt.ten, vt.mo_ta
-       FROM nguoi_dung_vai_tro nvt
-       JOIN vai_tro vt ON vt.id = nvt.vai_tro_id
-       WHERE nvt.nguoi_dung_id = ?`,
+    // 3) Lấy vai_tro duy nhất (từ VIEW hoặc JOIN 1 record)
+    // Cách A (đọc từ VIEW):
+    const [r1] = await pool.execute(
+      `SELECT vai_tro FROM v_nguoi_dung WHERE id = ? LIMIT 1`,
       [user.id]
     );
+    let primaryRole = r1?.[0]?.vai_tro || "Customer";
 
-    // Nếu không có vai trò nào, mặc định là Customer
-    const roles = roleRows.length > 0 
-      ? roleRows.map(r => r.ten) 
-      : ['Customer'];
+    // (Tuỳ chọn) Cách B (JOIN trực tiếp 1 role):
+    // const [r1] = await pool.execute(
+    //   `SELECT v.ten AS vai_tro
+    //      FROM nguoi_dung_vai_tro nvt
+    //      JOIN vai_tro v ON v.id = nvt.vai_tro_id
+    //     WHERE nvt.nguoi_dung_id = ?
+    //     LIMIT 1`,
+    //   [user.id]
+    // );
+    // let primaryRole = r1?.[0]?.vai_tro || "Customer";
 
-    // Xác định vai trò chính (ưu tiên: Admin > QL_* > Customer)
-    let primaryRole = 'Customer';
-    let redirectPath = '/';
+    const roles = [primaryRole]; // mảng 1 phần tử cho FE cũ
 
-    if (roles.includes('Admin')) {
-      primaryRole = 'Admin';
-      redirectPath = '/NoiBo/Admin';
-    } else if (roles.includes('QL_SanPham')) {
-      primaryRole = 'QL_SanPham';
-      redirectPath = '/NoiBo/QLSP';
-    } else if (roles.includes('QL_Kho')) {
-      primaryRole = 'QL_Kho';
-      redirectPath = '/NoiBo/QLKho';
-    } else if (roles.includes('QL_KhachHang')) {
-      primaryRole = 'QL_KhachHang';
-      redirectPath = '/NoiBo/QLKH';
-    }
+    const redirectPath = resolveRedirect(primaryRole);
 
-    // Tạo JWT token
-    const appToken = signAppToken({
+    // 4) JWT
+    const token = signAppToken({
       uid: user.id,
       email: user.email,
-      roles: roles,
-      primaryRole: primaryRole,
+      roles,
+      primaryRole,
       username: user.ten_dang_nhap,
       provider: "password",
     });
 
-    // Tạo object user trả về
+    // 5) Payload trả FE
     const userData = {
       id: user.id,
       username: user.ten_dang_nhap,
@@ -138,43 +107,32 @@ export default async function handler(req, res) {
       firstName: user.ho,
       lastName: user.ten,
       avatar: user.anh_dai_dien || "/images/default-avatar.png",
-      roles: roles,
-      primaryRole: primaryRole,
+      roles,
+      primaryRole,
+      role: primaryRole,     // alias
+      vai_tro: primaryRole,  // alias
       createdAt: user.thoi_gian_tao,
     };
 
-    // Log đăng nhập (audit trail)
+    // 6) Audit (không chặn login nếu lỗi)
     try {
       await pool.execute(
         `INSERT INTO nhat_ky_hoat_dong (bang, ban_ghi_id, hanh_dong, du_lieu_moi, thuc_hien_boi) 
          VALUES (?, ?, ?, ?, ?)`,
-        [
-          'nguoi_dung', 
-          user.id, 
-          'CREATE',
-          JSON.stringify({ action: 'LOGIN', method: 'password', roles: roles }),
-          user.id
-        ]
+        ['nguoi_dung', user.id, 'CREATE', JSON.stringify({ action: 'LOGIN', method: 'password', role: primaryRole }), user.id]
       );
-    } catch (logErr) {
-      console.error('Failed to log activity:', logErr);
-      // Không throw error vì không ảnh hưởng đến login
-    }
+    } catch {}
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       success: true,
-      token: appToken, 
+      token,
       user: userData,
       redirect: redirectPath,
-      message: "Đăng nhập thành công"
+      message: "Đăng nhập thành công",
     });
 
   } catch (err) {
     console.error("[/api/auth/login] error:", err);
-    const msg = typeof err?.message === "string" ? err.message : "Lỗi hệ thống. Vui lòng thử lại sau";
-    return res.status(500).json({ 
-      success: false,
-      message: msg 
-    });
+    return res.status(500).json({ success: false, message: "Lỗi hệ thống. Vui lòng thử lại sau" });
   }
 }
