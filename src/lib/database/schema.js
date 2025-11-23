@@ -4,8 +4,8 @@
 export const TABLES = Object.freeze({
   // Cùng trỏ về bảng nguoi_dung – 
   // khi query nhớ WHERE vai_tro = 'Customer' hoặc 'Staff' / 'Admin'
-  CUSTOMERS: "nguoi_dung",
-  EMPLOYEES: "nguoi_dung",
+  CUSTOMERS: "v_nguoi_dung",
+  EMPLOYEES: "v_nguoi_dung",
 
   PRODUCTS: "sanpham",
   CATEGORIES: "danh_muc",

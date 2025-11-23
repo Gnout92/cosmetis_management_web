@@ -439,7 +439,7 @@ const SecuritySettings = ({ user, showNotification }) => {
           <p className={styles.sectionDescription}>Các thiết bị đang đăng nhập vào tài khoản của bạn</p>
         </div>
 
-        {activeDevices.length > 1 && (
+        {/* {activeDevices.length > 1 && (
           <div style={{ marginBottom: '1.5rem' }}>
             <button
               onClick={handleLogoutAllDevices}
@@ -449,7 +449,7 @@ const SecuritySettings = ({ user, showNotification }) => {
               🚪 Đăng xuất tất cả thiết bị khác
             </button>
           </div>
-        )}
+        )} */}
 
         <div style={{ display: 'grid', gap: '1rem' }}>
           {activeDevices.map((device) => (
@@ -494,7 +494,7 @@ const SecuritySettings = ({ user, showNotification }) => {
                     Hoạt động cuối: {new Date(device.lastActive).toLocaleString('vi-VN')}
                   </p>
                 </div>
-                {!device.isCurrent && (
+                {/* {!device.isCurrent && (
                   <button
                     onClick={() => handleLogoutDevice(device.id)}
                     className={`${styles.btn} ${styles['btn-danger']}`}
@@ -502,7 +502,7 @@ const SecuritySettings = ({ user, showNotification }) => {
                   >
                     🚪 Đăng xuất
                   </button>
-                )}
+                )} */}
               </div>
             </div>
           ))}

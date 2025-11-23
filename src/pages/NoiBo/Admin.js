@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Users, Package, TrendingUp, UserPlus, Edit2, Lock, Key, Ban, CheckCircle, BarChart3 } from 'lucide-react';
 import styles from '../../styles/NoiBo/Admin.module.css';
+import withAuth from '@/utils/withAuth';
 
 const Admin = () => {
   const [activeTab, setActiveTab] = useState('users');
@@ -636,4 +637,4 @@ const Admin = () => {
   );
 };
 
-export default Admin;
+export default withAuth(Admin, ['Admin']);

@@ -749,13 +749,13 @@ const moreNewsEvents= [
                 />
                 <span className={styles.userName}>{authUser?.name}</span>
               </div>
-              <button
+              {/* <button
                 onClick={logout}
                 className={styles.logoutButton}
                 title="Đăng xuất"
               >
                 🚪
-              </button>
+              </button> */}
             </div>
           ) : (
             <Link href="/login" className={`${styles.navLink} pro-nav-item`}>

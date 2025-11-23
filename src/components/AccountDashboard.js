@@ -140,7 +140,7 @@ export default function AccountDashboard() {
               </div>
             )}
           </div>
-          <button 
+          {/* <button 
             onClick={handleLogout}
             className={styles.logoutButton}
             style={{
@@ -154,7 +154,7 @@ export default function AccountDashboard() {
             }}
           >
             🚪 Đăng xuất
-          </button>
+          </button> */}
         </div>
       </div>
 
