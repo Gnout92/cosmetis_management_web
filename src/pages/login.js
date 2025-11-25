@@ -20,24 +20,45 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
   // --- Helper: chuẩn hoá role và xác định đường dẫn ---
-const getRedirectPath = (user) => {
-  // Ưu tiên các field đã có:
-  const raw =
-    user?.primaryRole ??
-    user?.role ??
-    user?.vai_tro ??
-    (Array.isArray(user?.roles) && user.roles.length ? user.roles[0] : "Customer");
+  const getRedirectPath = (user) => {
+    // Ưu tiên các field đã có:
+    const raw =
+      user?.primaryRole ??
+      user?.role ??
+      user?.vai_tro ??
+      (Array.isArray(user?.roles) && user.roles.length ? user.roles[0] : "Customer");
 
-  const norm = String(raw || "Customer").trim().toLowerCase().replace(/[\s_]+/g, "");
-  console.log("[LOGIN] resolve role -> raw:", raw, "| normalized:", norm);
+    const norm = String(raw || "Customer").trim().toLowerCase().replace(/[\s_]+/g, "");
+    console.log("[LOGIN] resolve role -> raw:", raw, "| normalized:", norm);
 
-  if (norm === "admin") return "/NoiBo/Admin";
-  if (["warehouse", "warehous", "qlkho", "ql_kho"].includes(norm)) return "/NoiBo/QLKho";
-  if (["product", "qlsanpham", "ql_sanpham", "sales", "qlbh", "staff", "qlkhachhang", "ql_khachhang"].includes(norm)) {
-    return "/NoiBo/QLBH";
-  }
-  return "/";
-};
+    // Admin
+    if (norm === "admin") {
+      console.log("[LOGIN] Redirecting to Admin dashboard");
+      return "/NoiBo/Admin";
+    }
+    
+    // Warehouse Manager
+    if (["warehouse", "warehous", "qlkho", "ql_kho"].includes(norm)) {
+      console.log("[LOGIN] Redirecting to QLKho dashboard");
+      return "/NoiBo/QLKho";
+    }
+    
+    // Product Manager
+    if (["product", "qlsanpham", "ql_sanpham", "sales"].includes(norm)) {
+      console.log("[LOGIN] Redirecting to QLSP dashboard");
+      return "/NoiBo/QLSP";
+    }
+    
+    // Customer Manager
+    if (["staff", "qlbh", "qlkhachhang", "ql_khachhang", "customer"].includes(norm)) {
+      console.log("[LOGIN] Redirecting to QLKH dashboard");
+      return "/NoiBo/QLKH";
+    }
+    
+    // Default to home for customers
+    console.log("[LOGIN] Default redirect to home");
+    return "/";
+  };
   // --- Sau khi login thành công ---
   const handleLoginSuccess = async (user, token, isNewUser = false) => {
     try {

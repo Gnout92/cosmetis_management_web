@@ -17,55 +17,119 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     console.log("🔄 Initializing AuthContext...");
     
-    try {
-      const storedUser = localStorage.getItem("user");
-      const storedToken = localStorage.getItem("authToken") || localStorage.getItem("token");
+    const initAuth = async () => {
+      try {
+        const storedUser = localStorage.getItem("user");
+        const storedToken = localStorage.getItem("authToken") || localStorage.getItem("token");
 
-      console.log("📦 Stored data:", {
-        hasUser: !!storedUser,
-        hasToken: !!storedToken,
-        user: storedUser ? JSON.parse(storedUser) : null,
-        token: storedToken ? "EXISTS" : "MISSING"
-      });
+        console.log("📦 Stored data:", {
+          hasUser: !!storedUser,
+          hasToken: !!storedToken,
+          user: storedUser ? JSON.parse(storedUser) : null,
+          token: storedToken ? "EXISTS" : "MISSING"
+        });
 
-      if (storedUser) {
-        const user = JSON.parse(storedUser);
-        setAuthUser(user);
-        console.log("✅ User loaded from localStorage:", user);
+        if (storedUser && storedToken) {
+          const user = JSON.parse(storedUser);
+          
+          // Fetch fresh user data từ database để đảm bảo role là mới nhất
+          try {
+            const response = await fetch('/api/auth/me', {
+              headers: {
+                'Authorization': `Bearer ${storedToken}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            
+            if (response.ok) {
+              const userData = await response.json();
+              if (userData.success && userData.user) {
+                // Update user data với thông tin mới từ database
+                const updatedUser = {
+                  ...userData.user,
+                  ...user, // Giữ lại data từ localStorage
+                  id: user.id || userData.user.id
+                };
+                setAuthUser(updatedUser);
+                localStorage.setItem("user", JSON.stringify(updatedUser));
+                console.log("✅ User data refreshed from database:", updatedUser);
+              } else {
+                setAuthUser(user);
+                console.log("✅ User loaded from localStorage:", user);
+              }
+            } else {
+              setAuthUser(user);
+              console.log("✅ User loaded from localStorage:", user);
+            }
+          } catch (error) {
+            console.warn("⚠️ Failed to fetch fresh user data:", error);
+            setAuthUser(user);
+            console.log("✅ User loaded from localStorage:", user);
+          }
+        }
+        
+        if (storedToken) {
+          setToken(storedToken);
+          console.log("✅ Token loaded from localStorage");
+        }
+      } catch (err) {
+        console.error("❌ AuthContext init error:", err);
+        // Nếu có lỗi parsing, clear localStorage
+        localStorage.removeItem("user");
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("token");
+      } finally {
+        setLoading(false);
+        console.log("🏁 AuthContext initialization complete");
       }
-      
-      if (storedToken) {
-        setToken(storedToken);
-        console.log("✅ Token loaded from localStorage");
-      }
-    } catch (err) {
-      console.error("❌ AuthContext init error:", err);
-      // Nếu có lỗi parsing, clear localStorage
-      localStorage.removeItem("user");
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("token");
-    } finally {
-      setLoading(false);
-      console.log("🏁 AuthContext initialization complete");
-    }
+    };
+
+    initAuth();
   }, []);
 
-  // Login function
-  const login = useCallback((userObj, jwtToken) => {
+  // Login function với RBAC integration
+  const login = useCallback(async (userObj, jwtToken) => {
     console.log("🔑 Login called with:", { 
       user: userObj, 
       token: jwtToken ? "EXISTS" : "MISSING" 
     });
 
     try {
+      // Nếu có token, fetch thông tin user từ database để lấy role thật
+      let updatedUser = userObj;
+      if (jwtToken && userObj?.id) {
+        try {
+          const response = await fetch('/api/auth/me', {
+            headers: {
+              'Authorization': `Bearer ${jwtToken}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            const userData = await response.json();
+            // Merge user data từ database với data hiện tại
+            updatedUser = {
+              ...userData,
+              ...userObj, // Giữ lại data từ login response
+              id: userObj.id // Đảm bảo ID không bị overwrite
+            };
+            console.log("✅ User data updated from database:", updatedUser);
+          }
+        } catch (error) {
+          console.warn("⚠️ Failed to fetch user data from database:", error);
+          // Sử dụng userObj như fallback
+        }
+      }
+
       // Set state
-      setAuthUser(userObj || null);
+      setAuthUser(updatedUser || null);
       setToken(jwtToken || null);
 
       // Store in localStorage
-      if (userObj) {
-        localStorage.setItem("user", JSON.stringify(userObj));
-        console.log("💾 User stored in localStorage");
+      if (updatedUser) {
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        console.log("💾 User stored in localStorage:", updatedUser);
       } else {
         localStorage.removeItem("user");
         console.log("🗑️ User removed from localStorage");

@@ -23,8 +23,9 @@ function resolveRedirect(roleName) {
   const norm = normalizeRole(roleName || "Customer");
   if (norm === "admin") return "/NoiBo/Admin";
   if (["warehouse","warehous","qlkho","ql_kho"].includes(norm)) return "/NoiBo/QLKho";
-  if (["product","qlsanpham","ql_sanpham","sales","qlbh","staff","qlkhachhang","ql_khachhang"].includes(norm)) {
-    return "/NoiBo/QLBH";
+  if (["product","qlsanpham","ql_sanpham"].includes(norm)) return "/NoiBo/QLSP";
+  if (["customer","khachhang","qlkh","qlkhang","qlkhachhang","ql_khachhang","qlbh","staff"].includes(norm)) {
+    return "/NoiBo/QLKH";
   }
   return "/";
 }
