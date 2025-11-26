@@ -1,7 +1,7 @@
 // Clean & Professional QLKH Component
 import React, { useState, useEffect } from 'react';
 import { Shield, Users, Package, TrendingUp, UserPlus, Edit2, Lock, Key, Ban, CheckCircle, BarChart3, Home } from 'lucide-react';
-import styles from '../../styles/NoiBo/QLKH.module.css';
+
 import withAuth from '@/utils/withAuth';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'next/router';

@@ -1,6 +1,6 @@
 // src/pages/NoiBo/QLSP.js
 import React, { useState, useEffect } from 'react';
-import styles from '../../styles/NoiBo/QLSP.module.css';
+
 import { useAuth } from '../../context/AuthContext';
 import { getFunctionsByRole } from '../../lib/auth/permissionManager';
 

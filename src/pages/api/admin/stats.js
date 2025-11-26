@@ -87,8 +87,8 @@ async function handler(req, res) {
         sp.id as productId,
         sp.ten as productName,
         SUM(dhct.so_luong) as totalSold,
-        SUM(dhct.thanh_tien) as totalRevenue
-      FROM chi_tiet_don_hang dhct
+        SUM(dhct.so_luong * dhct.don_gia) as totalRevenue
+      FROM don_hang_chitiet dhct
       JOIN sanpham sp ON dhct.san_pham_id = sp.id
       JOIN don_hang dh ON dhct.don_hang_id = dh.id
       WHERE dh.trang_thai IN ('delivered', 'shipping')
