@@ -150,9 +150,9 @@ const GioHang = () => {
 
   // Tạm thời: phí ship cố định 20.000đ cho mọi đơn (nếu không có sản phẩm thì 0)
   const calculateShipping = () => {
-    if (!cartItems.length) return 0;
-    return 20000;
-  };
+    if (!cartItems.length) return 0; // Luôn trả về 20.000đ, bỏ qua express/standard
+    return 20000; 
+  };
 
   const calculateTotal = () => {
     const subtotal = calculateSubtotal();
@@ -217,6 +217,7 @@ const GioHang = () => {
 
   // ====== API: Lấy địa chỉ giao hàng mặc định ======
   const loadDefaultShippingAddress = async () => {
+    console.log('[GioHang] loadDefaultShippingAddress() start');
     try {
       setIsLoadingAddress(true);
       setOrderError(null);
@@ -268,7 +269,8 @@ const GioHang = () => {
   };
 
   // Mở modal xác nhận đặt hàng
-  const handleOpenOrderModal = async () => {
+    const handleOpenOrderModal = async () => {
+    console.log('[GioHang] handleOpenOrderModal CALLED');
     if (!cartItems || cartItems.length === 0) {
       showNotification('Giỏ hàng trống, vui lòng thêm sản phẩm!', 'error');
       return;
@@ -277,9 +279,13 @@ const GioHang = () => {
     setOrderError(null);
     setOrderSuccess(null);
 
-    await loadDefaultShippingAddress();
+    // 👉 Cho modal hiện NGAY, rồi mới load địa chỉ (tránh người dùng tưởng như không có gì)
     setShowOrderModal(true);
+    console.log('[GioHang] setShowOrderModal(true)');
+
+    await loadDefaultShippingAddress();
   };
+
 
   // Xác nhận đặt hàng (chuẩn bị cho bước 2 nối backend)
   const handleConfirmOrder = async () => {
@@ -313,12 +319,12 @@ const GioHang = () => {
         quantity: item.quantity || 1,
       }));
 
-      const payload = {
-        addressId: shippingAddress.id,
-        items: itemsPayload,
-        shippingFee: calculateShipping(), // tạm thời 20.000
-        paymentMethod,
-      };
+      const payload = { 
+      addressId: shippingAddress.id,
+      items: itemsPayload,
+      shippingMethod,   // 'standard' | 'express', BE vẫn tính 20k như nhau
+      // paymentMethod không cần gửi vì BE đã hardcode 'COD'
+    };
 
       // Bước 2 sẽ tạo API /api/orders đúng schema don_hang + don_hang_chi_tiet
       const res = await fetch('/api/orders', {
@@ -369,6 +375,7 @@ const GioHang = () => {
       </div>
     );
   }
+  console.log('[GioHang] showOrderModal =', showOrderModal);
 
   return (
     <div className={styles.container}>
@@ -419,8 +426,8 @@ const GioHang = () => {
 
       {/* Modal xác nhận đặt hàng mới */}
       {showOrderModal && (
-        <div className={styles.orderModalBackdrop}>
-          <div className={styles.orderModal}>
+        <div className={styles.modal}>
+          <div className={styles.modalContent}>
             {/* Header */}
             <div className={styles.orderModalHeader}>
               <h2>Xác nhận đặt hàng</h2>

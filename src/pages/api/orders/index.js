@@ -3,8 +3,9 @@ import jwt from 'jsonwebtoken';
 import { getPool } from '@/lib/database/pool';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_change_me';
-const FIXED_SHIPPING_FEE = 20000; // tạm thời set cứng như FE đang dùng
-
+/**
+ * Lấy userId từ JWT trong header Authorization
+ */
 function getUserIdFromReq(req) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
@@ -18,6 +19,14 @@ function getUserIdFromReq(req) {
     return null;
   }
 }
+
+  const FIXED_SHIPPING_FEE = 20000; // Khai báo hằng số rõ ràng
+
+  function calculateShippingFee(address, shippingMethod = 'standard') {
+  // **FIXED RATE LOGIC**
+  return FIXED_SHIPPING_FEE; 
+}
+  
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -33,21 +42,23 @@ export default async function handler(req, res) {
       .json({ success: false, message: 'Unauthorized (no/invalid token)' });
   }
 
-  const { addressId, shippingMethod, items } = req.body || {};
+  const { addressId, items, shippingMethod } = req.body || {};
 
-  // Validate cơ bản
+  // ==== 1. Validate dữ liệu từ FE ====
+
   if (!addressId) {
     return res
       .status(400)
       .json({ success: false, message: 'addressId is required' });
   }
+
   if (!Array.isArray(items) || items.length === 0) {
     return res
       .status(400)
       .json({ success: false, message: 'Cart items is required' });
   }
 
-  // Chuẩn hoá items
+  // Chuẩn hoá item: productId = số, quantity > 0
   const cleanItems = items
     .map((it) => ({
       productId: Number(it.productId),
@@ -68,7 +79,7 @@ export default async function handler(req, res) {
   try {
     await conn.beginTransaction();
 
-    // 1) Lấy thông tin địa chỉ, join tên phường/xã, quận/huyện, tỉnh/thành
+    // ==== 2. Lấy địa chỉ giao hàng (snapshot) ====
     const [addrRows] = await conn.execute(
       `
       SELECT 
@@ -82,6 +93,7 @@ export default async function handler(req, res) {
         dc.quan_huyen_id,
         qh.ten AS ten_quan_huyen,
         dc.tinh_thanh_id,
+        tt.id  AS tinh_thanh_id,   -- dùng id cho rule ship
         tt.ten AS ten_tinh_thanh
       FROM dia_chi dc
       LEFT JOIN phuong_xa  px ON px.id = dc.phuong_xa_id
@@ -103,8 +115,9 @@ export default async function handler(req, res) {
 
     const address = addrRows[0];
 
-    // 2) Lấy thông tin sản phẩm và kiểm tra tồn kho cơ bản
+    // ==== 3. Lấy thông tin sản phẩm ====
     const productIds = [...new Set(cleanItems.map((it) => it.productId))];
+    const placeholders = productIds.map(() => '?').join(', ');
 
     const [productRows] = await conn.query(
       `
@@ -114,13 +127,12 @@ export default async function handler(req, res) {
         sp.Gia,
         sp.GiaGoc
       FROM sanpham sp
-      WHERE sp.MaSanPham IN ( ${productIds.map(() => '?').join(', ')} )
+      WHERE sp.MaSanPham IN (${placeholders})
     `,
       productIds
     );
 
     if (productRows.length !== productIds.length) {
-      // có id không tồn tại
       const foundIds = new Set(productRows.map((p) => p.MaSanPham));
       const missing = productIds.filter((id) => !foundIds.has(id));
       await conn.rollback();
@@ -131,19 +143,16 @@ export default async function handler(req, res) {
       });
     }
 
-    // Map sản phẩm theo id
-    const productMap = new Map(
-      productRows.map((p) => [p.MaSanPham, p])
-    );
+    const productMap = new Map(productRows.map((p) => [p.MaSanPham, p]));
 
-    // 2b) Check tồn kho tổng (so_luong_ton - so_luong_giu_cho)
+    // ==== 4. Kiểm tra tồn kho (tổng) ====
     const [stockRows] = await conn.query(
       `
       SELECT 
         tk.san_pham_id,
         SUM(tk.so_luong_ton - tk.so_luong_giu_cho) AS available
       FROM ton_kho tk
-      WHERE tk.san_pham_id IN ( ${productIds.map(() => '?').join(', ')} )
+      WHERE tk.san_pham_id IN (${placeholders})
       GROUP BY tk.san_pham_id
     `,
       productIds
@@ -167,85 +176,95 @@ export default async function handler(req, res) {
       }
     }
 
-    // 3) Tính tiền
+    // ==== 5. Tính tiền ====
     let subtotal = 0;
+    const detailItems = [];
 
-    const detailItems = cleanItems.map((item) => {
+    for (const item of cleanItems) {
       const p = productMap.get(item.productId);
-      const giaBan = Number(p.Gia);
-      const giaGoc = p.GiaGoc != null ? Number(p.GiaGoc) : giaBan;
+
+      const giaBan = Number(p.Gia); // giá đang bán
+      const giaGoc = p.GiaGoc != null ? Number(p.GiaGoc) : giaBan; // giá niêm yết
 
       const lineTotal = giaBan * item.quantity;
       subtotal += lineTotal;
 
-      return {
+      detailItems.push({
         productId: item.productId,
         quantity: item.quantity,
         priceList: giaGoc,
         unitPrice: giaBan,
         discountPercent: null,
         discountAmount: 0,
-      };
-    });
+      });
+    }
 
-    const shippingFee = FIXED_SHIPPING_FEE;
-    const discountTotal = 0; // tạm thời chưa xử lý mã giảm giá ở BE
-
+    const shippingFee = calculateShippingFee(address, shippingMethod || 'standard');
+    const discountTotal = 0; // tạm thời chưa có mã giảm giá ở BE
     const grandTotal = subtotal + shippingFee - discountTotal;
 
-    // 4) Insert đơn hàng (don_hang)
+    // ==== 6. Insert đơn hàng (don_hang) ====
+    // Lưu ý:
+    //  - phuong_thuc_tt: chỉ có 'COD' nên hardcode
+    //  - tong_hang, tong_thanh_toan: có thể set 0, triggers sẽ cập nhật lại
     const [orderResult] = await conn.execute(
-      `
-      INSERT INTO don_hang (
-        nguoi_dung_id,
-        trang_thai,
-        phuong_thuc_tt,
-        trang_thai_tt,
-        ship_phuong_xa_id,
-        ship_quan_huyen_id,
-        ship_tinh_thanh_id,
-        ship_ten_phuong_xa,
-        ship_ten_quan_huyen,
-        ship_ten_tinh_thanh,
-        ship_ten_nguoi_nhan,
-        ship_so_dien_thoai,
-        ship_dia_chi_chi_tiet,
-        ship_duong,
-        tong_hang,
-        phi_van_chuyen,
-        tong_giam_gia,
-        tong_thanh_toan
-      )
-      VALUES (?, 'PENDING', 'COD', 'UNPAID',
-              ?, ?, ?,
-              ?, ?, ?,
-              ?, ?, ?, ?,
-              ?, ?, ?, ?)
-    `,
-      [
-        userId,
-        address.phuong_xa_id,
-        address.quan_huyen_id,
-        address.tinh_thanh_id,
-        address.ten_phuong_xa,
-        address.ten_quan_huyen,
-        address.ten_tinh_thanh,
-        address.ten_nguoi_nhan,
-        address.so_dien_thoai,
-        address.dia_chi_chi_tiet,
-        address.duong,
-        subtotal,
-        shippingFee,
-        discountTotal,
-        grandTotal,
-      ]
-    );
+  `
+  INSERT INTO don_hang (
+    nguoi_dung_id,
+    trang_thai,
+    phuong_thuc_tt,
+    trang_thai_tt,
+    ship_phuong_xa_id,
+    ship_quan_huyen_id,
+    ship_tinh_thanh_id,
+    ship_ten_phuong_xa,
+    ship_ten_quan_huyen,
+    ship_ten_tinh_thanh,
+    ship_ten_nguoi_nhan,
+    ship_so_dien_thoai,
+    ship_dia_chi_chi_tiet,
+    ship_duong,
+    tong_hang,
+    phi_van_chuyen,
+    tong_giam_gia,
+    tong_thanh_toan
+  )
+  VALUES (
+    ?, ?, ?, ?,
+    ?, ?, ?,
+    ?, ?, ?,
+    ?, ?, ?,
+    ?, ?, ?, ?, ?
+  )
+  `,
+  [
+    userId,                     // nguoi_dung_id
+    'PENDING',                  // trang_thai
+    'COD',                      // phuong_thuc_tt
+    'UNPAID',                   // trang_thai_tt
+    address.phuong_xa_id,       // ship_phuong_xa_id
+    address.quan_huyen_id,      // ship_quan_huyen_id
+    address.tinh_thanh_id,      // ship_tinh_thanh_id
+    address.ten_phuong_xa,      // ship_ten_phuong_xa
+    address.ten_quan_huyen,     // ship_ten_quan_huyen
+    address.ten_tinh_thanh,     // ship_ten_tinh_thanh
+    address.ten_nguoi_nhan,     // ship_ten_nguoi_nhan
+    address.so_dien_thoai,      // ship_so_dien_thoai
+    address.dia_chi_chi_tiet,   // ship_dia_chi_chi_tiet
+    address.duong,              // ship_duong
+    subtotal,                   // tong_hang
+    shippingFee,                // phi_van_chuyen
+    discountTotal,              // tong_giam_gia
+    grandTotal,                 // tong_thanh_toan
+  ]
+);
+
 
     const orderId = orderResult.insertId;
 
-    // 5) Insert chi tiết đơn hàng (don_hang_chi_tiet)
-    const detailValues = [];
+    // ==== 7. Insert chi tiết đơn hàng (don_hang_chi_tiet) ====
     const detailPlaceholders = [];
+    const detailValues = [];
 
     for (const d of detailItems) {
       detailPlaceholders.push('(?,?,?,?,?,?,?)');
@@ -275,7 +294,9 @@ export default async function handler(req, res) {
     `,
       detailValues
     );
-    // Trigger trg_dhct_after_ins sẽ tự cập nhật tong_hang, tong_thanh_toan + giu_cho/ton_kho
+    // AFTER INSERT trigger:
+    //  - trg_dhct_after_ins        -> cập nhật tong_hang & tong_thanh_toan
+    //  - trg_dhct_after_reserve    -> tạo giu_cho + cập nhật ton_kho
 
     await conn.commit();
 
@@ -283,22 +304,22 @@ export default async function handler(req, res) {
       success: true,
       message: 'Tạo đơn hàng thành công',
       orderId,
+      status: 'PENDING',
       totals: {
         subtotal,
         shippingFee,
         discountTotal,
         grandTotal,
       },
-      meta: {
-        shippingMethod: shippingMethod || 'standard',
-      },
     });
   } catch (err) {
     await conn.rollback();
     console.error('[orders] Error creating order:', err);
-    return res
-      .status(500)
-      .json({ success: false, message: 'Internal Server Error' });
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+      error: err.message,
+    });
   } finally {
     conn.release();
   }
