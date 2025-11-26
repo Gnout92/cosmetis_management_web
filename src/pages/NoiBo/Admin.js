@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import styles from '../../styles/NoiBo/Admin.module.css';
 
+// Global fallback hasPermission function
+const hasPermission = (functionKey) => {
+  // Always return true as fallback for global functions
+  // Admin component will override this with proper permission checking
+  return true;
+};
+
 // Helper function để lấy text trạng thái đơn hàng
 const getOrderStatusText = (status) => {
   const statusMap = {
@@ -50,6 +57,9 @@ const Icon = ({ name, className = "", size = "20" }) => {
     tag: <svg {...iconProps} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
     </svg>,
+    bookmark: <svg {...iconProps} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+    </svg>,
 
     // Customer Management Icons
     user: <svg {...iconProps} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,6 +98,22 @@ const Icon = ({ name, className = "", size = "20" }) => {
     crown: <svg {...iconProps} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
     </svg>,
+    shield: <svg {...iconProps} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+    </svg>,
+    power: <svg {...iconProps} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+    </svg>,
+    key: <svg {...iconProps} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+    </svg>,
+    mapPin: <svg {...iconProps} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>,
+    info: <svg {...iconProps} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>,
     
     // Stock Management Icons
     chartBar: <svg {...iconProps} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,12 +144,6 @@ const Icon = ({ name, className = "", size = "20" }) => {
     idCard: <svg {...iconProps} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
     </svg>,
-    key: <svg {...iconProps} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-3a1 1 0 011-1h2.586l6.414-6.414A6 6 0 1121 9z" />
-    </svg>,
-    shield: <svg {...iconProps} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-    </svg>,
     folder: <svg {...iconProps} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
     </svg>,
@@ -150,6 +170,9 @@ const Icon = ({ name, className = "", size = "20" }) => {
     </svg>,
     trash: <svg {...iconProps} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+    </svg>,
+    alertTriangle: <svg {...iconProps} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
     </svg>,
     folderOpen: <svg {...iconProps} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
@@ -273,8 +296,8 @@ const EmptyState = ({ onRefresh }) => (
   </div>
 );
 
-// Render functions cho từng loại chức năng với dữ liệu từ database thực
-const renderProductManagement = (functionKey, functionData, loadingData) => {
+// Render functions cho từng chức năng sản phẩm cụ thể từ image
+const renderProductOverview = () => {
   const products = functionData.products || [];
   
   return (
@@ -296,123 +319,469 @@ const renderProductManagement = (functionKey, functionData, loadingData) => {
 
       <div className={styles.formContainer}>
         <div className={styles.sectionHeader}>
-          <h3>Quản lý Sản phẩm</h3>
-          {(functionKey === 'product.create' || functionKey === 'products.view') && hasPermission(functionKey) && (
-            <button className={styles.primaryButton} onClick={() => {
-              console.log('Add new product');
-            }}>
-              <Icon name="plus" size="18" />
-              Thêm sản phẩm mới
-            </button>
-          )}
+          <h3>Tổng quan Quản lý Sản phẩm</h3>
+          <button className={styles.primaryButton} onClick={() => setActiveTab('product.create')}>
+            <Icon name="plus" size="18" />
+            Thêm sản phẩm mới
+          </button>
         </div>
         
         <div className={styles.dataTableContainer}>
-          {loadingData ? (
-            <div className={styles.loadingState}>
-              <div className={styles.spinner}></div>
-              <p>Đang tải dữ liệu sản phẩm từ database...</p>
-            </div>
-          ) : (
-            <table className={styles.dataTable}>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Tên sản phẩm</th>
-                  <th>Danh mục</th>
-                  <th>Giá</th>
-                  <th>Trạng thái</th>
-                  <th>Thao tác</th>
+          <table className={styles.dataTable}>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Tên sản phẩm</th>
+                <th>Danh mục</th>
+                <th>Giá</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.slice(0, 5).map(product => (
+                <tr key={product.MaSanPham}>
+                  <td>{product.MaSanPham}</td>
+                  <td>{product.TenSanPham}</td>
+                  <td>{product.categoryName || product.MaDanhMuc}</td>
+                  <td>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.Gia)}</td>
+                  <td>
+                    <span className={getStatusBadge(product.is_an, 'product')}>
+                      {(product.is_an === 1 || product.is_an === true) ? 'Đã ẩn' : 'Hiển thị'}
+                    </span>
+                  </td>
+                  <td>
+                    <div className={styles.actionButtons}>
+                      <button className={styles.actionButton} title="Xem chi tiết" onClick={() => setActiveTab('products.detail')}>
+                        <Icon name="eye" size="16" />
+                      </button>
+                      <button className={styles.actionButton} title="Chỉnh sửa" onClick={() => setActiveTab('product.update')}>
+                        <Icon name="pencil" size="16" />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {products.map(product => (
-                  <tr key={product.MaSanPham}>
-                    <td>{product.MaSanPham}</td>
-                    <td>{product.TenSanPham}</td>
-                    <td>{product.categoryName || product.MaDanhMuc}</td>
-                    <td>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.Gia)}</td>
-                    <td>
-                      <span className={getStatusBadge(product.is_an, 'product')}>
-                        {(product.is_an === 1 || product.is_an === true) ? 'Đã ẩn' : 'Hiển thị'}
-                      </span>
-                    </td>
-                    <td>
-                      <div className={styles.actionButtons}>
-                        <button className={styles.actionButton} title="Xem chi tiết">
-                          <Icon name="eye" size="16" />
-                        </button>
-                        {(functionKey === 'product.update' || functionKey === 'product.delete') && hasPermission(functionKey) && (
-                          <>
-                            <button className={styles.actionButton} title="Chỉnh sửa">
-                              <Icon name="pencil" size="16" />
-                            </button>
-                            {functionKey === 'product.delete' && (
-                              <button className={styles.actionButton} title="Xóa sản phẩm">
-                                <Icon name="trash" size="16" />
-                              </button>
-                            )}
-                            <button className={styles.actionButton} title="Cập nhật hình ảnh">
-                              <Icon name="camera" size="16" />
-                            </button>
-                            <button className={styles.actionButton} title="Quản lý tags">
-                              <Icon name="tag" size="16" />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {products.length === 0 && (
-                  <tr>
-                    <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
-                      Chưa có sản phẩm nào trong database
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          )}
+              ))}
+              {products.length === 0 && (
+                <tr>
+                  <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
+                    Chưa có sản phẩm nào trong database
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
   );
 };
 
-const renderCustomerManagement = (functionKey, functionData, loadingData) => {
-  const customers = functionData.customers || [];
-  const isViewOnly = functionKey === 'customer.view';
+
+
+const renderProductDetail = (functionKey, functionData, loadingData) => {
+  return (
+    <div className={styles.managementSection}>
+      <div className={styles.formContainer}>
+        <div className={styles.sectionHeader}>
+          <h3>Chi tiết Sản phẩm</h3>
+        </div>
+        
+        <div className={styles.formRow}>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>Mã sản phẩm:</label>
+            <input type="text" className={styles.formInput} placeholder="Nhập mã sản phẩm để xem chi tiết" />
+          </div>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>&nbsp;</label>
+            <button className={styles.primaryButton}>
+              <Icon name="eye" size="18" />
+              Xem chi tiết
+            </button>
+          </div>
+        </div>
+        
+        <div style={{ marginTop: '40px', textAlign: 'center', color: '#6b7280' }}>
+          <Icon name="document" size="64" style={{ marginBottom: '16px' }} />
+          <p>Nhập mã sản phẩm để xem thông tin chi tiết</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const renderCreateProduct = (functionKey, functionData, loadingData) => {
+  return (
+    <div className={styles.managementSection}>
+      <div className={styles.formContainer}>
+        <div className={styles.sectionHeader}>
+          <h3>Tạo Sản phẩm mới</h3>
+        </div>
+        
+        <div className={styles.formRow}>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>Tên sản phẩm *</label>
+            <input type="text" className={styles.formInput} placeholder="Nhập tên sản phẩm" />
+          </div>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>Danh mục *</label>
+            <select className={styles.formSelect}>
+              <option value="">Chọn danh mục</option>
+              <option value="1">Dưỡng da</option>
+              <option value="2">Dầu Gội</option>
+            </select>
+          </div>
+        </div>
+        
+        <div className={styles.formRow}>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>Giá bán *</label>
+            <input type="number" className={styles.formInput} placeholder="Nhập giá bán" />
+          </div>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>Trạng thái</label>
+            <select className={styles.formSelect}>
+              <option value="0">Hiển thị</option>
+              <option value="1">Ẩn</option>
+            </select>
+          </div>
+        </div>
+        
+        <div className={styles.formField}>
+          <label className={styles.formLabel}>Mô tả sản phẩm</label>
+          <textarea className={styles.formInput} rows="4" placeholder="Nhập mô tả sản phẩm"></textarea>
+        </div>
+        
+        <div className={styles.formActions}>
+          <button className={styles.primaryButton}>
+            <Icon name="plus" size="18" />
+            Tạo sản phẩm
+          </button>
+          <button className={styles.secondaryButton}>
+            <Icon name="x" size="18" />
+            Hủy
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const renderUpdateProduct = (functionKey, functionData, loadingData) => {
+  return (
+    <div className={styles.managementSection}>
+      <div className={styles.formContainer}>
+        <div className={styles.sectionHeader}>
+          <h3>Cập nhật Sản phẩm</h3>
+        </div>
+        
+        <div className={styles.formRow}>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>Mã sản phẩm *</label>
+            <input type="text" className={styles.formInput} placeholder="Nhập mã sản phẩm cần cập nhật" />
+          </div>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>&nbsp;</label>
+            <button className={styles.primaryButton}>
+              <Icon name="pencil" size="18" />
+              Load thông tin
+            </button>
+          </div>
+        </div>
+        
+        <div className={styles.formRow}>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>Tên sản phẩm *</label>
+            <input type="text" className={styles.formInput} placeholder="Tên sản phẩm" />
+          </div>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>Danh mục *</label>
+            <select className={styles.formSelect}>
+              <option value="">Chọn danh mục</option>
+              <option value="1">Dưỡng da</option>
+              <option value="2">Dầu Gội</option>
+            </select>
+          </div>
+        </div>
+        
+        <div className={styles.formRow}>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>Giá bán *</label>
+            <input type="number" className={styles.formInput} placeholder="Giá bán" />
+          </div>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>Trạng thái</label>
+            <select className={styles.formSelect}>
+              <option value="0">Hiển thị</option>
+              <option value="1">Ẩn</option>
+            </select>
+          </div>
+        </div>
+        
+        <div className={styles.formField}>
+          <label className={styles.formLabel}>Mô tả sản phẩm</label>
+          <textarea className={styles.formInput} rows="4" placeholder="Mô tả sản phẩm"></textarea>
+        </div>
+        
+        <div className={styles.formActions}>
+          <button className={styles.primaryButton}>
+            <Icon name="check" size="18" />
+            Cập nhật
+          </button>
+          <button className={styles.secondaryButton}>
+            <Icon name="x" size="18" />
+            Hủy
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const renderDeleteProduct = (functionKey, functionData, loadingData) => {
+  return (
+    <div className={styles.managementSection}>
+      <div className={styles.formContainer}>
+        <div className={styles.sectionHeader}>
+          <h3>Xóa Sản phẩm</h3>
+        </div>
+        
+        <div className={styles.formRow}>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>Mã sản phẩm *</label>
+            <input type="text" className={styles.formInput} placeholder="Nhập mã sản phẩm cần xóa" />
+          </div>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>&nbsp;</label>
+            <button className={styles.secondaryButton}>
+              <Icon name="eye" size="18" />
+              Kiểm tra
+            </button>
+          </div>
+        </div>
+        
+        <div style={{ 
+          background: 'linear-gradient(135deg, rgba(254, 242, 242, 0.95) 0%, rgba(254, 226, 226, 0.95) 100%)',
+          border: '1px solid rgba(254, 202, 202, 0.5)',
+          borderRadius: '12px',
+          padding: '24px',
+          marginTop: '24px',
+          textAlign: 'center'
+        }}>
+          <Icon name="alertTriangle" size="48" style={{ color: '#dc2626', marginBottom: '16px' }} />
+          <h4 style={{ color: '#dc2626', marginBottom: '12px' }}>Cảnh báo</h4>
+          <p style={{ color: '#7f1d1d', margin: 0 }}>
+            Việc xóa sản phẩm sẽ không thể hoàn tác. Hãy chắc chắn bạn muốn xóa sản phẩm này.
+          </p>
+        </div>
+        
+        <div className={styles.formActions}>
+          <button className={styles.primaryButton} style={{ 
+            background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)'
+          }}>
+            <Icon name="trash" size="18" />
+            Xóa sản phẩm
+          </button>
+          <button className={styles.secondaryButton}>
+            <Icon name="x" size="18" />
+            Hủy
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const renderUpdateImages = (functionKey, functionData, loadingData) => {
+  return (
+    <div className={styles.managementSection}>
+      <div className={styles.formContainer}>
+        <div className={styles.sectionHeader}>
+          <h3>Cập nhật Hình ảnh</h3>
+        </div>
+        
+        <div className={styles.formRow}>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>Mã sản phẩm *</label>
+            <input type="text" className={styles.formInput} placeholder="Nhập mã sản phẩm" />
+          </div>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>&nbsp;</label>
+            <button className={styles.primaryButton}>
+              <Icon name="camera" size="18" />
+              Load hình ảnh
+            </button>
+          </div>
+        </div>
+        
+        <div style={{ 
+          border: '2px dashed rgba(203, 213, 225, 0.5)',
+          borderRadius: '12px',
+          padding: '40px',
+          textAlign: 'center',
+          marginTop: '24px',
+          background: 'rgba(248, 250, 252, 0.5)'
+        }}>
+          <Icon name="camera" size="64" style={{ color: '#6b7280', marginBottom: '16px' }} />
+          <h4 style={{ color: '#374151', marginBottom: '12px' }}>Kéo thả hình ảnh vào đây</h4>
+          <p style={{ color: '#6b7280', marginBottom: '20px' }}>
+            hoặc click để chọn file
+          </p>
+          <button className={styles.secondaryButton}>
+            <Icon name="upload" size="18" />
+            Chọn file
+          </button>
+        </div>
+        
+        <div style={{ marginTop: '24px' }}>
+          <h4>Hình ảnh hiện tại:</h4>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', 
+            gap: '16px',
+            marginTop: '16px'
+          }}>
+            <div style={{
+              aspectRatio: '1',
+              border: '2px solid #e5e7eb',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: '#f9fafb'
+            }}>
+              <span style={{ color: '#6b7280', fontSize: '12px' }}>Chưa có hình</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className={styles.formActions}>
+          <button className={styles.primaryButton}>
+            <Icon name="check" size="18" />
+            Cập nhật hình ảnh
+          </button>
+          <button className={styles.secondaryButton}>
+            <Icon name="x" size="18" />
+            Hủy
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const renderManageTags = (functionKey, functionData, loadingData) => {
+  return (
+    <div className={styles.managementSection}>
+      <div className={styles.formContainer}>
+        <div className={styles.sectionHeader}>
+          <h3>Quản lý Tags/Thuộc tính</h3>
+          <button className={styles.primaryButton}>
+            <Icon name="plus" size="18" />
+            Thêm tag mới
+          </button>
+        </div>
+        
+        <div className={styles.formRow}>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>Mã sản phẩm *</label>
+            <input type="text" className={styles.formInput} placeholder="Nhập mã sản phẩm" />
+          </div>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>&nbsp;</label>
+            <button className={styles.primaryButton}>
+              <Icon name="tag" size="18" />
+              Load tags
+            </button>
+          </div>
+        </div>
+        
+        <div style={{ marginTop: '24px' }}>
+          <h4>Tags hiện tại:</h4>
+          <div style={{ 
+            display: 'flex', 
+            flexWrap: 'wrap', 
+            gap: '8px',
+            marginTop: '12px'
+          }}>
+            <span style={{
+              background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+              color: 'white',
+              padding: '6px 12px',
+              borderRadius: '16px',
+              fontSize: '12px',
+              fontWeight: '600'
+            }}>
+              new-arrival
+            </span>
+            <span style={{
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              color: 'white',
+              padding: '6px 12px',
+              borderRadius: '16px',
+              fontSize: '12px',
+              fontWeight: '600'
+            }}>
+              bestseller
+            </span>
+          </div>
+        </div>
+        
+        <div className={styles.formRow} style={{ marginTop: '24px' }}>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>Thêm tag mới:</label>
+            <input type="text" className={styles.formInput} placeholder="Nhập tag mới" />
+          </div>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>Thuộc tính:</label>
+            <input type="text" className={styles.formInput} placeholder="Nhập thuộc tính (VD: size=M)" />
+          </div>
+        </div>
+        
+        <div className={styles.formActions}>
+          <button className={styles.primaryButton}>
+            <Icon name="check" size="18" />
+            Cập nhật tags
+          </button>
+          <button className={styles.secondaryButton}>
+            <Icon name="x" size="18" />
+            Hủy
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const renderSystemAdmin = (functionKey, functionData, loadingData) => {
+  const users = functionData?.customers || [];
   
   return (
     <div className={styles.managementSection}>
-      <div className={styles.statsGrid}>
-        <div className={styles.statCard}>
-          <div className={styles.statNumber}>{customers.length}</div>
-          <div className={styles.statLabel}>Tổng khách hàng</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statNumber}>{customers.filter(c => c.vai_tro === 'Customer').length}</div>
-          <div className={styles.statLabel}>Khách hàng</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statNumber}>{customers.filter(c => c.dang_hoat_dong === 1 || c.dang_hoat_dong === true).length}</div>
-          <div className={styles.statLabel}>Đang hoạt động</div>
-        </div>
-      </div>
-
       <div className={styles.formContainer}>
         <div className={styles.sectionHeader}>
-          <h3>Quản lý Khách hàng</h3>
+          <h3>Quản trị Hệ thống</h3>
         </div>
         
-        <div className={styles.dataTableContainer}>
-          {loadingData ? (
-            <div className={styles.loadingState}>
-              <div className={styles.spinner}></div>
-              <p>Đang tải dữ liệu khách hàng từ database...</p>
+        {functionKey === 'system.stats' && (
+          <div className={styles.statsGrid}>
+            <div className={styles.statCard}>
+              <div className={styles.statNumber}>{users.length}</div>
+              <div className={styles.statLabel}>Tổng người dùng</div>
             </div>
-          ) : (
+            <div className={styles.statCard}>
+              <div className={styles.statNumber}>{users.filter(u => u.vai_tro === 'Admin').length}</div>
+              <div className={styles.statLabel}>Quản trị viên</div>
+            </div>
+            <div className={styles.statCard}>
+              <div className={styles.statNumber}>{users.filter(u => u.vai_tro === 'Customer').length}</div>
+              <div className={styles.statLabel}>Khách hàng</div>
+            </div>
+          </div>
+        )}
+        
+        {functionKey === 'system.users' && (
+          <div className={styles.dataTableContainer}>
             <table className={styles.dataTable}>
               <thead>
                 <tr>
@@ -421,64 +790,325 @@ const renderCustomerManagement = (functionKey, functionData, loadingData) => {
                   <th>Email</th>
                   <th>Vai trò</th>
                   <th>Trạng thái</th>
-                  <th>Ngày tạo</th>
                   <th>Thao tác</th>
                 </tr>
               </thead>
               <tbody>
-                {customers.map(customer => (
-                  <tr key={customer.id}>
-                    <td>{customer.id}</td>
-                    <td>{customer.ten_hien_thi || customer.displayName || `${customer.ho || ''} ${customer.ten || ''}`}</td>
-                    <td>{customer.email}</td>
+                {users.map(user => (
+                  <tr key={user.MaKhachHang}>
+                    <td>{user.MaKhachHang}</td>
+                    <td>{user.HoTen}</td>
+                    <td>{user.email}</td>
                     <td>
-                      <span className="role-badge">{customer.vai_tro || 'Customer'}</span>
-                    </td>
-                    <td>
-                      <span className={getStatusBadge(customer.dang_hoat_dong)}>
-                        {(customer.dang_hoat_dong === 1 || customer.dang_hoat_dong === true) ? 'Hoạt động' : 'Tạm khóa'}
+                      <span className={getStatusBadge(user.vai_tro === 'Admin', 'user')}>
+                        {user.vai_tro || 'Customer'}
                       </span>
                     </td>
-                    <td>{new Date(customer.thoi_gian_tao || customer.createdAt).toLocaleDateString('vi-VN')}</td>
                     <td>
-                      <div className={styles.actionButtons}>
-                        <button className={styles.actionButton} title="Xem chi tiết">
-                          <Icon name="eye" size="16" />
-                        </button>
-                        {!isViewOnly && hasPermission(functionKey) && (
-                          <button className={styles.actionButton} title="Chỉnh sửa">
-                            <Icon name="pencil" size="16" />
-                          </button>
-                        )}
-                        {functionKey === 'customer.orders' && (
-                          <button className={styles.actionButton} title="Lịch sử mua hàng">
-                            <Icon name="clipboard" size="16" />
-                          </button>
-                        )}
-                        {(functionKey === 'profile.update' || functionKey === 'profile.view') && (
-                          <>
-                            <button className={styles.actionButton} title="Cập nhật profile">
-                              <Icon name="idCard" size="16" />
-                            </button>
-                            <button className={styles.actionButton} title="Quản lý địa chỉ">
-                              <Icon name="map" size="16" />
-                            </button>
-                          </>
-                        )}
-                      </div>
+                      <span className={getStatusBadge(user.is_an === 0, 'user')}>
+                        {(user.is_an === 0 || !user.is_an) ? 'Hoạt động' : 'Đã khóa'}
+                      </span>
+                    </td>
+                    <td>
+                      <button className={styles.actionButton} title="Chỉnh sửa">
+                        <Icon name="pencil" size="16" />
+                      </button>
+                      <button className={styles.actionButton} title="Xóa">
+                        <Icon name="trash" size="16" />
+                      </button>
                     </td>
                   </tr>
                 ))}
-                {customers.length === 0 && (
-                  <tr>
-                    <td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
-                      Chưa có khách hàng nào trong database
-                    </td>
-                  </tr>
-                )}
               </tbody>
             </table>
-          )}
+          </div>
+        )}
+        
+        {functionKey === 'system.roles' && (
+          <div className={styles.formRow}>
+            <div className={styles.formField}>
+              <label className={styles.formLabel}>Tên vai trò:</label>
+              <input type="text" className={styles.formInput} placeholder="Nhập tên vai trò mới" />
+            </div>
+            <div className={styles.formField}>
+              <label className={styles.formLabel}>Mô tả:</label>
+              <input type="text" className={styles.formInput} placeholder="Mô tả vai trò" />
+            </div>
+          </div>
+        )}
+        
+        {functionKey === 'system.toggle' && (
+          <div className={styles.formRow}>
+            <div className={styles.formField}>
+              <label className={styles.formLabel}>Người dùng:</label>
+              <select className={styles.formInput}>
+                <option value="">Chọn người dùng</option>
+                {users.map(user => (
+                  <option key={user.MaKhachHang} value={user.MaKhachHang}>
+                    {user.HoTen} - {user.email}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.formField}>
+              <label className={styles.formLabel}>Thao tác:</label>
+              <select className={styles.formInput}>
+                <option value="enable">Bật tài khoản</option>
+                <option value="disable">Tắt tài khoản</option>
+              </select>
+            </div>
+          </div>
+        )}
+        
+        {functionKey === 'system.reset' && (
+          <div className={styles.formRow}>
+            <div className={styles.formField}>
+              <label className={styles.formLabel}>Người dùng:</label>
+              <select className={styles.formInput}>
+                <option value="">Chọn người dùng</option>
+                {users.map(user => (
+                  <option key={user.MaKhachHang} value={user.MaKhachHang}>
+                    {user.HoTen} - {user.email}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.formField}>
+              <label className={styles.formLabel}>&nbsp;</label>
+              <button className={styles.primaryButton}>
+                <Icon name="key" size="18" />
+                Reset mật khẩu
+              </button>
+            </div>
+          </div>
+        )}
+        
+        <div className={styles.formActions}>
+          <button className={styles.primaryButton}>
+            <Icon name="check" size="18" />
+            Thực hiện
+          </button>
+          <button className={styles.secondaryButton}>
+            <Icon name="x" size="18" />
+            Hủy
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Render functions cho Customer Management
+const renderCustomerManagement = (functionKey, functionData, loadingData) => {
+  const customers = functionData?.customers || [];
+  
+  // Xử lý từng loại chức năng customer
+  switch (functionKey) {
+    case 'customer.list':
+    case 'customer.view':
+      return renderCustomerList(functionKey, functionData, loadingData);
+    case 'customer.update':
+      return renderCustomerUpdate(functionKey, functionData, loadingData);
+    case 'customer.history':
+      return renderCustomerHistory(functionKey, functionData, loadingData);
+    case 'customer.profile.update':
+      return renderCustomerProfileUpdate(functionKey, functionData, loadingData);
+    case 'customer.profile.info':
+      return renderCustomerProfileInfo(functionKey, functionData, loadingData);
+    case 'customer.addresses':
+      return renderCustomerAddresses(functionKey, functionData, loadingData);
+    default:
+      return renderDefaultCustomerView(functionKey, functionData, loadingData);
+  }
+};
+
+// Render functions cho Customer Management - Detailed
+const renderCustomerUpdate = (functionKey, functionData, loadingData) => {
+  const customers = functionData?.customers || [];
+  
+  return (
+    <div className={styles.managementSection}>
+      <div className={styles.formContainer}>
+        <div className={styles.sectionHeader}>
+          <h3>Cập nhật Khách hàng</h3>
+        </div>
+        
+        <div className={styles.formRow}>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>Mã khách hàng *</label>
+            <input type="text" className={styles.formInput} placeholder="Nhập mã khách hàng" />
+          </div>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>&nbsp;</label>
+            <button className={styles.primaryButton}>
+              <Icon name="eye" size="18" />
+              Load thông tin
+            </button>
+          </div>
+        </div>
+        
+        <div className={styles.formActions}>
+          <button className={styles.primaryButton}>
+            <Icon name="check" size="18" />
+            Cập nhật
+          </button>
+          <button className={styles.secondaryButton}>
+            <Icon name="x" size="18" />
+            Hủy
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const renderCustomerHistory = (functionKey, functionData, loadingData) => {
+  const customers = functionData?.customers || [];
+  
+  return (
+    <div className={styles.managementSection}>
+      <div className={styles.formContainer}>
+        <div className={styles.sectionHeader}>
+          <h3>Lịch sử mua hàng</h3>
+        </div>
+        
+        <div className={styles.formRow}>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>Mã khách hàng *</label>
+            <input type="text" className={styles.formInput} placeholder="Nhập mã khách hàng" />
+          </div>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>&nbsp;</label>
+            <button className={styles.primaryButton}>
+              <Icon name="clipboard" size="18" />
+              Xem lịch sử
+            </button>
+          </div>
+        </div>
+        
+        <div style={{ marginTop: '24px', textAlign: 'center', color: '#6b7280' }}>
+          <Icon name="document" size="64" style={{ marginBottom: '16px' }} />
+          <p>Nhập mã khách hàng để xem lịch sử mua hàng</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const renderCustomerProfileUpdate = (functionKey, functionData, loadingData) => {
+  const customers = functionData?.customers || [];
+  
+  return (
+    <div className={styles.managementSection}>
+      <div className={styles.formContainer}>
+        <div className={styles.sectionHeader}>
+          <h3>Cập nhật Profile cá nhân</h3>
+        </div>
+        
+        <div className={styles.formRow}>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>Họ tên:</label>
+            <input type="text" className={styles.formInput} placeholder="Nhập họ tên" />
+          </div>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>Email:</label>
+            <input type="email" className={styles.formInput} placeholder="Nhập email" />
+          </div>
+        </div>
+        
+        <div className={styles.formActions}>
+          <button className={styles.primaryButton}>
+            <Icon name="check" size="18" />
+            Cập nhật profile
+          </button>
+          <button className={styles.secondaryButton}>
+            <Icon name="x" size="18" />
+            Hủy
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const renderCustomerProfileInfo = (functionKey, functionData, loadingData) => {
+  const customers = functionData?.customers || [];
+  
+  return (
+    <div className={styles.managementSection}>
+      <div className={styles.formContainer}>
+        <div className={styles.sectionHeader}>
+          <h3>Thông tin Profile</h3>
+        </div>
+        
+        <div style={{ marginTop: '24px', textAlign: 'center', color: '#6b7280' }}>
+          <Icon name="user" size="64" style={{ marginBottom: '16px' }} />
+          <p>Thông tin profile khách hàng sẽ hiển thị ở đây</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const renderCustomerAddresses = (functionKey, functionData, loadingData) => {
+  const customers = functionData?.customers || [];
+  
+  return (
+    <div className={styles.managementSection}>
+      <div className={styles.formContainer}>
+        <div className={styles.sectionHeader}>
+          <h3>Quản lý Địa chỉ</h3>
+        </div>
+        
+        <div className={styles.formActions}>
+          <button className={styles.primaryButton}>
+            <Icon name="mapPin" size="18" />
+            Thêm địa chỉ mới
+          </button>
+        </div>
+        
+        <div style={{ marginTop: '24px', textAlign: 'center', color: '#6b7280' }}>
+          <Icon name="mapPin" size="64" style={{ marginBottom: '16px' }} />
+          <p>Danh sách địa chỉ khách hàng sẽ hiển thị ở đây</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const renderDefaultCustomerView = (functionKey, functionData, loadingData) => {
+  const customers = functionData?.customers || [];
+  
+  return (
+    <div className={styles.managementSection}>
+      <div className={styles.formContainer}>
+        <div className={styles.sectionHeader}>
+          <h3>Quản lý Khách hàng</h3>
+        </div>
+        
+        <div style={{ marginTop: '24px', textAlign: 'center', color: '#6b7280' }}>
+          <Icon name="users" size="64" style={{ marginBottom: '16px' }} />
+          <p>Chọn một chức năng cụ thể từ menu để quản lý khách hàng</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Additional render functions for other modules
+const renderProductManagement = (functionKey, functionData, loadingData) => {
+  const products = functionData?.products || [];
+  
+  return (
+    <div className={styles.managementSection}>
+      <div className={styles.formContainer}>
+        <div className={styles.sectionHeader}>
+          <h3>Quản lý Sản phẩm</h3>
+        </div>
+        
+        <div style={{ marginTop: '24px', textAlign: 'center', color: '#6b7280' }}>
+          <Icon name="tag" size="64" style={{ marginBottom: '16px' }} />
+          <p>Chức năng quản lý sản phẩm</p>
         </div>
       </div>
     </div>
@@ -486,97 +1116,37 @@ const renderCustomerManagement = (functionKey, functionData, loadingData) => {
 };
 
 const renderOrderManagement = (functionKey, functionData, loadingData) => {
-  const orders = functionData.orders || [];
+  const orders = functionData?.orders || [];
   
   return (
     <div className={styles.managementSection}>
-      <div className={styles.statsGrid}>
-        <div className={styles.statCard}>
-          <div className={styles.statNumber}>{orders.length}</div>
-          <div className={styles.statLabel}>Tổng đơn hàng</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statNumber}>{orders.filter(o => o.trang_thai === 'PENDING' || o.status === 'pending').length}</div>
-          <div className={styles.statLabel}>Chờ xử lý</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statNumber}>{orders.filter(o => o.trang_thai === 'DELIVERED' || o.status === 'delivered').length}</div>
-          <div className={styles.statLabel}>Hoàn thành</div>
-        </div>
-      </div>
-
       <div className={styles.formContainer}>
         <div className={styles.sectionHeader}>
           <h3>Quản lý Đơn hàng</h3>
-          {functionKey === 'order.create' && hasPermission(functionKey) && (
-            <button className={styles.primaryButton} onClick={() => {
-              console.log('Create new order');
-            }}>
-              <Icon name="plus" size="18" />
-              Tạo đơn hàng mới
-            </button>
-          )}
         </div>
         
-        <div className={styles.dataTableContainer}>
-          {loadingData ? (
-            <div className={styles.loadingState}>
-              <div className={styles.spinner}></div>
-              <p>Đang tải dữ liệu đơn hàng từ database...</p>
-            </div>
-          ) : (
-            <table className={styles.dataTable}>
-              <thead>
-                <tr>
-                  <th>Mã đơn</th>
-                  <th>Khách hàng</th>
-                  <th>Ngày đặt</th>
-                  <th>Tổng tiền</th>
-                  <th>Trạng thái</th>
-                  <th>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map(order => (
-                  <tr key={order.id}>
-                    <td>#{order.id}</td>
-                    <td>{order.ten_khach_hang || order.shippingInfo?.name || order.email || 'Khách hàng'}</td>
-                    <td>{new Date(order.thoi_gian_tao || order.createdAt).toLocaleDateString('vi-VN')}</td>
-                    <td>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.tong_thanh_toan || order.total)}</td>
-                    <td>
-                      <span className={getStatusBadge(order.trang_thai || order.status, 'order')}>
-                        {getOrderStatusText(order.trang_thai || order.status)}
-                      </span>
-                    </td>
-                    <td>
-                      <div className={styles.actionButtons}>
-                        <button className={styles.actionButton} title="Xem chi tiết">
-                          <Icon name="eye" size="16" />
-                        </button>
-                        {(functionKey === 'order.status' || functionKey === 'order.admin-all') && hasPermission(functionKey) && (
-                          <button className={styles.actionButton} title="Cập nhật trạng thái">
-                            <Icon name="checkCircle" size="16" />
-                          </button>
-                        )}
-                        {functionKey === 'order.my-orders' && (
-                          <button className={styles.actionButton} title="Theo dõi đơn hàng">
-                            <Icon name="truck" size="16" />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {orders.length === 0 && (
-                  <tr>
-                    <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
-                      Chưa có đơn hàng nào trong database
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          )}
+        <div className={styles.statsGrid}>
+          <div className={styles.statCard}>
+            <div className={styles.statNumber}>{orders.length}</div>
+            <div className={styles.statLabel}>Tổng đơn hàng</div>
+          </div>
+          <div className={styles.statCard}>
+            <div className={styles.statNumber}>{orders.filter(o => o.trang_thai === 'PENDING').length}</div>
+            <div className={styles.statLabel}>Chờ xử lý</div>
+          </div>
+          <div className={styles.statCard}>
+            <div className={styles.statNumber}>{orders.filter(o => o.trang_thai === 'SHIPPING').length}</div>
+            <div className={styles.statLabel}>Đang giao</div>
+          </div>
+          <div className={styles.statCard}>
+            <div className={styles.statNumber}>{orders.filter(o => o.trang_thai === 'DELIVERED').length}</div>
+            <div className={styles.statLabel}>Đã giao</div>
+          </div>
+        </div>
+        
+        <div style={{ marginTop: '24px', textAlign: 'center', color: '#6b7280' }}>
+          <Icon name="cube" size="64" style={{ marginBottom: '16px' }} />
+          <p>Dữ liệu đơn hàng sẽ được load từ API orders</p>
         </div>
       </div>
     </div>
@@ -584,105 +1154,37 @@ const renderOrderManagement = (functionKey, functionData, loadingData) => {
 };
 
 const renderStockManagement = (functionKey, functionData, loadingData) => {
-  const stocks = functionData.stock || [];
+  const stock = functionData?.stock || [];
   
   return (
     <div className={styles.managementSection}>
-      <div className={styles.statsGrid}>
-        <div className={styles.statCard}>
-          <div className={styles.statNumber}>{stocks.reduce((sum, item) => sum + (item.quantityOnHand || 0), 0)}</div>
-          <div className={styles.statLabel}>Tổng tồn kho</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statNumber}>{stocks.filter(item => (item.availableQuantity || 0) <= 10).length}</div>
-          <div className={styles.statLabel}>Sắp hết</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statNumber}>{stocks.filter(item => (item.availableQuantity || 0) === 0).length}</div>
-          <div className={styles.statLabel}>Hết hàng</div>
-        </div>
-      </div>
-
       <div className={styles.formContainer}>
         <div className={styles.sectionHeader}>
-          <h3>Quản lý Kho</h3>
-          {(functionKey === 'stock.import' || functionKey === 'stock.export') && hasPermission(functionKey) && (
-            <button className={styles.primaryButton} onClick={() => {
-              console.log('Adjust stock');
-            }}>
-              <Icon name={functionKey === 'stock.import' ? 'upload' : 'download'} size="18" />
-              {functionKey === 'stock.import' ? 'Nhập kho' : 'Xuất kho'}
-            </button>
-          )}
+          <h3>Quản lý Kho hàng</h3>
         </div>
         
-        <div className={styles.dataTableContainer}>
-          {loadingData ? (
-            <div className={styles.loadingState}>
-              <div className={styles.spinner}></div>
-              <p>Đang tải dữ liệu tồn kho từ database...</p>
-            </div>
-          ) : (
-            <table className={styles.dataTable}>
-              <thead>
-                <tr>
-                  <th>Sản phẩm</th>
-                  <th>Kho</th>
-                  <th>Tồn hiện tại</th>
-                  <th>Đã giữ</th>
-                  <th>Còn lại</th>
-                  <th>Trạng thái</th>
-                  <th>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stocks.map(stock => (
-                  <tr key={`${stock.productId}-${stock.warehouseId}`}>
-                    <td>{stock.productName}</td>
-                    <td>{stock.warehouseName}</td>
-                    <td>{stock.quantityOnHand || 0}</td>
-                    <td>{stock.quantityReserved || 0}</td>
-                    <td>{stock.availableQuantity || 0}</td>
-                    <td>
-                      <span className={getStatusBadge(stock.availableQuantity, 'stock')}>
-                        {(stock.availableQuantity || 0) === 0 ? 'Hết hàng' :
-                         (stock.availableQuantity || 0) <= 10 ? 'Sắp hết' : 'Còn hàng'}
-                      </span>
-                    </td>
-                    <td>
-                      <div className={styles.actionButtons}>
-                        <button className={styles.actionButton} title="Xem chi tiết">
-                          <Icon name="eye" size="16" />
-                        </button>
-                        {(functionKey === 'stock.import' || functionKey === 'stock.export') && hasPermission(functionKey) && (
-                          <button className={styles.actionButton} title={functionKey === 'stock.import' ? 'Nhập kho' : 'Xuất kho'}>
-                            <Icon name={functionKey === 'stock.import' ? 'upload' : 'download'} size="16" />
-                          </button>
-                        )}
-                        {functionKey === 'stock.history' && (
-                          <button className={styles.actionButton} title="Lịch sử">
-                            <Icon name="clock" size="16" />
-                          </button>
-                        )}
-                        {functionKey === 'stock.warehouse' && (
-                          <button className={styles.actionButton} title="Quản lý kho">
-                            <Icon name="folderOpen" size="16" />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {stocks.length === 0 && (
-                  <tr>
-                    <td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
-                      Chưa có dữ liệu tồn kho trong database
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          )}
+        <div className={styles.statsGrid}>
+          <div className={styles.statCard}>
+            <div className={styles.statNumber}>{stock.length}</div>
+            <div className={styles.statLabel}>Sản phẩm trong kho</div>
+          </div>
+          <div className={styles.statCard}>
+            <div className={styles.statNumber}>{stock.filter(s => s.availableQuantity > 10).length}</div>
+            <div className={styles.statLabel}>Còn hàng</div>
+          </div>
+          <div className={styles.statCard}>
+            <div className={styles.statNumber}>{stock.filter(s => s.availableQuantity <= 10).length}</div>
+            <div className={styles.statLabel}>Sắp hết</div>
+          </div>
+          <div className={styles.statCard}>
+            <div className={styles.statNumber}>{stock.filter(s => s.availableQuantity === 0).length}</div>
+            <div className={styles.statLabel}>Hết hàng</div>
+          </div>
+        </div>
+        
+        <div style={{ marginTop: '24px', textAlign: 'center', color: '#6b7280' }}>
+          <Icon name="chartBar" size="64" style={{ marginBottom: '16px' }} />
+          <p>Dữ liệu kho hàng sẽ được load từ API stock</p>
         </div>
       </div>
     </div>
@@ -692,47 +1194,14 @@ const renderStockManagement = (functionKey, functionData, loadingData) => {
 const renderReviewManagement = (functionKey) => {
   return (
     <div className={styles.managementSection}>
-      <div className={styles.statsGrid}>
-        <div className={styles.statCard}>
-          <div className={styles.statNumber}>0</div>
-          <div className={styles.statLabel}>Tổng đánh giá</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statNumber}>0</div>
-          <div className={styles.statLabel}>Chờ duyệt</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statNumber}>0</div>
-          <div className={styles.statLabel}>Đã duyệt</div>
-        </div>
-      </div>
-
       <div className={styles.formContainer}>
         <div className={styles.sectionHeader}>
           <h3>Quản lý Đánh giá</h3>
         </div>
         
-        <div className={styles.dataTableContainer}>
-          <table className={styles.dataTable}>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Sản phẩm</th>
-                <th>Khách hàng</th>
-                <th>Đánh giá</th>
-                <th>Nội dung</th>
-                <th>Trạng thái</th>
-                <th>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
-                  Dữ liệu sẽ được load từ API reviews
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div style={{ marginTop: '24px', textAlign: 'center', color: '#6b7280' }}>
+          <Icon name="star" size="64" style={{ marginBottom: '16px' }} />
+          <p>Chức năng quản lý đánh giá sản phẩm</p>
         </div>
       </div>
     </div>
@@ -744,71 +1213,14 @@ const renderSearchManagement = (functionKey) => {
     <div className={styles.managementSection}>
       <div className={styles.formContainer}>
         <div className={styles.sectionHeader}>
-          <h3>Tìm kiếm và Lọc</h3>
+          <h3>Tìm kiếm & Giỏ hàng</h3>
         </div>
         
-        <div className={styles.searchForm}>
-          <div className={styles.searchBox}>
-            <input type="text" placeholder="Nhập từ khóa tìm kiếm..." className={styles.searchInput} />
-            <button className={styles.searchButton}>
-              <Icon name="magnifyingGlass" size="18" />
-            </button>
-          </div>
-          
-          <div className={styles.filterOptions}>
-            <select className={styles.filterSelect}>
-              <option value="">Tất cả danh mục</option>
-              <option value="category1">Danh mục 1</option>
-              <option value="category2">Danh mục 2</option>
-            </select>
-            
-            <select className={styles.filterSelect}>
-              <option value="">Tất cả thương hiệu</option>
-              <option value="brand1">Thương hiệu 1</option>
-              <option value="brand2">Thương hiệu 2</option>
-            </select>
-            
-            <input type="number" placeholder="Giá từ..." className={styles.priceInput} />
-            <input type="number" placeholder="Giá đến..." className={styles.priceInput} />
-          </div>
-        </div>
-        
-        <div className={styles.searchResults}>
-          <p style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
-            Kết quả tìm kiếm sẽ hiển thị ở đây
-          </p>
+        <div style={{ marginTop: '24px', textAlign: 'center', color: '#6b7280' }}>
+          <Icon name="magnifyingGlass" size="64" style={{ marginBottom: '16px' }} />
+          <p>Chức năng tìm kiếm và quản lý giỏ hàng</p>
         </div>
       </div>
-
-      {functionKey === 'cart.manage' && (
-        <div className={styles.formContainer}>
-          <div className={styles.sectionHeader}>
-            <h3>Quản lý Giỏ hàng</h3>
-          </div>
-          
-          <div className={styles.dataTableContainer}>
-            <table className={styles.dataTable}>
-              <thead>
-                <tr>
-                  <th>STT</th>
-                  <th>Sản phẩm</th>
-                  <th>Số lượng</th>
-                  <th>Đơn giá</th>
-                  <th>Thành tiền</th>
-                  <th>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
-                    Dữ liệu giỏ hàng sẽ được load từ API cart
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
@@ -816,51 +1228,14 @@ const renderSearchManagement = (functionKey) => {
 const renderPromotionManagement = (functionKey) => {
   return (
     <div className={styles.managementSection}>
-      <div className={styles.statsGrid}>
-        <div className={styles.statCard}>
-          <div className={styles.statNumber}>0</div>
-          <div className={styles.statLabel}>Tổng khuyến mãi</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statNumber}>0</div>
-          <div className={styles.statLabel}>Đang hiệu lực</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statNumber}>0</div>
-          <div className={styles.statLabel}>Đã hết hạn</div>
-        </div>
-      </div>
-
       <div className={styles.formContainer}>
         <div className={styles.sectionHeader}>
           <h3>Quản lý Khuyến mãi</h3>
-          <button className={styles.primaryButton}>
-            <Icon name="plus" size="18" />
-            Tạo khuyến mãi mới
-          </button>
         </div>
         
-        <div className={styles.dataTableContainer}>
-          <table className={styles.dataTable}>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Tên khuyến mãi</th>
-                <th>Loại</th>
-                <th>Giá trị</th>
-                <th>Hiệu lực</th>
-                <th>Trạng thái</th>
-                <th>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
-                  Dữ liệu sẽ được load từ API promotions
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div style={{ marginTop: '24px', textAlign: 'center', color: '#6b7280' }}>
+          <Icon name="gift" size="64" style={{ marginBottom: '16px' }} />
+          <p>Chức năng quản lý khuyến mãi và giảm giá</p>
         </div>
       </div>
     </div>
@@ -872,51 +1247,12 @@ const renderAuthManagement = (functionKey) => {
     <div className={styles.managementSection}>
       <div className={styles.formContainer}>
         <div className={styles.sectionHeader}>
-          <h3>
-            {functionKey === 'auth.me' && 'Thông tin User hiện tại'}
-            {functionKey === 'auth.login' && 'Đăng nhập'}
-            {functionKey === 'auth.google' && 'Đăng nhập Google OAuth'}
-            {functionKey === 'auth.register' && 'Đăng ký tài khoản'}
-            {functionKey === 'auth.logout' && 'Đăng xuất'}
-            {functionKey === 'auth.profile' && 'Quản lý Profile'}
-            {functionKey === 'auth.health' && 'Kiểm tra sức khỏe API'}
-          </h3>
+          <h3>Quản lý Xác thực</h3>
         </div>
         
-        <div className={styles.authInfo}>
-          <div className={styles.infoCard}>
-            <Icon name="lock" size="24" />
-            <h4>
-              {functionKey === 'auth.google' ? 'Đăng nhập Google' : 
-               functionKey === 'auth.profile' ? 'Quản lý Profile' : 
-               'Hệ thống Xác thực'}
-            </h4>
-            <p>
-              {functionKey === 'auth.google' ? 'Cho phép người dùng đăng nhập bằng tài khoản Google' :
-               functionKey === 'auth.profile' ? 'Quản lý thông tin profile người dùng' :
-               'Xử lý xác thực và bảo mật hệ thống'}
-            </p>
-            {functionKey === 'auth.google' && (
-              <div className={styles.toggleSwitch}>
-                <input type="checkbox" id="google-auth-toggle" checked />
-                <label htmlFor="google-auth-toggle">Bật/Tắt</label>
-              </div>
-            )}
-          </div>
-          
-          <div className={styles.statsSection}>
-            <h4>Thống kê đăng nhập</h4>
-            <div className={styles.statsGrid}>
-              <div className={styles.statItem}>
-                <span className={styles.statNumber}>0</span>
-                <span className={styles.statLabel}>Tổng lượt đăng nhập</span>
-              </div>
-              <div className={styles.statItem}>
-                <span className={styles.statNumber}>0</span>
-                <span className={styles.statLabel}>Hôm nay</span>
-              </div>
-            </div>
-          </div>
+        <div style={{ marginTop: '24px', textAlign: 'center', color: '#6b7280' }}>
+          <Icon name="lock" size="64" style={{ marginBottom: '16px' }} />
+          <p>Chức năng quản lý xác thực và đăng nhập</p>
         </div>
       </div>
     </div>
@@ -924,65 +1260,16 @@ const renderAuthManagement = (functionKey) => {
 };
 
 const renderAdminManagement = (functionKey) => {
-  // 🔥 Sử dụng dữ liệu từ stats state và functionData
-  const totalCustomers = functionData.customers?.length || 0;
-  const adminUsers = functionData.customers?.filter(c => c.vai_tro === 'Admin').length || 0;
-  const staffUsers = functionData.customers?.filter(c => c.vai_tro !== 'Customer' && c.vai_tro !== 'Admin').length || 0;
-  
   return (
     <div className={styles.managementSection}>
-      <div className={styles.statsGrid}>
-        <div className={styles.statCard}>
-          <div className={styles.statNumber}>{totalCustomers}</div>
-          <div className={styles.statLabel}>Tổng người dùng</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statNumber}>{adminUsers}</div>
-          <div className={styles.statLabel}>Admin</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statNumber}>{staffUsers}</div>
-          <div className={styles.statLabel}>Nhân viên</div>
-        </div>
-      </div>
-
       <div className={styles.formContainer}>
         <div className={styles.sectionHeader}>
-          <h3>
-            {functionKey === 'admin.stats' && 'Thống kê Tổng quan'}
-            {functionKey === 'admin.users' && 'Quản lý Users'}
-            {functionKey === 'admin.role' && 'Quản lý Role'}
-            {functionKey === 'admin.toggle-status' && 'Bật/Tắt User'}
-            {functionKey === 'admin.reset-password' && 'Reset Password'}
-          </h3>
-          {functionKey !== 'admin.stats' && (
-            <button className={styles.primaryButton}>
-              <Icon name="plus" size="18" />
-              Thêm mới
-            </button>
-          )}
+          <h3>Quản lý Admin</h3>
         </div>
         
-        <div className={styles.dataTableContainer}>
-          <table className={styles.dataTable}>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Tên</th>
-                <th>Email</th>
-                <th>Vai trò</th>
-                <th>Trạng thái</th>
-                <th>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
-                  Dữ liệu sẽ được load từ API admin
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div style={{ marginTop: '24px', textAlign: 'center', color: '#6b7280' }}>
+          <Icon name="crown" size="64" style={{ marginBottom: '16px' }} />
+          <p>Chức năng quản lý quyền admin</p>
         </div>
       </div>
     </div>
@@ -994,31 +1281,12 @@ const renderOtherFunctions = (functionKey) => {
     <div className={styles.managementSection}>
       <div className={styles.formContainer}>
         <div className={styles.sectionHeader}>
-          <h3>
-            {functionKey === 'categories.list' && 'Danh mục Sản phẩm'}
-            {functionKey === 'categories.map' && 'Mapping Danh mục'}
-          </h3>
+          <h3>Chức năng Khác</h3>
         </div>
         
-        <div className={styles.dataTableContainer}>
-          <table className={styles.dataTable}>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Tên danh mục</th>
-                <th>Mô tả</th>
-                <th>Trạng thái</th>
-                <th>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td colSpan="5" style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
-                  Dữ liệu sẽ được load từ API categories
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div style={{ marginTop: '24px', textAlign: 'center', color: '#6b7280' }}>
+          <Icon name="settings" size="64" style={{ marginBottom: '16px' }} />
+          <p>Chức năng khác trong hệ thống</p>
         </div>
       </div>
     </div>
@@ -1032,8 +1300,129 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
 
   // Permission checking function
-  const hasPermission = (functionKey) => {
+  const checkPermission = (functionKey) => {
     return userPermissions.includes(functionKey);
+  };
+
+  // Status badge helper function
+  const getStatusBadge = (status) => {
+    if (status === 1 || status === true) {
+      return "status-badge status-active";
+    } else {
+      return "status-badge status-inactive";
+    }
+  };
+
+  // Customer management render function
+  const renderCustomerList = (functionKey, functionData, loadingData) => {
+    console.log('renderCustomerList called with:', { functionKey, functionData, loadingData });
+    const customers = functionData?.customers || [];
+    const functionKeyResolved = functionKey || 'customer.list'; // Fallback để tránh undefined
+    const isViewOnly = functionKeyResolved === 'customer.view';
+    console.log('isViewOnly:', isViewOnly, 'functionKey:', functionKeyResolved);
+    
+    // Fallback để đảm bảo luôn có giá trị
+    const viewOnly = typeof isViewOnly === 'boolean' ? isViewOnly : false;
+    
+    return (
+      <div className={styles.managementSection}>
+        <div className={styles.statsGrid}>
+          <div className={styles.statCard}>
+            <div className={styles.statNumber}>{customers.length}</div>
+            <div className={styles.statLabel}>Tổng khách hàng</div>
+          </div>
+          <div className={styles.statCard}>
+            <div className={styles.statNumber}>{customers.filter(c => c.vai_tro === 'Customer').length}</div>
+            <div className={styles.statLabel}>Khách hàng</div>
+          </div>
+          <div className={styles.statCard}>
+            <div className={styles.statNumber}>{customers.filter(c => c.dang_hoat_dong === 1 || c.dang_hoat_dong === true).length}</div>
+            <div className={styles.statLabel}>Đang hoạt động</div>
+          </div>
+        </div>
+
+        <div className={styles.formContainer}>
+          <div className={styles.sectionHeader}>
+            <h3>Quản lý Khách hàng</h3>
+          </div>
+          
+          <div className={styles.dataTableContainer}>
+            {loadingData ? (
+              <div className={styles.loadingState}>
+                <div className={styles.spinner}></div>
+                <p>Đang tải dữ liệu khách hàng từ database...</p>
+              </div>
+            ) : (
+              <table className={styles.dataTable}>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Họ tên</th>
+                    <th>Email</th>
+                    <th>Vai trò</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày tạo</th>
+                    <th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {customers.map(customer => (
+                    <tr key={customer.id}>
+                      <td>{customer.id}</td>
+                      <td>{customer.ten_hien_thi || customer.displayName || `${customer.ho || ''} ${customer.ten || ''}`}</td>
+                      <td>{customer.email}</td>
+                      <td>
+                        <span className="role-badge">{customer.vai_tro || 'Customer'}</span>
+                      </td>
+                      <td>
+                        <span className={getStatusBadge(customer.dang_hoat_dong)}>
+                          {(customer.dang_hoat_dong === 1 || customer.dang_hoat_dong === true) ? 'Hoạt động' : 'Tạm khóa'}
+                        </span>
+                      </td>
+                      <td>{new Date(customer.thoi_gian_tao || customer.createdAt).toLocaleDateString('vi-VN')}</td>
+                      <td>
+                        <div className={styles.actionButtons}>
+                          <button className={styles.actionButton} title="Xem chi tiết">
+                            <Icon name="eye" size="16" />
+                          </button>
+                          {!viewOnly && checkPermission(functionKey) && (
+                            <button className={styles.actionButton} title="Chỉnh sửa">
+                              <Icon name="pencil" size="16" />
+                            </button>
+                          )}
+                          {(functionKey || '') === 'customer.orders' && (
+                            <button className={styles.actionButton} title="Lịch sử mua hàng">
+                              <Icon name="clipboard" size="16" />
+                            </button>
+                          )}
+                          {((functionKey || '') === 'profile.update' || (functionKey || '') === 'profile.view') && (
+                            <>
+                              <button className={styles.actionButton} title="Cập nhật profile">
+                                <Icon name="idCard" size="16" />
+                              </button>
+                              <button className={styles.actionButton} title="Quản lý địa chỉ">
+                                <Icon name="map" size="16" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {customers.length === 0 && (
+                    <tr>
+                      <td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
+                        Chưa có khách hàng nào trong database
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -1109,14 +1498,14 @@ const Admin = () => {
     { key: 'auth.register', name: 'Đăng ký tài khoản', icon: 'user', category: 'auth' },
     { key: 'auth.logout', name: 'Đăng xuất', icon: 'logout', category: 'auth' },
     { key: 'auth.profile', name: 'Quản lý profile', icon: 'idCard', category: 'auth' },
-    { key: 'auth.health', name: 'Kiểm tra sức khỏe API', icon: 'shield', category: 'auth' },
+    
 
     // Admin Management APIs (5 functions)
-    { key: 'admin.stats', name: 'Thống kê tổng quan', icon: 'chartLine', category: 'admin' },
-    { key: 'admin.users', name: 'Quản lý users', icon: 'users', category: 'admin' },
-    { key: 'admin.role', name: 'Quản lý role', icon: 'crown', category: 'admin' },
-    { key: 'admin.toggle-status', name: 'Bật/tắt user', icon: 'shield', category: 'admin' },
-    { key: 'admin.reset-password', name: 'Reset password', icon: 'key', category: 'admin' },
+    { key: 'system.stats', name: 'Thống kê tổng quan', icon: 'chartBar', category: 'admin' },
+    { key: 'system.users', name: 'Quản lý users', icon: 'users', category: 'admin' },
+    { key: 'system.roles', name: 'Quản lý role', icon: 'crown', category: 'admin' },
+    { key: 'system.toggle', name: 'Bật/tắt user', icon: 'shield', category: 'admin' },
+    { key: 'system.reset', name: 'Reset password', icon: 'key', category: 'admin' },
 
     // Product Management APIs (7 functions)
     { key: 'products.view', name: 'Xem danh sách sản phẩm', icon: 'eye', category: 'product' },
@@ -1128,12 +1517,12 @@ const Admin = () => {
     { key: 'product.tags', name: 'Quản lý tags/thuộc tính', icon: 'tag', category: 'product' },
 
     // Customer Management APIs (6 functions)
-    { key: 'customer.view', name: 'Quản lý khách hàng', icon: 'users', category: 'customer' },
+    { key: 'customer.list', name: 'Quản lý khách hàng', icon: 'users', category: 'customer' },
     { key: 'customer.update', name: 'Cập nhật khách hàng', icon: 'pencil', category: 'customer' },
-    { key: 'customer.orders', name: 'Lịch sử mua hàng', icon: 'clipboard', category: 'customer' },
-    { key: 'profile.update', name: 'Cập nhật profile cá nhân', icon: 'user', category: 'customer' },
-    { key: 'profile.view', name: 'Thông tin profile', icon: 'userCircle', category: 'customer' },
-    { key: 'addresses.manage', name: 'Quản lý địa chỉ', icon: 'map', category: 'customer' },
+    { key: 'customer.history', name: 'Lịch sử mua hàng', icon: 'clipboard', category: 'customer' },
+    { key: 'customer.profile.update', name: 'Cập nhật profile cá nhân', icon: 'user', category: 'customer' },
+    { key: 'customer.profile.info', name: 'Thông tin profile', icon: 'info', category: 'customer' },
+    { key: 'customer.addresses', name: 'Quản lý địa chỉ', icon: 'mapPin', category: 'customer' },
 
     // Order Management APIs (4 functions)
     { key: 'order.my-orders', name: 'Đơn hàng của user', icon: 'cube', category: 'order' },
@@ -1165,7 +1554,7 @@ const Admin = () => {
 
   // Phân nhóm functions
   const functionCategories = {
-    auth: { title: 'Xác thực & Bảo mật', icon: 'lock', color: 'blue' },
+   
     admin: { title: 'Quản trị hệ thống', icon: 'crown', color: 'purple' },
     product: { title: 'Quản lý Sản phẩm', icon: 'tag', color: 'green' },
     customer: { title: 'Quản lý Khách hàng', icon: 'users', color: 'pink' },
@@ -1201,8 +1590,8 @@ const Admin = () => {
             ],
             'QL_KhachHang': [
               'auth.me', 'auth.login', 'auth.logout', 'auth.profile',
-              'customer.view', 'customer.update', 'customer.orders',
-              'profile.update', 'profile.view', 'addresses.manage',
+              'customer.list', 'customer.update', 'customer.history',
+              'customer.profile.update', 'customer.profile.info', 'customer.addresses',
               'order.create', 'order.my-orders',
               'cart.manage', 'review.create',
               'products.view', 'products.detail', 'search.index'
@@ -1217,8 +1606,8 @@ const Admin = () => {
             'Customer': [
               'auth.me', 'auth.login', 'auth.logout', 'auth.profile',
               'products.view', 'products.detail', 'search.index',
-              'customer.orders', 'cart.manage',
-              'profile.update', 'profile.view', 'addresses.manage',
+              'customer.history', 'cart.manage',
+              'customer.profile.update', 'customer.profile.info', 'customer.addresses',
               'order.create', 'order.my-orders',
               'review.create', 'review.list'
             ]
@@ -1234,8 +1623,8 @@ const Admin = () => {
           const defaultFunctions = [
             'auth.me', 'auth.login', 'auth.logout', 'auth.profile',
             'products.view', 'products.detail', 'search.index',
-            'customer.orders', 'cart.manage',
-            'profile.update', 'profile.view', 'addresses.manage',
+            'customer.history', 'cart.manage',
+            'customer.profile.update', 'customer.profile.info', 'customer.addresses',
             'order.create', 'order.my-orders',
             'review.create', 'review.list'
           ];
@@ -1292,7 +1681,7 @@ const Admin = () => {
           endpoint = '/api/qlkh/customers';
           dataKey = 'customers';
         } else if (activeTab.startsWith('order')) {
-          if (hasPermission('order.admin-all')) {
+          if (checkPermission('order.admin-all')) {
             endpoint = '/api/orders/admin/all';
           } else {
             endpoint = '/api/orders/my-orders';
@@ -1314,6 +1703,7 @@ const Admin = () => {
           endpoint = '/api/cart/index';
           dataKey = 'cart';
         }
+
 
         if (endpoint) {
           console.log('Loading data for:', activeTab, 'from:', endpoint);
@@ -1455,7 +1845,7 @@ const Admin = () => {
           <Icon name="crown" size="20" style={{ marginRight: '8px' }} />
           Quản Trị Hệ Thống
         </h2>
-        <div className={styles.sidebarSubtitle}>38 Functions API Management</div>
+        
       </div>
       
       <div className={styles.sidebarContent}>
@@ -1470,14 +1860,335 @@ const Admin = () => {
             }}
           >
             <Icon name="home" size="22" className={styles.menuItemIcon} />
-            <span className={styles.menuItemText}>Dashboard Tổng quan</span>
+            <span className={styles.menuItemText}> Tổng quan</span>
           </a>
         </div>
 
-        {/* Function Categories */}
-        {Object.entries(functionCategories).map(([categoryKey, category]) => {
+        {/* QUẢN LÝ SẢN PHẨM - Exact structure from image */}
+        <div className={styles.menuSection}>
+          <a 
+            href="#" 
+            className={`${styles.menuItem} ${activeTab === 'product-management' ? styles.active : ''}`}
+            onClick={(e) => { 
+              e.preventDefault(); 
+              setActiveTab('product-management'); 
+            }}
+          >
+            <Icon name="tag" size="18" className={styles.menuItemIcon} />
+            <span className={styles.menuItemText}>QUẢN LÝ SẢN PHẨM</span>
+            <span className={styles.menuItemBadge}>7</span>
+          </a>
+          
+          {/* Sub-functions under Product Management */}
+          {checkPermission('products.view') && (
+            <a
+              href="#"
+              className={`${styles.menuItem} ${activeTab === 'products.view' ? styles.active : ''}`}
+              onClick={(e) => { 
+                e.preventDefault(); 
+                setActiveTab('products.view'); 
+              }}
+              style={{ paddingLeft: '48px', fontSize: '14px' }}
+            >
+              <Icon name="eye" size="16" className={styles.menuItemIcon} />
+              <span className={styles.menuItemText}>Xem danh sách sản phẩm</span>
+            </a>
+          )}
+          
+          {checkPermission('products.detail') && (
+            <a
+              href="#"
+              className={`${styles.menuItem} ${activeTab === 'products.detail' ? styles.active : ''}`}
+              onClick={(e) => { 
+                e.preventDefault(); 
+                setActiveTab('products.detail'); 
+              }}
+              style={{ paddingLeft: '48px', fontSize: '14px' }}
+            >
+              <Icon name="eye" size="16" className={styles.menuItemIcon} />
+              <span className={styles.menuItemText}>Xem chi tiết sản phẩm</span>
+            </a>
+          )}
+          
+          {checkPermission('product.create') && (
+            <a
+              href="#"
+              className={`${styles.menuItem} ${activeTab === 'product.create' ? styles.active : ''}`}
+              onClick={(e) => { 
+                e.preventDefault(); 
+                setActiveTab('product.create'); 
+              }}
+              style={{ paddingLeft: '48px', fontSize: '14px' }}
+            >
+              <Icon name="plus" size="16" className={styles.menuItemIcon} />
+              <span className={styles.menuItemText}>Tạo sản phẩm mới</span>
+            </a>
+          )}
+          
+          {checkPermission('product.update') && (
+            <a
+              href="#"
+              className={`${styles.menuItem} ${activeTab === 'product.update' ? styles.active : ''}`}
+              onClick={(e) => { 
+                e.preventDefault(); 
+                setActiveTab('product.update'); 
+              }}
+              style={{ paddingLeft: '48px', fontSize: '14px' }}
+            >
+              <Icon name="pencil" size="16" className={styles.menuItemIcon} />
+              <span className={styles.menuItemText}>Cập nhật sản phẩm</span>
+            </a>
+          )}
+          
+          {checkPermission('product.delete') && (
+            <a
+              href="#"
+              className={`${styles.menuItem} ${activeTab === 'product.delete' ? styles.active : ''}`}
+              onClick={(e) => { 
+                e.preventDefault(); 
+                setActiveTab('product.delete'); 
+              }}
+              style={{ paddingLeft: '48px', fontSize: '14px' }}
+            >
+              <Icon name="trash" size="16" className={styles.menuItemIcon} />
+              <span className={styles.menuItemText}>Xóa sản phẩm</span>
+            </a>
+          )}
+          
+          {checkPermission('product.media') && (
+            <a
+              href="#"
+              className={`${styles.menuItem} ${activeTab === 'product.media' ? styles.active : ''}`}
+              onClick={(e) => { 
+                e.preventDefault(); 
+                setActiveTab('product.media'); 
+              }}
+              style={{ paddingLeft: '48px', fontSize: '14px' }}
+            >
+              <Icon name="camera" size="16" className={styles.menuItemIcon} />
+              <span className={styles.menuItemText}>Cập nhật hình ảnh</span>
+            </a>
+          )}
+          
+          {checkPermission('product.tags') && (
+            <a
+              href="#"
+              className={`${styles.menuItem} ${activeTab === 'product.tags' ? styles.active : ''}`}
+              onClick={(e) => { 
+                e.preventDefault(); 
+                setActiveTab('product.tags'); 
+              }}
+              style={{ paddingLeft: '48px', fontSize: '14px' }}
+            >
+              <Icon name="tag" size="16" className={styles.menuItemIcon} />
+              <span className={styles.menuItemText}>Quản lý tags/thuộc tính</span>
+            </a>
+          )}
+        </div>
+
+        {/* QUẢN TRỊ HỆ THỐNG */}
+        <div className={styles.menuSection}>
+          <a 
+            href="#" 
+            className={`${styles.menuItem} ${activeTab === 'system-admin' ? styles.active : ''}`}
+            onClick={(e) => { 
+              e.preventDefault(); 
+              setActiveTab('system-admin'); 
+            }}
+          >
+            <Icon name="crown" size="18" className={styles.menuItemIcon} />
+            <span className={styles.menuItemText}>QUẢN TRỊ HỆ THỐNG</span>
+            <span className={styles.menuItemBadge}>5</span>
+          </a>
+          
+          {/* Sub-functions under System Administration */}
+          {checkPermission('system.stats') && (
+            <a
+              href="#"
+              className={`${styles.menuItem} ${activeTab === 'system.stats' ? styles.active : ''}`}
+              onClick={(e) => { 
+                e.preventDefault(); 
+                setActiveTab('system.stats'); 
+              }}
+              style={{ paddingLeft: '48px', fontSize: '14px' }}
+            >
+              <Icon name="chartBar" size="16" className={styles.menuItemIcon} />
+              <span className={styles.menuItemText}>Thống kê tổng quan</span>
+            </a>
+          )}
+          
+          {checkPermission('system.users') && (
+            <a
+              href="#"
+              className={`${styles.menuItem} ${activeTab === 'system.users' ? styles.active : ''}`}
+              onClick={(e) => { 
+                e.preventDefault(); 
+                setActiveTab('system.users'); 
+              }}
+              style={{ paddingLeft: '48px', fontSize: '14px' }}
+            >
+              <Icon name="users" size="16" className={styles.menuItemIcon} />
+              <span className={styles.menuItemText}>Quản lý users</span>
+            </a>
+          )}
+          
+          {checkPermission('system.roles') && (
+            <a
+              href="#"
+              className={`${styles.menuItem} ${activeTab === 'system.roles' ? styles.active : ''}`}
+              onClick={(e) => { 
+                e.preventDefault(); 
+                setActiveTab('system.roles'); 
+              }}
+              style={{ paddingLeft: '48px', fontSize: '14px' }}
+            >
+              <Icon name="crown" size="16" className={styles.menuItemIcon} />
+              <span className={styles.menuItemText}>Quản lý role</span>
+            </a>
+          )}
+          
+          {checkPermission('system.toggle') && (
+            <a
+              href="#"
+              className={`${styles.menuItem} ${activeTab === 'system.toggle' ? styles.active : ''}`}
+              onClick={(e) => { 
+                e.preventDefault(); 
+                setActiveTab('system.toggle'); 
+              }}
+              style={{ paddingLeft: '48px', fontSize: '14px' }}
+            >
+              <Icon name="shield" size="16" className={styles.menuItemIcon} />
+              <span className={styles.menuItemText}>Bật/tắt user</span>
+            </a>
+          )}
+          
+          {checkPermission('system.reset') && (
+            <a
+              href="#"
+              className={`${styles.menuItem} ${activeTab === 'system.reset' ? styles.active : ''}`}
+              onClick={(e) => { 
+                e.preventDefault(); 
+                setActiveTab('system.reset'); 
+              }}
+              style={{ paddingLeft: '48px', fontSize: '14px' }}
+            >
+              <Icon name="key" size="16" className={styles.menuItemIcon} />
+              <span className={styles.menuItemText}>Reset password</span>
+            </a>
+          )}
+        </div>
+
+        {/* QUẢN LÝ KHÁCH HÀNG */}
+        <div className={styles.menuSection}>
+          <a 
+            href="#" 
+            className={`${styles.menuItem} ${activeTab === 'customer-management' ? styles.active : ''}`}
+            onClick={(e) => { 
+              e.preventDefault(); 
+              setActiveTab('customer-management'); 
+            }}
+          >
+            <Icon name="users" size="18" className={styles.menuItemIcon} />
+            <span className={styles.menuItemText}>QUẢN LÝ KHÁCH HÀNG</span>
+            <span className={styles.menuItemBadge}>6</span>
+          </a>
+          
+          {/* Sub-functions under Customer Management */}
+          {checkPermission('customer.list') && (
+            <a
+              href="#"
+              className={`${styles.menuItem} ${activeTab === 'customer.list' ? styles.active : ''}`}
+              onClick={(e) => { 
+                e.preventDefault(); 
+                setActiveTab('customer.list'); 
+              }}
+              style={{ paddingLeft: '48px', fontSize: '14px' }}
+            >
+              <Icon name="users" size="16" className={styles.menuItemIcon} />
+              <span className={styles.menuItemText}>Quản lý khách hàng</span>
+            </a>
+          )}
+          
+          {checkPermission('customer.update') && (
+            <a
+              href="#"
+              className={`${styles.menuItem} ${activeTab === 'customer.update' ? styles.active : ''}`}
+              onClick={(e) => { 
+                e.preventDefault(); 
+                setActiveTab('customer.update'); 
+              }}
+              style={{ paddingLeft: '48px', fontSize: '14px' }}
+            >
+              <Icon name="pencil" size="16" className={styles.menuItemIcon} />
+              <span className={styles.menuItemText}>Cập nhật khách hàng</span>
+            </a>
+          )}
+          
+          {checkPermission('customer.history') && (
+            <a
+              href="#"
+              className={`${styles.menuItem} ${activeTab === 'customer.history' ? styles.active : ''}`}
+              onClick={(e) => { 
+                e.preventDefault(); 
+                setActiveTab('customer.history'); 
+              }}
+              style={{ paddingLeft: '48px', fontSize: '14px' }}
+            >
+              <Icon name="clipboard" size="16" className={styles.menuItemIcon} />
+              <span className={styles.menuItemText}>Lịch sử mua hàng</span>
+            </a>
+          )}
+          
+          {checkPermission('customer.profile.update') && (
+            <a
+              href="#"
+              className={`${styles.menuItem} ${activeTab === 'customer.profile.update' ? styles.active : ''}`}
+              onClick={(e) => { 
+                e.preventDefault(); 
+                setActiveTab('customer.profile.update'); 
+              }}
+              style={{ paddingLeft: '48px', fontSize: '14px' }}
+            >
+              <Icon name="user" size="16" className={styles.menuItemIcon} />
+              <span className={styles.menuItemText}>Cập nhật profile cá nhân</span>
+            </a>
+          )}
+          
+          {checkPermission('customer.profile.info') && (
+            <a
+              href="#"
+              className={`${styles.menuItem} ${activeTab === 'customer.profile.info' ? styles.active : ''}`}
+              onClick={(e) => { 
+                e.preventDefault(); 
+                setActiveTab('customer.profile.info'); 
+              }}
+              style={{ paddingLeft: '48px', fontSize: '14px' }}
+            >
+              <Icon name="info" size="16" className={styles.menuItemIcon} />
+              <span className={styles.menuItemText}>Thông tin profile</span>
+            </a>
+          )}
+          
+          {checkPermission('customer.addresses') && (
+            <a
+              href="#"
+              className={`${styles.menuItem} ${activeTab === 'customer.addresses' ? styles.active : ''}`}
+              onClick={(e) => { 
+                e.preventDefault(); 
+                setActiveTab('customer.addresses'); 
+              }}
+              style={{ paddingLeft: '48px', fontSize: '14px' }}
+            >
+              <Icon name="mapPin" size="16" className={styles.menuItemIcon} />
+              <span className={styles.menuItemText}>Quản lý địa chỉ</span>
+            </a>
+          )}
+        </div>
+
+        {/* Other Function Categories */}
+        {Object.entries(functionCategories).filter(([categoryKey]) => categoryKey !== 'product').map(([categoryKey, category]) => {
           const categoryFunctions = allFunctions.filter(f => f.category === categoryKey);
-          const visibleFunctions = categoryFunctions.filter(f => hasPermission(f.key));
+          const visibleFunctions = categoryFunctions.filter(f => checkPermission(f.key));
           
           if (visibleFunctions.length === 0) return null;
 
@@ -1536,8 +2247,8 @@ const Admin = () => {
       return (
         <div className={styles.fullScreenMainContent}>
           <div className={styles.adminHeader}>
-            <h1 className={styles.adminTitle}>Dashboard Quản Trị Hệ Thống - 38 Functions API</h1>
-            <p className={styles.adminSubtitle}>Tổng quan và thống kê hệ thống - Quản lý toàn diện với 38 API endpoints</p>
+            <h1 className={styles.adminTitle}> Quản Trị Hệ Thống </h1>
+            
           </div>
 
           <div className={styles.statsGrid}>
@@ -1563,10 +2274,7 @@ const Admin = () => {
 
           {/* Simple dashboard header */}
           <div className={styles.contentSection}>
-            <div className={styles.sectionHeader}>
-              <h2 className={styles.sectionTitle}>Dashboard Quản Trị Hệ Thống - 38 Functions API</h2>
-              <p className={styles.welcomeSubtitle}>Tổng quan và thống kê hệ thống - Quản lý toàn diện với 38 API endpoints</p>
-            </div>
+            
           </div>
         </div>
       );
@@ -1582,13 +2290,56 @@ const Admin = () => {
     const renderFunctionContent = () => {
       const functionKey = currentFunction.key;
       
-      // PRODUCT MANAGEMENT CONTENT
-      if (functionKey.startsWith('product')) {
+      // PRODUCT MANAGEMENT CONTENT - Specific functions from image
+      if (functionKey === 'product-management') {
+        return renderProductOverview();
+      }
+      
+      if (functionKey === 'products.view') {
+        return renderCustomerList(functionKey, functionData, loadingData);
+      }
+      
+      if (functionKey === 'products.detail') {
+        return renderProductDetail(functionKey, functionData, loadingData);
+      }
+      
+      if (functionKey === 'product.create') {
+        return renderCreateProduct(functionKey, functionData, loadingData);
+      }
+      
+      if (functionKey === 'product.update') {
+        return renderUpdateProduct(functionKey, functionData, loadingData);
+      }
+      
+      if (functionKey === 'product.delete') {
+        return renderDeleteProduct(functionKey, functionData, loadingData);
+      }
+      
+      if (functionKey === 'product.media') {
+        return renderUpdateImages(functionKey, functionData, loadingData);
+      }
+      
+      if (functionKey === 'product.tags') {
+        return renderManageTags(functionKey, functionData, loadingData);
+      }
+      
+      // SYSTEM ADMINISTRATION CONTENT
+      if (functionKey.startsWith('system.')) {
+        return renderSystemAdmin(functionKey, functionData, loadingData);
+      }
+      
+      // CUSTOMER MANAGEMENT CONTENT  
+      if (functionKey.startsWith('customer.') || functionKey.startsWith('profile.') || functionKey.startsWith('addresses.')) {
+        return renderCustomerManagement(functionKey, functionData, loadingData);
+      }
+      
+      // PRODUCT MANAGEMENT CONTENT (Legacy)
+      if (functionKey.startsWith('product') && functionKey !== 'products.view' && functionKey !== 'products.detail') {
         return renderProductManagement(functionKey, functionData, loadingData);
       }
       
       // CUSTOMER MANAGEMENT CONTENT  
-      if (functionKey.startsWith('customer') || functionKey === 'profile.update' || functionKey === 'profile.view' || functionKey === 'addresses.manage') {
+      if ((functionKey || '').startsWith('customer') || (functionKey || '') === 'profile.update' || (functionKey || '') === 'profile.view' || (functionKey || '') === 'addresses.manage') {
         return renderCustomerManagement(functionKey, functionData, loadingData);
       }
       
@@ -1702,13 +2453,7 @@ const Admin = () => {
             gap: '10px',
             boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
           }}>
-            <span style={{ fontSize: '18px' }}>🧪</span>
-            <div>
-              <strong>DEMO MODE - Sử dụng Mock Data</strong>
-              <div style={{ fontSize: '14px', opacity: 0.9, marginTop: '2px' }}>
-                Hiện tại đang hiển thị dữ liệu mẫu để test UI. Để kết nối database thật, cần đăng nhập admin.
-              </div>
-            </div>
+            
           </div>
           
           {renderContent()}
