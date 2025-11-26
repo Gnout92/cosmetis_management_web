@@ -33,7 +33,7 @@ const ORDER_STATUS_COLOR = {
 
 function verifyToken(token) {
   try {
-    return jwt.verify(token, process.env.JWT_SECRET || "dev_secret");
+    return jwt.verify(token, process.env.JWT_SECRET || "super_secret_change_me");
   } catch (err) {
     return null;
   }
@@ -73,31 +73,48 @@ export default async function handler(req, res) {
     const pool = getPool();
 
     // Query lấy danh sách đơn hàng của user
-    const [orders] = await pool.execute(
-      `SELECT 
-        dh.id,
-        dh.trang_thai,
-        dh.phuong_thuc_tt,
-        dh.trang_thai_tt,
-        dh.ship_ten_nguoi_nhan,
-        dh.ship_so_dien_thoai,
-        dh.ship_dia_chi_chi_tiet,
-        dh.ship_ten_quan_huyen,
-        dh.ship_ten_tinh_thanh,
-        dh.tong_hang,
-        dh.phi_van_chuyen,
-        dh.tong_giam_gia,
-        dh.tong_thanh_toan,
-        dh.thoi_gian_tao,
-        dh.thoi_gian_cap_nhat,
-        COUNT(dhct.id) as so_san_pham
-      FROM don_hang dh
-      LEFT JOIN don_hang_chi_tiet dhct ON dh.id = dhct.don_hang_id
-      WHERE dh.nguoi_dung_id = ?
-      GROUP BY dh.id, dh.trang_thai, dh.phuong_thuc_tt, dh.trang_thai_tt, dh.ship_ten_nguoi_nhan, dh.ship_so_dien_thoai, dh.ship_dia_chi_chi_tiet, dh.ship_ten_quan_huyen, dh.ship_ten_tinh_thanh, dh.tong_hang, dh.phi_van_chuyen, dh.tong_giam_gia, dh.tong_thanh_toan, dh.thoi_gian_tao, dh.thoi_gian_cap_nhat
-      ORDER BY dh.thoi_gian_tao DESC`,
-      [userId]
-    );
+      const sql = `
+      SELECT
+        dh.id,
+        dh.trang_thai,
+        dh.phuong_thuc_tt,
+        dh.trang_thai_tt,
+        dh.ship_ten_nguoi_nhan,
+        dh.ship_so_dien_thoai,
+        dh.ship_dia_chi_chi_tiet,
+        dh.ship_ten_quan_huyen,
+        dh.ship_ten_tinh_thanh,
+        dh.tong_hang,
+        dh.phi_van_chuyen,
+        dh.tong_giam_gia,
+        dh.tong_thanh_toan,
+        dh.thoi_gian_tao,
+        dh.thoi_gian_cap_nhat,
+        COUNT(dhct.don_hang_id) AS so_san_pham
+      FROM don_hang AS dh
+      LEFT JOIN don_hang_chi_tiet AS dhct
+        ON dh.id = dhct.don_hang_id
+      WHERE dh.nguoi_dung_id = ?
+      GROUP BY
+        dh.id,
+        dh.trang_thai,
+        dh.phuong_thuc_tt,
+        dh.trang_thai_tt,
+        dh.ship_ten_nguoi_nhan,
+        dh.ship_so_dien_thoai,
+        dh.ship_dia_chi_chi_tiet,
+        dh.ship_ten_quan_huyen,
+        dh.ship_ten_tinh_thanh,
+        dh.tong_hang,
+        dh.phi_van_chuyen,
+        dh.tong_giam_gia,
+        dh.tong_thanh_toan,
+        dh.thoi_gian_tao,
+        dh.thoi_gian_cap_nhat
+      ORDER BY dh.thoi_gian_tao DESC
+    `;
+
+    const [orders] = await pool.execute(sql, [userId]);
 
     // Format dữ liệu trả về
     const formattedOrders = orders.map(order => {

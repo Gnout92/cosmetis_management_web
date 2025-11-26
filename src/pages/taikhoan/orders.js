@@ -275,7 +275,10 @@ const AccountOrdersPage = () => {
             ) : (
               <div className={styles.ordersList}>
                 {orders.map((order) => (
-                  <div key={order.id} className={styles.orderCard}>
+                  <div key={order.id} className={styles.orderCard}
+                      onClick={() => router.push(`/taikhoan/orders/${order.id}`)}
+                      style={{ cursor: 'pointer' }} 
+                      >
                     {/* Header */}
                     <div className={styles.orderHeader}>
                       <div className={styles.orderInfo}>
@@ -378,13 +381,8 @@ const AccountOrdersPage = () => {
                     <div className={styles.orderFooter}>
                       <div className={styles.paymentMethod}>
                         <CreditCard size={14} />
-                        {order.paymentMethod === 'cod'
-                          ? 'Thanh toán khi nhận hàng'
-                          : order.paymentMethod === 'banking'
-                          ? 'Chuyển khoản ngân hàng'
-                          : order.paymentMethod === 'momo'
-                          ? 'Ví MoMo'
-                          : 'Khác'}
+                        {order.paymentMethod === 'COD'
+                          }
                       </div>
                     </div>
                   </div>

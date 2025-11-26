@@ -6,7 +6,7 @@ import { getPool } from "@/lib/database/db";
 function signAppToken(payload) {
   return jwt.sign(
     payload,
-    process.env.JWT_SECRET || "dev_secret",
+    process.env.JWT_SECRET || "super_secret_change_me",
     { expiresIn: process.env.JWT_EXPIRES_IN || "7d", issuer: "beauty-shop" }
   );
 }
