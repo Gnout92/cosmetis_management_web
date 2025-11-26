@@ -899,69 +899,7 @@ const moreNewsEvents= [
         </div>
       </div>
 
-      {/* Sale Section - Flash Sale */}
-      <div className={styles.saleSection} data-animation-id="sale-section">
-        <div className={styles.sectionContainer}>
-          <h2 className={styles.sectionTitle}>⚡ FLASH SALE - SĂN SALE NGAY!</h2>
-          <p className={styles.sectionSubtitle}>⏰ Thời gian có hạn - Giảm đến 50% cho các sản phẩm chọn lọc</p>
-          <div className={styles.saleGrid}>
-            {saleProducts.map((product) => (
-              <div key={product.id} className={styles.saleCard}>
-                <div className={styles.saleBadge}>-{product.discount}</div>
-                <div className={styles.productImageWrapper}>
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    width={280}
-                    height={280}
-                    className={styles.productImage}
-                    placeholder="blur"
-                    blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyLli2kigjKMoqyAq3PzGtnZQEMlGINM1yBFxO"
-                  />
-                  <div className={styles.productActions}>
-                    <button 
-                      className={styles.wishlistBtn}
-                      data-wishlist-id={product.id}
-                      onClick={() => handleAddToWishlist(product.id)}
-                      title="Thêm vào yêu thích"
-                    >
-                      ❤️
-                    </button>
-                    <button 
-                      className={styles.quickViewBtn}
-                      title="Xem nhanh"
-                    >
-                      👁️
-                    </button>
-                  </div>
-                </div>
-                <div className={styles.productInfo}>
-                  <h3 className={styles.productName}>{product.name}</h3>
-                  <div className={styles.productRating}>
-                    <span className={styles.stars}>⭐⭐⭐⭐⭐</span>
-                    <span className={styles.ratingScore}>({product.rating})</span>
-                  </div>
-                  <div className={styles.productPricing}>
-                    <span className={styles.currentPrice}>{product.price}</span>
-                    <span className={styles.originalPrice}>{product.originalPrice}</span>
-                  </div>
-                  <div className={styles.saleTimer}>
-                    ⏰ Kết thúc trong: <strong>{countdown.hours}:{countdown.minutes}:{countdown.seconds}</strong>
-                  </div>
-                  <button 
-                    className={styles.addToCartBtn}
-                    data-product-id={product.id}
-                    onClick={() => handleAddToCart(product.id)}
-                  >
-                    <span>🛒</span>
-                    <span>MUA NGAY</span>
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+   
 
       {/* Featured Products Section */}
       <div className={styles.productsSection} data-animation-id="products-section">
@@ -1098,25 +1036,6 @@ const moreNewsEvents= [
 </div>
 
 
-      {/* Newsletter Section */}
-      <div className={styles.newsletterSection} data-animation-id="newsletter-section">
-        <div className={styles.sectionContainer}>
-          <h2 className={styles.newsletterTitle}>📧 ĐĂNG KÝ NHẬN TIN</h2>
-          <p className={styles.newsletterSubtitle}>Nhận thông tin về sản phẩm mới và ưu đãi đặc biệt</p>
-          <form className={styles.newsletterForm} onSubmit={handleNewsletterSubmit}>
-            <input 
-              type="email" 
-              placeholder="📧 Nhập email để nhận ưu đãi đặc biệt..."
-              className={styles.newsletterInput}
-              required
-            />
-            <button className={styles.newsletterBtn} type="submit">
-              ✨ ĐĂNG KÝ NGAY
-            </button>
-          </form>
-        </div>
-      </div>
-
       {/* 🚀 FOOTER THÔNG MINH & HIỆN ĐẠI */}
       <div className={styles.footerModern}>
         <div className={styles.footerGrid}>
@@ -1144,24 +1063,6 @@ const moreNewsEvents= [
                 <span className={styles.statLabel}>Sản phẩm</span>
               </div>
             </div>
-            <nav className={styles.footerNav}>
-              <a href="#" className={styles.navLink}>
-                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
-                Lịch sử hình thành
-              </a>
-              <a href="#" className={styles.navLink}>
-                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                Tầm nhìn & Sứ mệnh
-              </a>
-              <a href="#" className={styles.navLink}>
-                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                Giải thưởng & Chứng nhận
-              </a>
-              <a href="#" className={styles.navLink}>
-                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/></svg>
-                Tin tức & Sự kiện
-              </a>
-            </nav>
           </div>
 
           {/* 👤 CHĂM SÓC KHÁCH HÀNG - SMART SUPPORT */}
@@ -1191,15 +1092,7 @@ const moreNewsEvents= [
                 <svg width="16" height="16" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
                 Hướng dẫn mua hàng
               </a>
-              <a href="#" className={styles.navLink}>
-                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
-                Theo dõi đơn hàng
-              </a>
-              <a href="#" className={styles.navLink}>
-                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                Chính sách bảo hành
-              </a>
-            </nav>
+                        </nav>
           </div>
 
           {/* 📜 CHÍNH SÁCH - SMART POLICIES */}
@@ -1229,14 +1122,6 @@ const moreNewsEvents= [
                 <svg width="16" height="16" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
                 Chính sách đổi trả
               </a>
-              <a href="#" className={styles.navLink}>
-                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/></svg>
-                Chính sách hoàn tiền
-              </a>
-              <a href="#" className={styles.navLink}>
-                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
-                Bảo mật thông tin
-              </a>
             </nav>
           </div>
 
@@ -1258,87 +1143,6 @@ const moreNewsEvents= [
                   <svg width="16" height="16" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4v4c0 .55.45 1 1 1s1-.45 1-1v-4h2l4 4V4c0-1.1-.9-2-2-2zm0 14H6v-2h14v2z"/></svg>
                   Chat trực tiếp
                 </button>
-              </div>
-            </div>
-
-            <div className={styles.contactInfo}>
-              <div className={styles.contactItem}>
-                <div className={styles.contactIcon}>
-                  <svg width="16" height="16" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
-                </div>
-                <div className={styles.contactDetails}>
-                  <strong>Hotline:</strong> 1900 1234
-                  <span className={styles.available}>Tư vấn miễn phí</span>
-                </div>
-              </div>
-              <div className={styles.contactItem}>
-                <div className={styles.contactIcon}>
-                  <svg width="16" height="16" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-                </div>
-                <div className={styles.contactDetails}>
-                  <strong>Email:</strong> support@menbeauty.vn
-                  <span className={styles.responseTime}>Phản hồi trong 1h</span>
-                </div>
-              </div>
-              <div className={styles.contactItem}>
-                <div className={styles.contactIcon}>
-                  <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-                </div>
-                <div className={styles.contactDetails}>
-                  <strong>Địa chỉ:</strong> 123 Đường ABC, Quận 1, TP.HCM
-                  <span className={styles.mapLink}>Xem bản đồ</span>
-                </div>
-              </div>
-              <div className={styles.contactItem}>
-                <div className={styles.contactIcon}>
-                  <svg width="16" height="16" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-                </div>
-                <div className={styles.contactDetails}>
-                  <strong>Giờ làm việc:</strong> 8:00 - 22:00
-                  <span className={styles.days}>(T2 - CN)</span>
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.socialSection}>
-              <h4>Kết nối với chúng tôi</h4>
-              <div className={styles.socialLinks}>
-                <a href="#" className={styles.socialLink} data-platform="facebook">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                  </svg>
-                  <span className={styles.followerCount}>15K</span>
-                </a>
-                <a href="#" className={styles.socialLink} data-platform="instagram">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                  </svg>
-                  <span className={styles.followerCount}>28K</span>
-                </a>
-                <a href="#" className={styles.socialLink} data-platform="youtube">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                  </svg>
-                  <span className={styles.followerCount}>52K</span>
-                </a>
-                <a href="#" className={styles.socialLink} data-platform="tiktok">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
-                  </svg>
-                  <span className={styles.followerCount}>89K</span>
-                </a>
-                <a href="#" className={styles.socialLink} data-platform="zalo">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                  </svg>
-                  <span className={styles.followerCount}>32K</span>
-                </a>
-                <a href="#" className={styles.socialLink} data-platform="telegram">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-                  </svg>
-                  <span className={styles.followerCount}>12K</span>
-                </a>
               </div>
             </div>
           </div>

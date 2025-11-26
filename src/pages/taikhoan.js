@@ -3,21 +3,16 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import styles from '../styles/taikhoan.module.css';
-// Import modern SVG icons from lucide-react
 import { 
   User, 
   Package, 
-  ShoppingCart, 
   LogOut,
   Edit2,
   Save,
   X,
   Mail,
-  Calendar,
   MapPin,
   Plus,
-  Minus,
-  Trash2,
   AlertCircle,
   Clock,
   CreditCard,
@@ -31,7 +26,7 @@ const TaikhoanPage = () => {
   // Active menu state
   const [activeMenu, setActiveMenu] = useState('profile');
   
-  // Form data
+  // Form data (profile)
   const [formData, setFormData] = useState({
     username: '',
     displayName: '',
@@ -47,14 +42,35 @@ const TaikhoanPage = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   
-  // Cart states
-  const [cartItems, setCartItems] = useState([]);
-  const [cartLoading, setCartLoading] = useState(false);
-  
   // Orders states
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [ordersError, setOrdersError] = useState(null);
+
+  // ====== ADDRESS BOOK STATES ======
+  const [addresses, setAddresses] = useState([]);
+  const [addressesLoading, setAddressesLoading] = useState(false);
+  const [addressesError, setAddressesError] = useState(null);
+
+  const [isAddressFormOpen, setIsAddressFormOpen] = useState(false);
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [editingAddressId, setEditingAddressId] = useState(null);
+
+  const [addressForm, setAddressForm] = useState({
+    type: 'Shipping',        // Shipping / Billing
+    isDefault: false,
+    name: '',
+    phone: '',
+    provinceId: '',
+    districtId: '',
+    wardId: '',
+    street: '',
+    addressLine: '',
+  });
+
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
 
   // Get auth token with Bearer prefix
   const getAuthToken = () => {
@@ -172,73 +188,334 @@ const TaikhoanPage = () => {
     }
   };
 
-  // Load cart data from localStorage
-  const loadCartData = () => {
+  // ====== LOAD ADDRESSES ======
+  const loadAddresses = async () => {
     try {
-      setCartLoading(true);
-      if (typeof window !== 'undefined') {
-        const savedCart = localStorage.getItem('cosmetic_cart');
-        if (savedCart) {
-          const cartData = JSON.parse(savedCart);
-          setCartItems(cartData);
-        } else {
-          setCartItems([]);
-        }
+      setAddressesLoading(true);
+      setAddressesError(null);
+
+      const token = getAuthToken();
+      if (!token) {
+        setAddressesError('Bạn chưa đăng nhập.');
+        return;
+      }
+
+      const response = await fetch('/api/user/addresses', {
+        method: 'GET',
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Không thể tải danh sách địa chỉ');
+      }
+
+      const data = await response.json();
+      if (data.addresses) {
+        setAddresses(data.addresses);
       }
     } catch (err) {
-      console.error('Error loading cart:', err);
-      setCartItems([]);
+      console.error('Error loading addresses:', err);
+      setAddressesError(err.message || 'Lỗi khi tải danh sách địa chỉ');
     } finally {
-      setCartLoading(false);
+      setAddressesLoading(false);
     }
   };
 
-  // Update cart quantity
-  const updateQuantity = (productId, newQuantity) => {
-    if (newQuantity < 1) return;
-    
-    const updatedCart = cartItems.map(item => 
-      item.id === productId ? { ...item, quantity: newQuantity } : item
-    );
-    
-    setCartItems(updatedCart);
-    localStorage.setItem('cosmetic_cart', JSON.stringify(updatedCart));
+  // ====== LOAD LOCATION DATA (TỈNH / QUẬN / PHƯỜNG) ======
+  const loadProvinces = async () => {
+    try {
+      const response = await fetch('/api/locations/provinces');
+      if (!response.ok) throw new Error('Không thể tải danh sách Tỉnh/Thành phố');
+      const data = await response.json();
+      setProvinces(data.provinces || []);
+    } catch (err) {
+      console.error('Error loading provinces:', err);
+    }
   };
 
-  // Remove item from cart
-  const removeFromCart = (productId) => {
-    const updatedCart = cartItems.filter(item => item.id !== productId);
-    setCartItems(updatedCart);
-    localStorage.setItem('cosmetic_cart', JSON.stringify(updatedCart));
+  const loadDistricts = async (provinceId) => {
+    if (!provinceId) {
+      setDistricts([]);
+      return;
+    }
+    try {
+      const response = await fetch(`/api/locations/districts?provinceId=${provinceId}`);
+      if (!response.ok) throw new Error('Không thể tải danh sách Quận/Huyện');
+      const data = await response.json();
+      setDistricts(data.districts || []);
+    } catch (err) {
+      console.error('Error loading districts:', err);
+    }
   };
 
-  // Calculate cart total
-  const calculateCartTotal = () => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  const loadWards = async (districtId) => {
+  if (!districtId) {
+    setWards([]);
+    return;
+  }
+  try {
+    const response = await fetch(`/api/locations/wards?districtId=${districtId}`);
+    if (!response.ok) throw new Error('Không thể tải danh sách Phường/Xã');
+    const data = await response.json();
+    console.log('WARDS API DATA', data); // thêm log để nhìn
+    setWards(data.wards || []);
+  } catch (err) {
+    console.error('Error loading wards:', err);
+    setWards([]);
+  }
+};
+
+  // ====== ADDRESS FORM HELPERS ======
+  const resetAddressForm = () => {
+    setAddressForm({
+      type: 'Shipping',
+      isDefault: false,
+      name: '',
+      phone: '',
+      provinceId: '',
+      districtId: '',
+      wardId: '',
+      street: '',
+      addressLine: '',
+    });
+    setProvinces([]);
+    setDistricts([]);
+    setWards([]);
+    setEditingAddressId(null);
+    setIsEditingAddress(false);
+  };
+
+  const openNewAddressForm = async () => {
+    resetAddressForm();
+    setIsAddressFormOpen(true);
+    await loadProvinces();
+  };
+
+  const openEditAddressForm = async (address) => {
+    setIsEditingAddress(true);
+    setEditingAddressId(address.id);
+    setAddressForm({
+      type: address.type || 'Shipping',
+      isDefault: !!address.isDefault,
+      name: address.name || '',
+      phone: address.phone || '',
+      provinceId: address.provinceId || '',
+      districtId: address.districtId || '',
+      wardId: address.wardId || '',
+      street: address.street || '',
+      addressLine: address.addressLine || '',
+    });
+    setIsAddressFormOpen(true);
+
+    // Load danh sách Tỉnh/Quận/Phường để chọn đúng
+    await loadProvinces();
+    if (address.provinceId) {
+      await loadDistricts(address.provinceId);
+    }
+    if (address.districtId) {
+      await loadWards(address.districtId);
+    }
+  };
+
+  const handleAddressFieldChange = (field, value) => {
+    setAddressForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleProvinceChange = async (value) => {
+    handleAddressFieldChange('provinceId', value);
+    handleAddressFieldChange('districtId', '');
+    handleAddressFieldChange('wardId', '');
+    setDistricts([]);
+    setWards([]);
+    if (value) {
+      await loadDistricts(value);
+    }
+  };
+
+  const handleDistrictChange = async (value) => {
+    handleAddressFieldChange('districtId', value);
+    handleAddressFieldChange('wardId', '');
+    setWards([]);
+    if (value) {
+      await loadWards(value);
+    }
+  };
+
+  const validateAddressForm = () => {
+    if (!addressForm.name || !addressForm.phone) {
+      setError('Vui lòng nhập Tên người nhận và Số điện thoại.');
+      return false;
+    }
+    if (!addressForm.provinceId || !addressForm.districtId || !addressForm.wardId) {
+      setError('Vui lòng chọn đầy đủ Tỉnh/Thành phố, Quận/Huyện, Phường/Xã.');
+      return false;
+    }
+    if (!addressForm.street || !addressForm.addressLine) {
+      setError('Vui lòng nhập Tên đường và Địa chỉ chi tiết.');
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmitAddress = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    if (!validateAddressForm()) return;
+
+    try {
+      const token = getAuthToken();
+      if (!token) {
+        setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        setTimeout(() => router.push('/login'), 2000);
+        return;
+      }
+
+      const payload = {
+        type: addressForm.type,
+        isDefault: addressForm.isDefault,
+        name: addressForm.name,
+        phone: addressForm.phone,
+        addressLine: addressForm.addressLine,
+        street: addressForm.street,
+        wardId: addressForm.wardId || null, 
+        districtId: addressForm.districtId ? Number(addressForm.districtId) : null,
+        provinceId: addressForm.provinceId || null, 
+      };
+
+      const isEdit = isEditingAddress && editingAddressId;
+      const url = '/api/user/addresses';
+      const method = isEdit ? 'PUT' : 'POST';
+
+      const body = isEdit
+        ? JSON.stringify({ ...payload, addressId: editingAddressId })
+        : JSON.stringify(payload);
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json',
+        },
+        body,
+      });
+
+      if (!response.ok) {
+        const errRes = await response.json().catch(() => null);
+        throw new Error(errRes?.error || 'Không thể lưu địa chỉ');
+      }
+
+      const resData = await response.json();
+
+      setSuccess(isEdit ? 'Cập nhật địa chỉ thành công!' : 'Thêm địa chỉ mới thành công!');
+      setTimeout(() => setSuccess(null), 3000);
+
+      setIsAddressFormOpen(false);
+      resetAddressForm();
+      await loadAddresses();
+    } catch (err) {
+      console.error('Error saving address:', err);
+      setError(err.message || 'Lỗi khi lưu địa chỉ');
+    }
+  };
+
+  const handleDeleteAddress = async (address) => {
+    const ok = window.confirm('Bạn có chắc chắn muốn xóa địa chỉ này?');
+    if (!ok) return;
+
+    try {
+      const token = getAuthToken();
+      if (!token) {
+        setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        setTimeout(() => router.push('/login'), 2000);
+        return;
+      }
+
+      const response = await fetch(`/api/user/addresses?addressId=${address.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errRes = await response.json().catch(() => null);
+        throw new Error(errRes?.error || 'Không thể xóa địa chỉ');
+      }
+
+      setSuccess('Xóa địa chỉ thành công!');
+      setTimeout(() => setSuccess(null), 3000);
+      await loadAddresses();
+    } catch (err) {
+      console.error('Error deleting address:', err);
+      setError(err.message || 'Lỗi khi xóa địa chỉ');
+    }
+  };
+
+  const handleSetDefaultAddress = async (address) => {
+    try {
+      const token = getAuthToken();
+      if (!token) {
+        setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        setTimeout(() => router.push('/login'), 2000);
+        return;
+      }
+
+      const payload = {
+        addressId: address.id,
+        type: address.type || 'Shipping',
+        isDefault: true,
+      };
+
+      const response = await fetch('/api/user/addresses', {
+        method: 'PUT',
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errRes = await response.json().catch(() => null);
+        throw new Error(errRes?.error || 'Không thể đặt mặc định');
+      }
+
+      setSuccess('Đã đặt địa chỉ mặc định!');
+      setTimeout(() => setSuccess(null), 3000);
+      await loadAddresses();
+    } catch (err) {
+      console.error('Error setting default address:', err);
+      setError(err.message || 'Lỗi khi đặt địa chỉ mặc định');
+    }
   };
 
   // Load data on mount
   useEffect(() => {
     loadUserData();
-    loadCartData();
     loadOrdersData();
+    loadAddresses();
   }, []);
 
-  // Reload cart when activeMenu changes to 'cart'
-  useEffect(() => {
-    if (activeMenu === 'cart') {
-      loadCartData();
-    }
-  }, [activeMenu]);
-
-  // Reload orders when activeMenu changes to 'tracking'
+  // Reload orders / addresses when activeMenu changes
   useEffect(() => {
     if (activeMenu === 'tracking') {
       loadOrdersData();
     }
+    if (activeMenu === 'addresses') {
+      loadAddresses();
+    }
   }, [activeMenu]);
 
-  // Handle input change
+  // Handle input change (profile)
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -246,14 +523,14 @@ const TaikhoanPage = () => {
     }));
   };
 
-  // Handle edit mode
+  // Handle edit mode (profile)
   const handleEdit = () => {
     setIsEditing(true);
     setError(null);
     setSuccess(null);
   };
 
-  // Handle save changes
+  // Handle save changes (profile)
   const handleSave = async () => {
     try {
       setLoading(true);
@@ -354,10 +631,10 @@ const TaikhoanPage = () => {
       content: 'tracking'
     },
     {
-      id: 'cart',
-      label: 'Giỏ Hàng',
-      icon: <ShoppingCart size={20} />,
-      content: 'cart'
+      id: 'addresses',
+      label: 'Sổ Địa Chỉ',
+      icon: <MapPin size={20} />,
+      content: 'addresses'
     },
     {
       id: 'logout',
@@ -420,17 +697,17 @@ const TaikhoanPage = () => {
         {/* MAIN CONTENT AREA */}
         <main className={styles.mainContent}>
           
-          {/* Error/Success Messages */}
+          {/* Error/Success Messages (global) */}
           {error && (
             <div className={styles.errorMessage}>
-              <X size={16} />
+              <AlertCircle size={16} />
               <span>{error}</span>
             </div>
           )}
 
           {success && (
             <div className={styles.successMessage}>
-              <Save size={16} />
+              <CheckCircle2 size={16} />
               <span>{success}</span>
             </div>
           )}
@@ -683,124 +960,292 @@ const TaikhoanPage = () => {
             </div>
           )}
 
-          {/* CART VIEW */}
-          {activeMenu === 'cart' && (
+          {/* ADDRESS BOOK VIEW */}
+          {activeMenu === 'addresses' && (
             <div className={styles.contentSection}>
               <div className={styles.sectionHeader}>
-                <h1>Giỏ Hàng Của Tôi</h1>
-                <span className={styles.cartCount}>
-                  {cartItems.length} sản phẩm
-                </span>
+                <h1>Sổ Địa Chỉ</h1>
+                <button 
+                  className={styles.editButton} 
+                  onClick={openNewAddressForm}
+                >
+                  <Plus size={16} />
+                  Thêm địa chỉ mới
+                </button>
               </div>
 
-              {cartLoading ? (
-                <div className={styles.cartLoading}>
+              {/* Danh sách địa chỉ */}
+              {addressesLoading ? (
+                <div className={styles.ordersLoading}>
                   <div className={styles.spinner}></div>
-                  <p>Đang tải giỏ hàng...</p>
+                  <p>Đang tải danh sách địa chỉ...</p>
                 </div>
-              ) : cartItems.length === 0 ? (
-                <div className={styles.emptyCart}>
-                  <ShoppingCart size={64} className={styles.emptyIcon} />
-                  <h3>Giỏ hàng trống</h3>
-                  <p>Bạn chưa có sản phẩm nào trong giỏ hàng</p>
-                  <Link href="/" className={styles.shopNowButton}>
-                    Mua sắm ngay
-                  </Link>
+              ) : addressesError ? (
+                <div className={styles.ordersError}>
+                  <AlertCircle size={48} className={styles.errorIcon} />
+                  <h3>Không thể tải danh sách địa chỉ</h3>
+                  <p>{addressesError}</p>
+                  <button onClick={loadAddresses} className={styles.retryButton}>
+                    Thử lại
+                  </button>
+                </div>
+              ) : addresses.length === 0 ? (
+                <div className={styles.emptyOrders}>
+                  <MapPin size={64} className={styles.emptyIcon} />
+                  <h3>Chưa có địa chỉ nào</h3>
+                  <p>Hãy thêm địa chỉ giao hàng đầu tiên của bạn.</p>
+                  <button 
+                    className={styles.shopNowButton} 
+                    onClick={openNewAddressForm}
+                  >
+                    Thêm địa chỉ mới
+                  </button>
                 </div>
               ) : (
-                <div className={styles.cartContent}>
-                  <div className={styles.cartItems}>
-                    {cartItems.map((item) => (
-                      <div key={item.id} className={styles.cartItem}>
-                        <div className={styles.itemImage}>
-                          <img 
-                            src={item.image || '/images/default-product.png'} 
-                            alt={item.name}
-                            onError={(e) => { e.target.src = '/images/default-product.png'; }}
-                          />
-                        </div>
-                        
-                        <div className={styles.itemDetails}>
-                          <h4>{item.name}</h4>
-                          {item.variant && (
-                            <p className={styles.itemVariant}>{item.variant}</p>
-                          )}
-                          <p className={styles.itemPrice}>
-                            {new Intl.NumberFormat('vi-VN', {
-                              style: 'currency',
-                              currency: 'VND'
-                            }).format(item.price)}
+                <div className={styles.ordersList}>
+                  {addresses.map((address) => (
+                    <div key={address.id} className={styles.orderCard}>
+                      <div className={styles.orderHeader}>
+                        <div className={styles.orderInfo}>
+                          <h3 className={styles.orderId}>
+                            <MapPin size={18} />
+                            {address.name}
+                          </h3>
+                          <p className={styles.orderDate}>
+                            {address.phone}
                           </p>
                         </div>
-
-                        <div className={styles.itemQuantity}>
-                          <button 
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className={styles.qtyButton}
-                            disabled={item.quantity <= 1}
-                          >
-                            <Minus size={16} />
-                          </button>
-                          <span className={styles.qtyValue}>{item.quantity}</span>
-                          <button 
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className={styles.qtyButton}
-                          >
-                            <Plus size={16} />
-                          </button>
-                        </div>
-
-                        <div className={styles.itemTotal}>
-                          <p className={styles.itemTotalPrice}>
-                            {new Intl.NumberFormat('vi-VN', {
-                              style: 'currency',
-                              currency: 'VND'
-                            }).format(item.price * item.quantity)}
-                          </p>
-                          <button 
-                            onClick={() => removeFromCart(item.id)}
-                            className={styles.removeButton}
-                          >
-                            <Trash2 size={16} />
-                            Xóa
-                          </button>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          <span className={styles.orderStatus}>
+                            {address.type === 'Billing' ? 'Địa chỉ thanh toán' : 'Địa chỉ giao hàng'}
+                          </span>
+                          {address.isDefault ? (
+                            <span 
+                              style={{
+                                backgroundColor: '#10b981',
+                                color: 'white',
+                                padding: '6px 12px',
+                                borderRadius: '999px',
+                                fontSize: '0.8rem',
+                                fontWeight: 600,
+                                textAlign: 'center'
+                              }}
+                            >
+                              Mặc định
+                            </span>
+                          ) : null}
                         </div>
                       </div>
-                    ))}
-                  </div>
 
-                  <div className={styles.cartSummary}>
-                    <h3>Tổng Cộng</h3>
-                    <div className={styles.summaryRow}>
-                      <span>Tạm tính:</span>
-                      <span className={styles.summaryValue}>
-                        {new Intl.NumberFormat('vi-VN', {
-                          style: 'currency',
-                          currency: 'VND'
-                        }).format(calculateCartTotal())}
-                      </span>
+                      <div className={styles.orderBody}>
+                        <div className={styles.orderSummary}>
+                          <div className={styles.summaryItem}>
+                            <span className={styles.label}>Địa chỉ:</span>
+                            <span className={styles.value}>
+                              {address.addressLine}
+                              {address.street ? `, ${address.street}` : ''}
+                            </span>
+                          </div>
+                          <div className={styles.summaryItem}>
+                            <span className={styles.label}>Khu vực:</span>
+                            <span className={styles.value}>
+                              {address.wardName ? `${address.wardName}, ` : ''}
+                              {address.districtName ? `${address.districtName}, ` : ''}
+                              {address.provinceName || ''}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className={styles.shippingInfo}>
+                          <h4>Thao tác</h4>
+                          <p>
+                            <button
+                              className={styles.editButton}
+                              style={{ padding: '6px 12px', marginRight: 8 }}
+                              onClick={() => openEditAddressForm(address)}
+                            >
+                              <Edit2 size={14} />
+                              Sửa
+                            </button>
+                            {!address.isDefault && (
+                              <button
+                                className={styles.saveButton}
+                                style={{ padding: '6px 12px', marginRight: 8 }}
+                                onClick={() => handleSetDefaultAddress(address)}
+                              >
+                                <CheckCircle2 size={14} />
+                                Đặt mặc định
+                              </button>
+                            )}
+                            <button
+                              className={styles.cancelButton}
+                              style={{ padding: '6px 12px' }}
+                              onClick={() => handleDeleteAddress(address)}
+                            >
+                              <X size={14} />
+                              Xóa
+                            </button>
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <div className={styles.summaryRow}>
-                      <span>Phí vận chuyển:</span>
-                      <span className={styles.summaryValue}>Tính khi thanh toán</span>
+                  ))}
+                </div>
+              )}
+
+              {/* FORM THÊM / SỬA ĐỊA CHỈ */}
+              {isAddressFormOpen && (
+                <div className={styles.profileCard} style={{ marginTop: 30 }}>
+                  <h2 style={{ marginTop: 0, marginBottom: 20 }}>
+                    {isEditingAddress ? 'Chỉnh sửa địa chỉ' : 'Thêm địa chỉ mới'}
+                  </h2>
+
+                  <form onSubmit={handleSubmitAddress}>
+                    <div className={styles.formRow}>
+                      <div className={styles.formGroup}>
+                        <label>Loại địa chỉ</label>
+                        <select
+                          value={addressForm.type}
+                          onChange={(e) => handleAddressFieldChange('type', e.target.value)}
+                          className={styles.inputEditable}
+                        >
+                          <option value="Shipping">Địa chỉ giao hàng</option>
+                          <option value="Billing">Địa chỉ thanh toán</option>
+                        </select>
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={addressForm.isDefault}
+                            onChange={(e) => handleAddressFieldChange('isDefault', e.target.checked)}
+                            style={{ marginRight: 8 }}
+                          />
+                          Đặt làm địa chỉ mặc định
+                        </label>
+                        <small>Mỗi loại chỉ có tối đa 1 địa chỉ mặc định. Nếu chọn, địa chỉ mặc định cũ sẽ được thay thế.</small>
+                      </div>
                     </div>
-                    <div className={styles.summaryTotal}>
-                      <span>Tổng cộng:</span>
-                      <span className={styles.totalValue}>
-                        {new Intl.NumberFormat('vi-VN', {
-                          style: 'currency',
-                          currency: 'VND'
-                        }).format(calculateCartTotal())}
-                      </span>
+
+                    <div className={styles.formRow}>
+                      <div className={styles.formGroup}>
+                        <label>Tên người nhận</label>
+                        <input
+                          type="text"
+                          value={addressForm.name}
+                          onChange={(e) => handleAddressFieldChange('name', e.target.value)}
+                          className={styles.inputEditable}
+                          placeholder="VD: Nguyễn Văn A"
+                        />
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label>Số điện thoại</label>
+                        <input
+                          type="text"
+                          value={addressForm.phone}
+                          onChange={(e) => handleAddressFieldChange('phone', e.target.value)}
+                          className={styles.inputEditable}
+                          placeholder="VD: 0901234567"
+                        />
+                      </div>
                     </div>
-                    <Link href="/giohang" className={styles.checkoutButton}>
-                      Tiến hành thanh toán
-                    </Link>
-                    <p className={styles.cartNote}>
-                      <AlertCircle size={14} />
-                      Giá cuối cùng sẽ được xác nhận khi thanh toán
-                    </p>
-                  </div>
+
+                    <div className={styles.formRow}>
+                      <div className={styles.formGroup}>
+                        <label>Tỉnh / Thành phố</label>
+                        <select
+                          value={addressForm.provinceId}
+                          onChange={(e) => handleProvinceChange(e.target.value)}
+                          className={styles.inputEditable}
+                        >
+                          <option value="">-- Chọn Tỉnh / Thành phố --</option>
+                          {provinces.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.ten || p.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label>Quận / Huyện</label>
+                        <select
+                          value={addressForm.districtId}
+                          onChange={(e) => handleDistrictChange(e.target.value)}
+                          className={styles.inputEditable}
+                          disabled={!addressForm.provinceId}
+                        >
+                          <option value="">-- Chọn Quận / Huyện --</option>
+                          {districts.map((d) => (
+                            <option key={d.id} value={d.id}>
+                              {d.ten || d.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className={styles.formGroup}>
+                      <label>Phường / Xã</label>
+                      <select
+                        value={addressForm.wardId}
+                        onChange={(e) => handleAddressFieldChange('wardId', e.target.value)}
+                        className={styles.inputEditable}
+                        disabled={!addressForm.districtId}
+                      >
+                        <option value="">-- Chọn Phường / Xã --</option>
+                        {wards.map((w) => (
+                          <option key={w.id} value={w.id}>
+                            {w.ten || w.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className={styles.formRow}>
+                      <div className={styles.formGroup}>
+                        <label>Tên đường</label>
+                        <input
+                          type="text"
+                          value={addressForm.street}
+                          onChange={(e) => handleAddressFieldChange('street', e.target.value)}
+                          className={styles.inputEditable}
+                          placeholder="VD: Đường Lý Thái Tổ"
+                        />
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label>Địa chỉ chi tiết</label>
+                        <input
+                          type="text"
+                          value={addressForm.addressLine}
+                          onChange={(e) => handleAddressFieldChange('addressLine', e.target.value)}
+                          className={styles.inputEditable}
+                          placeholder="VD: Số 6, hẻm 5, nhà A2..."
+                        />
+                      </div>
+                    </div>
+
+                    <div className={styles.buttonGroup}>
+                      <button 
+                        type="submit"
+                        className={styles.saveButton}
+                        disabled={addressesLoading}
+                      >
+                        <Save size={16} />
+                        {isEditingAddress ? 'Lưu thay đổi' : 'Lưu địa chỉ'}
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.cancelButton}
+                        onClick={() => {
+                          setIsAddressFormOpen(false);
+                          resetAddressForm();
+                        }}
+                      >
+                        <X size={16} />
+                        Hủy
+                      </button>
+                    </div>
+                  </form>
                 </div>
               )}
             </div>

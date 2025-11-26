@@ -112,7 +112,7 @@ export default async function handler(req, res) {
           `INSERT INTO dia_chi (
             nguoi_dung_id, loai, mac_dinh, ten_nguoi_nhan, so_dien_thoai,
             dia_chi_chi_tiet, duong, phuong_xa_id, quan_huyen_id, tinh_thanh_id
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
           [userId, type, isDefault ? 1 : 0, name, phone, addressLine, street, wardId, districtId, provinceId]
         );
 

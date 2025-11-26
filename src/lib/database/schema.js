@@ -11,6 +11,11 @@ export const TABLES = Object.freeze({
   CATEGORIES: "danh_muc",
   BRANDS: "thuong_hieu",
 
+  PROVINCES: "tinh_thanh",
+  DISTRICTS: "quan_huyen",
+  WARDS: "phuong_xa",
+  ADDRESSES: "dia_chi",
+
   WAREHOUSES: "kho_moi",
   STOCKS: "ton_kho",
 
@@ -159,6 +164,53 @@ export const COLUMNS = Object.freeze({
     rating: "sao",
     content: "noi_dung",
     status: "trang_thai",
+    createdAt: "thoi_gian_tao",
+    updatedAt: "thoi_gian_cap_nhat",
+  },
+
+  // Tỉnh/Thành phố – bảng tinh_thanh
+  provinces: {
+    id: "id",
+    name: "ten",
+  },
+  
+  // Quận/Huyện – bảng quan_huyen
+  districts: {
+    id: "id",
+    provinceId: "tinh_thanh_id",
+    name: "ten",
+  },
+  
+  // Phường/Xã – bảng phuong_xa
+  wards: {
+    id: "id",
+    districtId: "quan_huyen_id",
+    name: "ten",
+  },
+
+  // Địa chỉ người dùng – bảng dia_chi
+  // Mapping này phải khớp với các trường được trả về từ API /api/user/addresses
+  addresses: {
+    id: "id",
+    userId: "nguoi_dung_id",
+    type: "loai",
+    isDefault: "mac_dinh",
+    name: "ten_nguoi_nhan",
+    phone: "so_dien_thoai",
+    addressLine: "dia_chi_chi_tiet",
+    street: "duong",
+    
+    // Khóa ngoại địa giới
+    wardId: "phuong_xa_id",
+    districtId: "quan_huyen_id",
+    provinceId: "tinh_thanh_id",
+    
+    // Tên địa giới (Tên này được lấy qua JOIN trong API GET, 
+    // không lưu trực tiếp trong bảng dia_chi)
+    // wardName: "ten_phuong_xa", // Không có cột này trong dia_chi
+    // districtName: "ten_quan_huyen", // Không có cột này trong dia_chi
+    // provinceName: "ten_tinh_thanh", // Không có cột này trong dia_chi
+    
     createdAt: "thoi_gian_tao",
     updatedAt: "thoi_gian_cap_nhat",
   },
